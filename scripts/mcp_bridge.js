@@ -12,6 +12,7 @@
 
 import { MCPTools } from '../src/mcp_tools.js';
 import { InstanceManager } from '../src/instance_manager.js';
+import RoleTemplateManager from '../src/role_templates/role_template_manager.js';
 
 async function main() {
     const command = process.argv[2];
@@ -27,6 +28,7 @@ async function main() {
         const manager = new InstanceManager();
         await manager.loadInstances();
         const tools = new MCPTools(manager);
+        const roleTemplateManager = new RoleTemplateManager();
         
         let result;
         
@@ -35,7 +37,24 @@ async function main() {
                 if (!params.role || !params.workDir || !params.context) {
                     throw new Error('spawn requires: role, workDir, context');
                 }
-                result = await tools.spawn(params, 'executive');
+                
+                // Generate instance ID
+                const instanceId = `${params.role.substring(0,3)}_${Date.now()}_${Math.floor(Math.random() * 100000)}`;
+                
+                // Build context using role template + project-specific context
+                const completeContext = roleTemplateManager.buildContext(
+                    params.role, 
+                    params.context, 
+                    instanceId
+                );
+                
+                // Update params with complete context
+                const enhancedParams = {
+                    ...params,
+                    context: completeContext
+                };
+                
+                result = await tools.spawn(enhancedParams, 'executive');
                 // Extract instance ID from response
                 const responseText = JSON.stringify(result);
                 const instanceMatch = responseText.match(/(exec|mgr|spec)_\\d+/);
