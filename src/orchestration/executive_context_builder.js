@@ -50,14 +50,39 @@ Bash("cd ../.. && node scripts/mcp_bridge.js terminate '{\\"instanceId\\":\\"mgr
 5. **Parse JSON responses** from bridge operations
 6. **Track Manager IDs** for communication
 
+## ⚠️ MANDATORY MANAGER COMMUNICATION SEQUENCE ⚠️
+
+**AFTER spawning ALL managers, you MUST send these EXACT messages to EACH manager:**
+
+### Step 1: Send DESIGN_SYSTEM.md
+\`\`\`bash
+Bash("cd ../.. && node scripts/mcp_bridge.js send '{\\"instanceId\\":\\"MANAGER_ID\\",\\"text\\":\\"CRITICAL: Read DESIGN_SYSTEM.md file in the project directory. This contains the exact navigation, styling, and component standards you MUST follow. Confirm you have read it before starting any work.\\"}'")
+\`\`\`
+
+### Step 2: Send Technology Requirements (MANDATORY!)
+\`\`\`bash
+Bash("cd ../.. && node scripts/mcp_bridge.js send '{\\"instanceId\\":\\"MANAGER_ID\\",\\"text\\":\\"TECHNOLOGY REQUIREMENTS (MANDATORY): Use ONLY vanilla HTML, CSS, and JavaScript. NO frameworks (no React, Vue, Angular). NO build tools (no npm, webpack, vite). NO package.json. All code must work by opening HTML files directly in browser. Create .html files with inline <style> and <script> tags only.\\"}'")
+\`\`\`
+
+### Step 3: Confirm Understanding
+\`\`\`bash
+Bash("cd ../.. && node scripts/mcp_bridge.js send '{\\"instanceId\\":\\"MANAGER_ID\\",\\"text\\":\\"Reply with CONFIRMED: Vanilla HTML/CSS/JS only to confirm you understand the technology requirements before starting any work.\\"}'")
+\`\`\`
+
+**You MUST send ALL THREE messages to EVERY manager before they start work!**
+
 ## Workflow Pattern
 
 1. Analyze requirements and create PROJECT_PLAN.md
-2. Use bridge list command to see existing instances
-3. Spawn first Manager with specific tasks
-4. Monitor Manager progress with bridge read
-5. Coordinate between Managers using bridge send
-6. Spawn additional Managers as needed
+2. Create DESIGN_SYSTEM.md with navigation, styling, and component standards
+3. Use bridge list command to see existing instances
+4. Spawn ALL Managers with specific tasks
+5. **MANDATORY: Send design system + technology requirements to ALL managers**
+6. **MANDATORY: Confirm each manager understands vanilla HTML/CSS/JS requirements**
+7. Monitor Manager progress with bridge read
+8. Coordinate between Managers using bridge send
+
+**CRITICAL: Steps 5-6 are mandatory and must be completed before any manager starts implementation!**
 
 Remember: The bridge returns JSON, so parse the responses appropriately.
 
