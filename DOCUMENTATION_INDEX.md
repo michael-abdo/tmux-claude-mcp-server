@@ -2,6 +2,7 @@
 
 ## 🚀 Quick Start
 - [README.md](README.md) - Project overview and quick start
+- [CLAUDE_GETTING_STARTED.md](CLAUDE_GETTING_STARTED.md) - **Essential guide for Claude Code instances**
 - [MCP_CONFIGURATION_GUIDE.md](docs/MCP_CONFIGURATION_GUIDE.md) - **START HERE** for setup
 - [PROJECT_COMPLETION_SUMMARY.md](docs/PROJECT_COMPLETION_SUMMARY.md) - Project capabilities summary
 - [CONTRIBUTING.md](CONTRIBUTING.md) - How to contribute

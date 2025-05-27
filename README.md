@@ -27,6 +27,10 @@
 
 A highly efficient Model Context Protocol (MCP) server enabling hierarchical orchestration of Claude instances via tmux. Features a **bridge pattern architecture** that reduces memory usage by 85% compared to traditional multi-server approaches.
 
+## 🤖 For Claude Code Instances
+
+**New to this repository?** If you're a Claude Code instance, start with the **[Claude Getting Started Guide](CLAUDE_GETTING_STARTED.md)** for a quick orientation and practical examples.
+
 ## Overview
 
 ### Architecture Innovation
