@@ -19,7 +19,15 @@
     "start:phase3": "PHASE=3 node src/simple_mcp_server.js",
     "dashboard": "node src/monitoring_dashboard.js",
     "dashboard:old": "PHASE=3 node src/dashboard/server.js",
-    "benchmark": "node tests/performance_benchmark.js"
+    "benchmark": "node tests/performance_benchmark.js",
+    "test:bridge": "./tests/run_bridge_tests.sh",
+    "test:bridge:unit": "node tests/unit/test_mcp_bridge.js",
+    "test:bridge:integration": "node tests/integration/test_bridge_orchestration.js",
+    "test:bridge:e2e": "node tests/e2e/test_bridge_hierarchy.js",
+    "test:bridge:errors": "node tests/e2e/test_bridge_error_scenarios.js",
+    "test:bridge:stress": "node tests/performance/test_bridge_stress.js",
+    "test:bridge:stress:heavy": "node tests/performance/test_bridge_stress.js heavy",
+    "bridge:demo": "node scripts/bridge_example.js"
   },
   "keywords": [
     "MCP",
