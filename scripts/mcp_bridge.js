@@ -10,8 +10,8 @@
  *   node mcp_bridge.js terminate '{"instanceId":"mgr_123"}'
  */
 
-import { MCPTools } from './src/mcp_tools.js';
-import { InstanceManager } from './src/instance_manager.js';
+import { MCPTools } from '../src/mcp_tools.js';
+import { InstanceManager } from '../src/instance_manager.js';
 
 async function main() {
     const command = process.argv[2];
@@ -83,7 +83,7 @@ async function main() {
                 result = await tools.read(params, 'executive');
                 console.log(JSON.stringify({
                     success: true,
-                    output: result.content[0].text
+                    output: result.output || result.content?.[0]?.text || result
                 }));
                 break;
                 

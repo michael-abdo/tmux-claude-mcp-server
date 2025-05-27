@@ -51,10 +51,10 @@ export class InstanceManager {
             });
             await this.stateStore.initialize();
             this.instances = await this.stateStore.getAllInstances();
-            console.log(`=== Instance Manager initialized with Redis (${Object.keys(this.instances).length} instances) ===`);
+            console.error(`=== Instance Manager initialized with Redis (${Object.keys(this.instances).length} instances) ===`);
         } else {
             this.instances = this.loadInstances();
-            console.log(`=== Instance Manager initialized with JSON (${Object.keys(this.instances).length} instances) ===`);
+            console.error(`=== Instance Manager initialized with JSON (${Object.keys(this.instances).length} instances) ===`);
         }
     }
 
@@ -616,7 +616,7 @@ IMPORTANT: You're in an isolated worktree, so:
             }
             
             const data = fs.readJsonSync(this.instancesFile);
-            console.log(`Loaded ${Object.keys(data.instances || {}).length} instances from ${this.instancesFile}`);
+            console.error(`Loaded ${Object.keys(data.instances || {}).length} instances from ${this.instancesFile}`);
             return data.instances || {};
         } catch (error) {
             console.error(`!!! ERROR !!! Failed to load instances: ${error.message}`);

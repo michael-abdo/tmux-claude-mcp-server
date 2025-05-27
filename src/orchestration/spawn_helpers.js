@@ -1,7 +1,12 @@
 /**
  * Spawn helpers for verified instance creation
  * Ensures instances are properly initialized and understand their context
+ * 
+ * NOTE: These helpers are for use by the PRIMARY Claude instance only.
+ * Spawned executives and managers must use the MCP Bridge instead.
  */
+
+import { buildExecutiveContext, buildManagerContext, buildSpecialistContext } from './executive_context_builder.js';
 
 /**
  * Spawn an instance with confirmation of understanding
@@ -162,8 +167,49 @@ async function verifyInstanceResponsive(tools, instanceId) {
     }
 }
 
+/**
+ * Spawn an Executive with bridge knowledge
+ * @param {Object} tools - MCP tools object (from primary instance)
+ * @param {string} projectRequirements - Project requirements
+ * @param {string} workDir - Working directory
+ * @returns {Object} - { instanceId, status, message }
+ */
+async function spawnExecutiveWithBridge(tools, projectRequirements, workDir) {
+    const instanceId = `exec_${Date.now()}`;
+    const context = buildExecutiveContext(projectRequirements, instanceId);
+    
+    return spawnWithConfirmation(tools, {
+        role: 'executive',
+        workDir: workDir,
+        context: context
+    });
+}
+
+/**
+ * Spawn a Manager with bridge knowledge
+ * @param {Object} tools - MCP tools object (from primary instance)
+ * @param {string} role - Manager role name
+ * @param {Array} tasks - List of tasks
+ * @param {string} workDir - Working directory
+ * @param {string} parentId - Parent instance ID
+ * @returns {Object} - { instanceId, status, message }
+ */
+async function spawnManagerWithBridge(tools, role, tasks, workDir, parentId) {
+    const instanceId = `mgr_${parentId}_${Date.now()}`;
+    const context = buildManagerContext(role, tasks, instanceId);
+    
+    return spawnWithConfirmation(tools, {
+        role: 'manager',
+        workDir: workDir,
+        context: context,
+        parentId: parentId
+    });
+}
+
 export {
     spawnWithConfirmation,
     spawnMultipleWithConfirmation,
-    verifyInstanceResponsive
+    verifyInstanceResponsive,
+    spawnExecutiveWithBridge,
+    spawnManagerWithBridge
 };

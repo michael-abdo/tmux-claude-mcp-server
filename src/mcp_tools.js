@@ -124,7 +124,7 @@ export class MCPTools {
             
             // TODO: Implement follow/streaming if needed
             if (follow) {
-                console.log('Follow mode not yet implemented, returning single read');
+                console.error('Follow mode not yet implemented, returning single read');
             }
             
             return result;
@@ -355,7 +355,7 @@ export class MCPTools {
      * This is the main entry point for MCP tool execution.
      */
     async executeTool(toolName, params, callerRole = null) {
-        console.log(`Executing tool: ${toolName} with role: ${callerRole}`);
+        console.error(`Executing tool: ${toolName} with role: ${callerRole}`);
         
         switch (toolName) {
             // Core orchestration tools

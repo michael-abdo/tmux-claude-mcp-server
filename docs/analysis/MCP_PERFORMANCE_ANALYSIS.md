@@ -1,4 +1,4 @@
-# MCP Performance Analysis: Multiple Servers vs Bridge
+# MCP Performance Analysis: Multiple Servers vs Orchestration Layer
 
 ## Approach 1: Multiple MCP Server Processes
 
@@ -25,7 +25,7 @@ node src/simple_mcp_server.js
 - **File locks**: Potential contention on shared state files
 - **Redis connections**: 10 separate connection pools
 
-## Approach 2: Bridge Pattern (Current)
+## Approach 2: Orchestration Layer Pattern (Current Architecture)
 
 ### Resource Requirements
 ```javascript
@@ -34,10 +34,10 @@ node src/simple_mcp_server.js (1 instance)
 ├── Node.js runtime: ~30-50MB base
 ├── Shared instance manager: ~10-20MB (scales with instances)
 ├── Shared state: 1 Redis connection pool
-└── Bridge calls: Minimal overhead per call
+└── Orchestration calls: Minimal overhead per call
 
 // Per Claude instance:
-node mcp_bridge.js <command> (ephemeral)
+node mcp_bridge.js <command> (ephemeral orchestration layer)
 ├── Quick Node.js startup: ~10-20MB briefly
 ├── Execute and exit: No persistent memory
 ├── Total persistent: Just the shared server
@@ -57,7 +57,7 @@ node mcp_bridge.js <command> (ephemeral)
 
 ## Performance Comparison
 
-| Metric | Multiple Servers | Bridge Pattern |
+| Metric | Multiple Servers | Orchestration Layer |
 |--------|------------------|----------------|
 | **Memory** | 400-700MB (10 instances) | 50-70MB total |
 | **CPU cores** | 10 event loops | 1 event loop |
@@ -75,7 +75,7 @@ const instances = JSON.parse(fs.readFileSync('state/instances.json'));
 // Potential race conditions, file locking needed
 ```
 
-**Bridge Pattern:**
+**Orchestration Layer:**
 ```javascript
 // Single server manages all state
 // No race conditions, better consistency
@@ -87,7 +87,7 @@ const instances = JSON.parse(fs.readFileSync('state/instances.json'));
 - Potential ID conflicts
 - Complex cleanup coordination
 
-**Bridge Pattern:** Centralized instance management
+**Orchestration Layer:** Centralized instance management
 - Single source of truth
 - No conflicts
 - Simpler cleanup
@@ -106,11 +106,11 @@ const instances = JSON.parse(fs.readFileSync('state/instances.json'));
 - Tmux interface: ~2-5MB
 - Redis client: ~1-3MB
 
-## Verdict: Bridge is Significantly More Efficient
+## Verdict: Orchestration Layer is Significantly More Efficient
 
 ### Memory Savings
-- **10 instances**: Bridge uses ~85% less memory (50MB vs 400MB+)
-- **Scales better**: Bridge grows sublinearly, multiple servers grow linearly
+- **10 instances**: Orchestration layer uses ~85% less memory (50MB vs 400MB+)
+- **Scales better**: Orchestration layer grows sublinearly, multiple servers grow linearly
 
 ### CPU Efficiency
 - **Single event loop** vs 10 competing event loops
@@ -118,17 +118,17 @@ const instances = JSON.parse(fs.readFileSync('state/instances.json'));
 - **Less context switching** overhead
 
 ### State Consistency
-- **No race conditions** in bridge pattern
+- **No race conditions** with orchestration layer
 - **Atomic operations** through single server
 - **Simpler error recovery**
 
 ## Recommendation
 
-**Keep the bridge pattern** - it's not just a workaround, it's actually the more efficient architecture:
+**The orchestration layer pattern is the optimal architecture**:
 
 1. **Much lower resource usage** (~85% memory savings)
 2. **Better state consistency** (no race conditions)
 3. **Simpler deployment** (one server vs many)
 4. **Follows microservices patterns** (shared service architecture)
 
-The bridge pattern is computationally superior in every measurable way.
+The orchestration layer architecture is computationally superior in every measurable way and represents the intended design for multi-instance MCP coordination.

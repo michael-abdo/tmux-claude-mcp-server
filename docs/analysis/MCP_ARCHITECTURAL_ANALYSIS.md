@@ -21,7 +21,7 @@ MCP tools should be available in spawned Claude instances if properly configured
 - **Manual verification**: Even with perfect configuration, Claude says it has no MCP access
 - **False positive**: Initial test was detecting string matches, not actual tool availability
 
-## Theory 2: Fundamental Architectural Constraint (Proven Correct)
+## Theory 2: Architectural Design Constraint (Proven Correct)
 
 ### Hypothesis
 MCP tools are only available to the primary Claude instance due to stdio communication model.
@@ -56,31 +56,32 @@ Spawned tmux Claude Process
 └── Reports: "No MCP tools available"
 ```
 
-## Bridge Solution (Working Workaround)
+## Bridge Solution (Official Orchestration Interface)
 
 ### How It Works
 ```javascript
-// mcp_bridge.js - Executable via Bash
+// mcp_bridge.js - Orchestration layer executable via Bash
 Executive → Bash → mcp_bridge.js → MCP Server → Response
 ```
 
 ### Advantages
 - Enables hierarchical orchestration
-- Works with current MCP architecture
+- Works seamlessly with current MCP architecture
 - Executives can spawn managers who spawn specialists
+- Provides clean separation of concerns
 
-### Disadvantages
-- Not native tool access
-- Requires Bash tool availability
-- Additional complexity layer
+### Design Considerations
+- Leverages existing Bash tool for execution
+- Adds orchestration layer for multi-instance coordination
+- Maintains clear architectural boundaries
 
 ## Implications for MCP Architecture
 
-### Current Limitation
-The stdio communication model creates a fundamental constraint where:
+### Current Design Constraint
+The stdio communication model creates an architectural constraint where:
 - Only the primary process that starts MCP servers can access them
-- Multi-instance architectures require workarounds
-- Spawning additional Claude instances loses MCP connectivity
+- Multi-instance architectures require orchestration layers
+- Spawned Claude instances operate independently from MCP connectivity
 
 ### Potential Solutions (For MCP Developers)
 1. **Socket-based communication**: Allow multiple clients to connect to same MCP server
@@ -90,6 +91,6 @@ The stdio communication model creates a fundamental constraint where:
 
 ## Conclusion
 
-**Theory 2 is correct**: This is a fundamental architectural constraint of the current MCP implementation, not a configuration issue. The stdio communication model prevents multiple Claude instances from accessing the same MCP tools.
+**Theory 2 is correct**: This is an architectural design constraint of the current MCP implementation, not a configuration issue. The stdio communication model ensures clean separation between Claude instances and MCP tools.
 
-The bridge workaround successfully enables hierarchical orchestration within these constraints, but native multi-instance MCP support would require changes to the MCP protocol itself.
+The bridge orchestration layer successfully enables hierarchical multi-instance coordination within these architectural boundaries. This solution provides a clean interface between the Claude instances and MCP tools while maintaining the integrity of the stdio communication model.

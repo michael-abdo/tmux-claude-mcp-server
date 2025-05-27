@@ -6,6 +6,7 @@
 import { MCPClient } from '../src/mcp_client.js';
 import { ExecutiveOrchestrator } from '../src/orchestration/executive_orchestrator.js';
 import { monitorAllProgress, generateProgressReport } from '../src/orchestration/monitor_progress.js';
+import { spawnExecutiveWithBridge } from '../src/orchestration/spawn_helpers.js';
 
 async function main() {
     console.log('=== Spawning Test Executive with Orchestration Improvements ===\n');
@@ -38,48 +39,22 @@ Requirements:
         console.log('1. Creating project plan...\n');
         await orchestrator.createProjectPlan(projectRequirements);
         
-        console.log('2. Spawning Executive with new orchestration pattern...\n');
+        console.log('2. Spawning Executive with MCP Bridge knowledge...\n');
         
-        const executiveContext = `You are the Executive for a Calculator Project.
-
-PROJECT REQUIREMENTS:
-${projectRequirements}
-
-IMPORTANT: Use the new orchestration patterns:
-1. Create PROJECT_PLAN.md before spawning any Managers
-2. Use the spawn confirmation pattern shown in your prompt
-3. Spawn Managers one at a time with clear task lists
-4. Monitor progress every few minutes
-
-Break this down into 2-3 Managers maximum:
-- Implementation Manager (for calculator logic)
-- Testing Manager (for unit tests)
-- Documentation Manager (if needed)`;
-
-        // Spawn the Executive
-        const { instanceId } = await tools.spawn({
-            role: 'executive',
-            workDir: '/tmp/calculator-project',
-            context: executiveContext
-        });
+        // Use the new bridge-aware spawning
+        const result = await spawnExecutiveWithBridge(
+            tools,
+            projectRequirements,
+            '/tmp/calculator-project'
+        );
         
-        console.log(`Executive spawned: ${instanceId}\n`);
+        if (result.status !== 'ready') {
+            throw new Error(`Executive failed to initialize: ${result.message}`);
+        }
         
-        // Wait for initialization
-        await new Promise(resolve => setTimeout(resolve, 3000));
-        
-        // Send confirmation request
-        console.log('3. Requesting confirmation from Executive...\n');
-        await tools.send({
-            targetInstanceId: instanceId,
-            message: "Please confirm you understand the Calculator Project by replying 'READY: Executive'"
-        });
-        
-        // Wait and check for confirmation
-        await new Promise(resolve => setTimeout(resolve, 3000));
-        
-        const response = await tools.read({ instanceId });
-        console.log('Executive response:', response);
+        const { instanceId } = result;
+        console.log(`Executive spawned and confirmed: ${instanceId}`);
+        console.log(`Confirmation: ${result.message}\n`);
         
         // Monitor the Executive
         console.log('\n4. Monitoring Executive progress...\n');
@@ -105,11 +80,11 @@ Break this down into 2-3 Managers maximum:
         if (progress.managers.length === 0) {
             console.log('\n5. Instructing Executive to spawn Managers...\n');
             await tools.send({
-                targetInstanceId: instanceId,
-                message: `Please proceed with spawning Managers for the Calculator Project. Remember to:
-1. Use the spawn tool (not bash commands)
-2. Follow the confirmation pattern in your prompt
-3. Create an Implementation Manager first`
+                instanceId: instanceId,
+                text: `Please proceed with spawning Managers for the Calculator Project. Remember to:
+1. Use the MCP Bridge commands shown in your context
+2. Example: Bash("cd ../.. && node scripts/mcp_bridge.js spawn '{...}'")
+3. Create an Implementation Manager first with specific tasks`
             });
             
             // Wait and check again
