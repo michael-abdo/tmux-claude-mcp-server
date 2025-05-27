@@ -1,0 +1,17 @@
+node_modules/
+state/
+*.log
+.DS_Store
+test-state/
+test-state-*/
+test-workdir-*/
+test-arch-alignment/
+test-phase4-quick/
+demo-state/
+test-workdir-load/
+test-workdir-recovery/
+test-state-recovery/
+test-state-load/
+*.jsonl
+experimental/
+config/local.json

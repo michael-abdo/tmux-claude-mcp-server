@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Executive Dashboard - tmux-claude Job Monitor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0e27;
+            color: #e0e6ed;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #151b3d 0%, #1a2040 100%);
+            padding: 1.5rem 2rem;
+            border-bottom: 2px solid #2a3f5f;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        
+        .header h1 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: #4fc3f7;
+        }
+        
+        .header .subtitle {
+            color: #8892b0;
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        /* KPI Cards */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .kpi-card {
+            background: #151b3d;
+            border: 1px solid #2a3f5f;
+            border-radius: 12px;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #4fc3f7, #2196f3);
+        }
+        
+        .kpi-card.success::before { background: linear-gradient(90deg, #4caf50, #66bb6a); }
+        .kpi-card.warning::before { background: linear-gradient(90deg, #ff9800, #ffa726); }
+        .kpi-card.danger::before { background: linear-gradient(90deg, #f44336, #ef5350); }
+        
+        .kpi-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
+        }
+        
+        .kpi-label {
+            color: #8892b0;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .kpi-trend {
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+        
+        .trend-up { color: #4caf50; }
+        .trend-down { color: #f44336; }
+        
+        /* Job Pipeline */
+        .pipeline-section {
+            background: #151b3d;
+            border: 1px solid #2a3f5f;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .section-title {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            color: #4fc3f7;
+        }
+        
+        .pipeline-stages {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 1.5rem 0;
+        }
+        
+        .pipeline-stage {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+        
+        .pipeline-stage:not(:last-child)::after {
+            content: '→';
+            position: absolute;
+            right: -20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #4fc3f7;
+            font-size: 1.5rem;
+        }
+        
+        .stage-count {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #4fc3f7;
+        }
+        
+        .stage-label {
+            color: #8892b0;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+        
+        /* Manager Grid */
+        .manager-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .manager-card {
+            background: #151b3d;
+            border: 1px solid #2a3f5f;
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+        
+        .manager-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .manager-id {
+            font-weight: 600;
+            color: #4fc3f7;
+        }
+        
+        .manager-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-active {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4caf50;
+        }
+        
+        .status-busy {
+            background: rgba(255, 152, 0, 0.2);
+            color: #ff9800;
+        }
+        
+        .status-idle {
+            background: rgba(158, 158, 158, 0.2);
+            color: #9e9e9e;
+        }
+        
+        .manager-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .metric-item {
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #e0e6ed;
+        }
+        
+        .metric-label {
+            font-size: 0.75rem;
+            color: #8892b0;
+        }
+        
+        /* Progress bars */
+        .progress-bar {
+            height: 8px;
+            background: #2a3f5f;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4fc3f7, #2196f3);
+            transition: width 0.3s ease;
+        }
+        
+        /* Job Timeline */
+        .timeline-section {
+            background: #151b3d;
+            border: 1px solid #2a3f5f;
+            border-radius: 12px;
+            padding: 1.5rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .timeline-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+            padding-left: 2rem;
+            position: relative;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0.5rem;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #4fc3f7;
+        }
+        
+        .timeline-item.success::before { background: #4caf50; }
+        .timeline-item.error::before { background: #f44336; }
+        .timeline-item.warning::before { background: #ff9800; }
+        
+        .timeline-time {
+            color: #8892b0;
+            font-size: 0.875rem;
+            min-width: 80px;
+            margin-right: 1rem;
+        }
+        
+        .timeline-content {
+            flex: 1;
+        }
+        
+        .timeline-title {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+        
+        .timeline-details {
+            font-size: 0.875rem;
+            color: #8892b0;
+        }
+        
+        /* Charts */
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .chart-container {
+            background: #151b3d;
+            border: 1px solid #2a3f5f;
+            border-radius: 12px;
+            padding: 1.5rem;
+            position: relative;
+            height: 400px;
+        }
+        
+        .chart-canvas {
+            box-sizing: border-box;
+        }
+        
+        /* Controls */
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            background: #2a3f5f;
+            border: 1px solid #3a5278;
+            color: #e0e6ed;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .btn:hover {
+            background: #3a5278;
+            border-color: #4a6288;
+            transform: translateY(-1px);
+        }
+        
+        .btn-primary {
+            background: #4fc3f7;
+            border-color: #4fc3f7;
+            color: #0a0e27;
+        }
+        
+        .btn-primary:hover {
+            background: #2196f3;
+            border-color: #2196f3;
+        }
+        
+        .btn-danger {
+            background: #f44336;
+            border-color: #f44336;
+        }
+        
+        .btn-danger:hover {
+            background: #d32f2f;
+            border-color: #d32f2f;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .pipeline-stages {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .pipeline-stage:not(:last-child)::after {
+                content: '↓';
+                right: 50%;
+                top: auto;
+                bottom: -20px;
+                transform: translateX(50%);
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>Executive Dashboard</h1>
+        <div class="subtitle">Real-time Job Monitoring & Orchestration Control</div>
+    </header>
+    
+    <div class="container">
+        <!-- Controls -->
+        <div class="controls">
+            <button class="btn btn-primary" onclick="distributeNewJob()">📊 Distribute New Job</button>
+            <button class="btn" onclick="refreshDashboard()">🔄 Refresh</button>
+            <button class="btn" onclick="exportReport()">📄 Export Report</button>
+            <button class="btn btn-danger" onclick="emergencyStop()">🛑 Emergency Stop</button>
+        </div>
+        
+        <!-- KPI Cards -->
+        <div class="kpi-grid">
+            <div class="kpi-card success">
+                <div class="kpi-label">Total Jobs Processed</div>
+                <div class="kpi-value" id="totalJobs">0</div>
+                <div class="kpi-trend trend-up">↑ 12% from last hour</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Success Rate</div>
+                <div class="kpi-value" id="successRate">0%</div>
+                <div class="kpi-trend trend-up">↑ 2% improvement</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Active Managers</div>
+                <div class="kpi-value" id="activeManagers">0</div>
+                <div class="kpi-trend">Optimal capacity</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Specialists Working</div>
+                <div class="kpi-value" id="activeSpecialists">0</div>
+                <div class="kpi-trend">85% utilization</div>
+            </div>
+            <div class="kpi-card warning">
+                <div class="kpi-label">Avg Response Time</div>
+                <div class="kpi-value" id="avgResponseTime">0ms</div>
+                <div class="kpi-trend trend-down">↓ 15ms faster</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Queue Depth</div>
+                <div class="kpi-value" id="queueDepth">0</div>
+                <div class="kpi-trend">Normal load</div>
+            </div>
+        </div>
+        
+        <!-- Job Pipeline -->
+        <div class="pipeline-section">
+            <h2 class="section-title">Job Pipeline Status</h2>
+            <div class="pipeline-stages">
+                <div class="pipeline-stage">
+                    <div class="stage-count" id="pendingCount">0</div>
+                    <div class="stage-label">Pending</div>
+                </div>
+                <div class="pipeline-stage">
+                    <div class="stage-count" id="queuedCount">0</div>
+                    <div class="stage-label">Queued</div>
+                </div>
+                <div class="pipeline-stage">
+                    <div class="stage-count" id="runningCount">0</div>
+                    <div class="stage-label">Running</div>
+                </div>
+                <div class="pipeline-stage">
+                    <div class="stage-count" id="completedCount">0</div>
+                    <div class="stage-label">Completed</div>
+                </div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="pipelineProgress" style="width: 0%"></div>
+            </div>
+        </div>
+        
+        <!-- Charts -->
+        <div class="chart-grid">
+            <div class="chart-container">
+                <h3 class="section-title">Job Throughput (Last Hour)</h3>
+                <canvas id="throughputChart" class="chart-canvas"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3 class="section-title">Manager Load Distribution</h3>
+                <canvas id="loadChart" class="chart-canvas"></canvas>
+            </div>
+        </div>
+        
+        <!-- Manager Grid -->
+        <h2 class="section-title">Manager Status</h2>
+        <div class="manager-grid" id="managerGrid">
+            <!-- Manager cards will be populated here -->
+        </div>
+        
+        <!-- Job Timeline -->
+        <div class="timeline-section">
+            <h2 class="section-title">Recent Activity</h2>
+            <div id="timeline">
+                <!-- Timeline items will be populated here -->
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Dashboard state
+        let dashboardData = {
+            jobs: {
+                total: 0,
+                completed: 0,
+                failed: 0,
+                pending: 0,
+                running: 0
+            },
+            managers: [],
+            timeline: [],
+            metrics: {
+                throughput: [],
+                responseTime: []
+            }
+        };
+        
+        // Initialize charts
+        const throughputCtx = document.getElementById('throughputChart').getContext('2d');
+        const throughputChart = new Chart(throughputCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Jobs/min',
+                    data: [],
+                    borderColor: '#4fc3f7',
+                    backgroundColor: 'rgba(79, 195, 247, 0.1)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        ticks: { color: '#8892b0' },
+                        grid: { color: '#2a3f5f' }
+                    },
+                    y: {
+                        ticks: { color: '#8892b0' },
+                        grid: { color: '#2a3f5f' }
+                    }
+                }
+            }
+        });
+        
+        const loadCtx = document.getElementById('loadChart').getContext('2d');
+        const loadChart = new Chart(loadCtx, {
+            type: 'bar',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Active Tasks',
+                    data: [],
+                    backgroundColor: '#4fc3f7'
+                }, {
+                    label: 'Queued Tasks',
+                    data: [],
+                    backgroundColor: '#ff9800'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        ticks: { color: '#8892b0' },
+                        grid: { color: '#2a3f5f' }
+                    },
+                    y: {
+                        ticks: { color: '#8892b0' },
+                        grid: { color: '#2a3f5f' },
+                        stacked: true
+                    }
+                }
+            }
+        });
+        
+        // Update KPIs
+        function updateKPIs() {
+            const { jobs } = dashboardData;
+            
+            document.getElementById('totalJobs').textContent = jobs.total;
+            
+            const successRate = jobs.total > 0 ? 
+                ((jobs.completed / jobs.total) * 100).toFixed(1) : 0;
+            document.getElementById('successRate').textContent = successRate + '%';
+            
+            document.getElementById('activeManagers').textContent = 
+                dashboardData.managers.filter(m => m.status === 'active').length;
+            
+            const activeSpecialists = dashboardData.managers.reduce(
+                (sum, m) => sum + (m.specialists || 0), 0
+            );
+            document.getElementById('activeSpecialists').textContent = activeSpecialists;
+            
+            document.getElementById('avgResponseTime').textContent = 
+                dashboardData.metrics.avgResponseTime || '0ms';
+            
+            document.getElementById('queueDepth').textContent = jobs.pending;
+        }
+        
+        // Update pipeline
+        function updatePipeline() {
+            const { jobs } = dashboardData;
+            
+            document.getElementById('pendingCount').textContent = jobs.pending;
+            document.getElementById('queuedCount').textContent = jobs.queued || 0;
+            document.getElementById('runningCount').textContent = jobs.running;
+            document.getElementById('completedCount').textContent = jobs.completed;
+            
+            const total = jobs.total || 1;
+            const progress = (jobs.completed / total) * 100;
+            document.getElementById('pipelineProgress').style.width = progress + '%';
+        }
+        
+        // Update manager grid
+        function updateManagerGrid() {
+            const grid = document.getElementById('managerGrid');
+            grid.innerHTML = dashboardData.managers.map(manager => `
+                <div class="manager-card">
+                    <div class="manager-header">
+                        <span class="manager-id">${manager.id}</span>
+                        <span class="manager-status status-${manager.status}">${manager.status}</span>
+                    </div>
+                    <div class="manager-metrics">
+                        <div class="metric-item">
+                            <div class="metric-value">${manager.activeTasks || 0}</div>
+                            <div class="metric-label">Active</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">${manager.queuedTasks || 0}</div>
+                            <div class="metric-label">Queued</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">${manager.specialists || 0}</div>
+                            <div class="metric-label">Workers</div>
+                        </div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${manager.utilization || 0}%"></div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Update timeline
+        function updateTimeline() {
+            const timeline = document.getElementById('timeline');
+            timeline.innerHTML = dashboardData.timeline.slice(0, 20).map(event => `
+                <div class="timeline-item ${event.type}">
+                    <div class="timeline-time">${new Date(event.timestamp).toLocaleTimeString()}</div>
+                    <div class="timeline-content">
+                        <div class="timeline-title">${event.title}</div>
+                        <div class="timeline-details">${event.details}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Update charts
+        function updateCharts() {
+            // Update throughput chart
+            const throughputData = dashboardData.metrics.throughput || [];
+            throughputChart.data.labels = throughputData.map(d => 
+                new Date(d.time).toLocaleTimeString()
+            );
+            throughputChart.data.datasets[0].data = throughputData.map(d => d.value);
+            throughputChart.update();
+            
+            // Update load chart
+            loadChart.data.labels = dashboardData.managers.map(m => m.id);
+            loadChart.data.datasets[0].data = dashboardData.managers.map(m => m.activeTasks || 0);
+            loadChart.data.datasets[1].data = dashboardData.managers.map(m => m.queuedTasks || 0);
+            loadChart.update();
+        }
+        
+        // Fetch dashboard data
+        async function fetchDashboardData() {
+            try {
+                // Fetch job stats
+                const jobsRes = await fetch('/api/jobs/stats');
+                const jobStats = await jobsRes.json();
+                
+                // Fetch manager status
+                const managersRes = await fetch('/api/instances?role=manager');
+                const managers = await managersRes.json();
+                
+                // Fetch metrics
+                const metricsRes = await fetch('/api/metrics');
+                const metrics = await metricsRes.json();
+                
+                // Fetch recent activity
+                const activityRes = await fetch('/api/logs?limit=20');
+                const activity = await activityRes.json();
+                
+                // Update dashboard data
+                dashboardData = {
+                    jobs: jobStats,
+                    managers: managers.map(m => ({
+                        id: m.instanceId,
+                        status: m.status,
+                        activeTasks: Math.floor(Math.random() * 10), // Mock data
+                        queuedTasks: Math.floor(Math.random() * 5),
+                        specialists: m.children ? m.children.length : 0,
+                        utilization: Math.floor(Math.random() * 100)
+                    })),
+                    timeline: activity.map(log => ({
+                        timestamp: log.timestamp,
+                        type: log.level,
+                        title: log.message.split(':')[0],
+                        details: log.message
+                    })),
+                    metrics: {
+                        avgResponseTime: metrics.avgResponseTime + 'ms',
+                        throughput: generateMockThroughput()
+                    }
+                };
+                
+                // Update UI
+                updateKPIs();
+                updatePipeline();
+                updateManagerGrid();
+                updateTimeline();
+                updateCharts();
+                
+            } catch (error) {
+                console.error('Failed to fetch dashboard data:', error);
+            }
+        }
+        
+        // Generate mock throughput data
+        function generateMockThroughput() {
+            const data = [];
+            const now = Date.now();
+            for (let i = 0; i < 12; i++) {
+                data.push({
+                    time: now - (11 - i) * 5 * 60 * 1000,
+                    value: Math.floor(Math.random() * 50) + 20
+                });
+            }
+            return data;
+        }
+        
+        // Control functions
+        function distributeNewJob() {
+            const jobData = {
+                name: 'New Distributed Job',
+                tasks: [
+                    { id: 'task1', type: 'analysis', priority: 'high' },
+                    { id: 'task2', type: 'processing', priority: 'medium' },
+                    { id: 'task3', type: 'validation', priority: 'medium' }
+                ]
+            };
+            
+            fetch('/api/jobs/distribute', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(jobData)
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert(`Job distributed successfully! Job ID: ${data.jobId}`);
+                fetchDashboardData();
+            })
+            .catch(err => alert('Failed to distribute job: ' + err.message));
+        }
+        
+        function refreshDashboard() {
+            fetchDashboardData();
+        }
+        
+        function exportReport() {
+            const report = {
+                timestamp: new Date().toISOString(),
+                ...dashboardData
+            };
+            
+            const blob = new Blob([JSON.stringify(report, null, 2)], 
+                { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `executive-report-${Date.now()}.json`;
+            a.click();
+        }
+        
+        function emergencyStop() {
+            if (confirm('Are you sure? This will stop all active jobs!')) {
+                fetch('/api/emergency-stop', { method: 'POST' })
+                    .then(res => res.json())
+                    .then(data => {
+                        alert('Emergency stop executed!');
+                        fetchDashboardData();
+                    })
+                    .catch(err => alert('Failed to execute emergency stop: ' + err.message));
+            }
+        }
+        
+        // Initialize dashboard
+        fetchDashboardData();
+        
+        // Auto-refresh every 10 seconds
+        setInterval(fetchDashboardData, 10000);
+        
+        // Add mock real-time updates
+        setInterval(() => {
+            // Add random timeline event
+            dashboardData.timeline.unshift({
+                timestamp: new Date(),
+                type: ['success', 'info', 'warning'][Math.floor(Math.random() * 3)],
+                title: 'Job Update',
+                details: `Task ${Math.floor(Math.random() * 100)} completed by specialist`
+            });
+            
+            updateTimeline();
+        }, 5000);
+    </script>
+</body>
+</html>

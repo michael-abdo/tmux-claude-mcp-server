@@ -1,0 +1,52 @@
+{
+  "server": {
+    "name": "tmux-claude",
+    "version": "1.0.0",
+    "description": "MCP server for orchestrating Claude instances via tmux"
+  },
+  "tmux": {
+    "sessionPrefix": "claude_",
+    "defaultShell": "/bin/zsh",
+    "initTimeout": 5000,
+    "commandTimeout": 120000,
+    "enterKeyDelay": 500,
+    "safetyEnterDelay": 1500
+  },
+  "instance": {
+    "defaultWorkDir": "/tmp/claude-workspace",
+    "stateFile": "state/instances.json",
+    "allowedRoles": ["executive", "manager", "specialist"],
+    "maxInstancesPerRole": {
+      "executive": 5,
+      "manager": 20,
+      "specialist": 100
+    }
+  },
+  "mcp": {
+    "serverPath": "src/simple_mcp_server.js",
+    "phase": "3",
+    "allowedTools": ["spawn", "send", "read", "list", "terminate"]
+  },
+  "monitoring": {
+    "todoCheckInterval": 10000,
+    "instanceHealthCheckInterval": 30000,
+    "dashboardPort": 3000
+  },
+  "redis": {
+    "enabled": false,
+    "url": "redis://localhost:6379",
+    "keyPrefix": "tmux-claude:",
+    "ttl": 86400
+  },
+  "git": {
+    "enabled": true,
+    "worktreeSupport": true,
+    "branchPattern": "{role}-{instanceId}-{taskId}-{feature}"
+  },
+  "logging": {
+    "level": "info",
+    "directory": "logs",
+    "maxFiles": 10,
+    "maxSize": "10m"
+  }
+}

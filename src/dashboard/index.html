@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>tmux-claude Monitoring Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0e27;
+            color: #e0e6ed;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: #151b3d;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid #2a3f5f;
+        }
+        
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 500;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .metric-card {
+            background: #151b3d;
+            border: 1px solid #2a3f5f;
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+        
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #4fc3f7;
+            margin: 0.5rem 0;
+        }
+        
+        .metric-label {
+            color: #8892b0;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .instance-grid {
+            display: grid;
+            gap: 1rem;
+        }
+        
+        .instance-card {
+            background: #151b3d;
+            border: 1px solid #2a3f5f;
+            border-radius: 8px;
+            padding: 1.5rem;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .instance-status {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        
+        .status-active { background: #4caf50; }
+        .status-inactive { background: #f44336; }
+        .status-recovering { background: #ff9800; }
+        
+        .instance-info h3 {
+            font-size: 1.125rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .instance-meta {
+            color: #8892b0;
+            font-size: 0.875rem;
+        }
+        
+        .instance-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .btn {
+            background: #2a3f5f;
+            border: 1px solid #3a5278;
+            color: #e0e6ed;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+        
+        .btn:hover {
+            background: #3a5278;
+            border-color: #4a6288;
+        }
+        
+        .chart-container {
+            background: #151b3d;
+            border: 1px solid #2a3f5f;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            position: relative;
+            height: 400px;
+        }
+        
+        .chart-title {
+            font-size: 1.125rem;
+            margin-bottom: 1rem;
+        }
+        
+        #performanceChart {
+            box-sizing: border-box;
+        }
+        
+        .logs-container {
+            background: #151b3d;
+            border: 1px solid #2a3f5f;
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+        
+        .logs-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .log-entries {
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.875rem;
+        }
+        
+        .log-entry {
+            padding: 0.5rem;
+            border-bottom: 1px solid #2a3f5f;
+        }
+        
+        .log-timestamp {
+            color: #8892b0;
+            margin-right: 1rem;
+        }
+        
+        .log-level-info { color: #4fc3f7; }
+        .log-level-warn { color: #ff9800; }
+        .log-level-error { color: #f44336; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>tmux-claude Monitoring Dashboard</h1>
+    </header>
+    
+    <div class="container">
+        <!-- Metrics Overview -->
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-label">Total Instances</div>
+                <div class="metric-value" id="totalInstances">0</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Active Instances</div>
+                <div class="metric-value" id="activeInstances">0</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Tasks Processed</div>
+                <div class="metric-value" id="tasksProcessed">0</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Average Response Time</div>
+                <div class="metric-value" id="avgResponseTime">0ms</div>
+            </div>
+        </div>
+        
+        <!-- Performance Chart -->
+        <div class="chart-container">
+            <h2 class="chart-title">System Performance</h2>
+            <canvas id="performanceChart"></canvas>
+        </div>
+        
+        <!-- Instance List -->
+        <h2 style="margin-bottom: 1rem;">Active Instances</h2>
+        <div class="instance-grid" id="instanceGrid">
+            <!-- Instances will be populated here -->
+        </div>
+        
+        <!-- System Logs -->
+        <div class="logs-container" style="margin-top: 2rem;">
+            <div class="logs-header">
+                <h2>System Logs</h2>
+                <button class="btn" onclick="clearLogs()">Clear</button>
+            </div>
+            <div class="log-entries" id="logEntries">
+                <!-- Logs will be populated here -->
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Dashboard state
+        let instances = [];
+        let metrics = {
+            totalInstances: 0,
+            activeInstances: 0,
+            tasksProcessed: 0,
+            avgResponseTime: 0
+        };
+        let performanceData = {
+            labels: [],
+            datasets: [{
+                label: 'CPU Usage %',
+                data: [],
+                borderColor: '#4fc3f7',
+                tension: 0.4
+            }, {
+                label: 'Memory MB',
+                data: [],
+                borderColor: '#4caf50',
+                tension: 0.4
+            }]
+        };
+        
+        // Initialize performance chart
+        const ctx = document.getElementById('performanceChart').getContext('2d');
+        const performanceChart = new Chart(ctx, {
+            type: 'line',
+            data: performanceData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#e0e6ed'
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: { color: '#8892b0' },
+                        grid: { color: '#2a3f5f' }
+                    },
+                    y: {
+                        ticks: { color: '#8892b0' },
+                        grid: { color: '#2a3f5f' },
+                        min: 0,
+                        max: 100,
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        
+        // Update metrics display
+        function updateMetrics() {
+            document.getElementById('totalInstances').textContent = metrics.totalInstances;
+            document.getElementById('activeInstances').textContent = metrics.activeInstances;
+            document.getElementById('tasksProcessed').textContent = metrics.tasksProcessed;
+            document.getElementById('avgResponseTime').textContent = metrics.avgResponseTime + 'ms';
+        }
+        
+        // Render instance grid
+        function renderInstances() {
+            const grid = document.getElementById('instanceGrid');
+            grid.innerHTML = instances.map(instance => `
+                <div class="instance-card">
+                    <div class="instance-status status-${instance.status}"></div>
+                    <div class="instance-info">
+                        <h3>${instance.instanceId}</h3>
+                        <div class="instance-meta">
+                            Role: ${instance.role} | Created: ${new Date(instance.created).toLocaleTimeString()}
+                        </div>
+                    </div>
+                    <div class="instance-actions">
+                        <button class="btn" onclick="viewInstance('${instance.instanceId}')">View</button>
+                        <button class="btn" onclick="restartInstance('${instance.instanceId}')">Restart</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Add log entry
+        function addLog(level, message) {
+            const logEntries = document.getElementById('logEntries');
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `
+                <span class="log-timestamp">${timestamp}</span>
+                <span class="log-level-${level}">[${level.toUpperCase()}]</span>
+                ${message}
+            `;
+            logEntries.insertBefore(entry, logEntries.firstChild);
+            
+            // Keep only last 100 entries
+            while (logEntries.children.length > 100) {
+                logEntries.removeChild(logEntries.lastChild);
+            }
+        }
+        
+        // Clear logs
+        function clearLogs() {
+            document.getElementById('logEntries').innerHTML = '';
+        }
+        
+        // Instance actions
+        function viewInstance(instanceId) {
+            addLog('info', `Viewing instance ${instanceId}`);
+            // TODO: Implement view functionality
+        }
+        
+        function restartInstance(instanceId) {
+            addLog('info', `Restarting instance ${instanceId}`);
+            fetch(`/api/instances/${instanceId}/restart`, { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        addLog('info', `Instance ${instanceId} restarted successfully`);
+                        fetchData();
+                    } else {
+                        addLog('error', `Failed to restart ${instanceId}: ${data.error}`);
+                    }
+                })
+                .catch(err => addLog('error', `Error restarting ${instanceId}: ${err.message}`));
+        }
+        
+        // Fetch data from server
+        function fetchData() {
+            // Fetch instances
+            fetch('/api/instances')
+                .then(res => res.json())
+                .then(data => {
+                    instances = data;
+                    metrics.totalInstances = data.length;
+                    metrics.activeInstances = data.filter(i => i.status === 'active').length;
+                    renderInstances();
+                    updateMetrics();
+                })
+                .catch(err => addLog('error', `Failed to fetch instances: ${err.message}`));
+            
+            // Fetch metrics
+            fetch('/api/metrics')
+                .then(res => res.json())
+                .then(data => {
+                    metrics.tasksProcessed = data.tasksProcessed || 0;
+                    metrics.avgResponseTime = data.avgResponseTime || 0;
+                    updateMetrics();
+                })
+                .catch(err => addLog('error', `Failed to fetch metrics: ${err.message}`));
+            
+            // Fetch performance data from dedicated endpoint
+            fetch('/api/performance')
+                .then(res => res.json())
+                .then(data => {
+                    const now = new Date().toLocaleTimeString();
+                    performanceData.labels.push(now);
+                    performanceData.datasets[0].data.push(data.cpu);
+                    performanceData.datasets[1].data.push(data.memory);
+                    
+                    // Keep only last 20 data points
+                    if (performanceData.labels.length > 20) {
+                        performanceData.labels.shift();
+                        performanceData.datasets.forEach(ds => ds.data.shift());
+                    }
+                    
+                    performanceChart.update();
+                })
+                .catch(err => addLog('error', `Failed to fetch performance: ${err.message}`));
+        }
+        
+        // Initialize dashboard
+        addLog('info', 'Dashboard initialized');
+        fetchData();
+        
+        // Auto-refresh every 5 seconds
+        setInterval(fetchData, 5000);
+    </script>
+</body>
+</html>
