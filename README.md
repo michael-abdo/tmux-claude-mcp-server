@@ -4,6 +4,27 @@
   <img src="logos/logo.png" alt="tmux-claude MCP Server" width="200">
 </p>
 
+<p align="center">
+  <a href="https://github.com/michael-abdo/tmux-claude-mcp-server/blob/master/LICENSE">
+    <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License">
+  </a>
+  <a href="https://www.npmjs.com/package/tmux-claude-mcp-server">
+    <img src="https://img.shields.io/npm/v/tmux-claude-mcp-server.svg" alt="npm version">
+  </a>
+  <a href="https://github.com/michael-abdo/tmux-claude-mcp-server/actions">
+    <img src="https://img.shields.io/github/actions/workflow/status/michael-abdo/tmux-claude-mcp-server/test.yml?branch=master" alt="Build Status">
+  </a>
+  <a href="https://nodejs.org">
+    <img src="https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg" alt="Node.js Version">
+  </a>
+  <a href="https://github.com/michael-abdo/tmux-claude-mcp-server">
+    <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome">
+  </a>
+  <a href="https://github.com/michael-abdo/tmux-claude-mcp-server/issues">
+    <img src="https://img.shields.io/github/issues/michael-abdo/tmux-claude-mcp-server.svg" alt="GitHub Issues">
+  </a>
+</p>
+
 A highly efficient Model Context Protocol (MCP) server enabling hierarchical orchestration of Claude instances via tmux. Features a **bridge pattern architecture** that reduces memory usage by 85% compared to traditional multi-server approaches.
 
 ## Overview
