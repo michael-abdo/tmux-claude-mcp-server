@@ -60,11 +60,27 @@ Sends instructions to an executive instance.
 node scripts/instructExecutive.js <instanceId> "Your instructions here"
 ```
 
-#### `mcpBridge.js`
-Bridge for external MCP tool access.
+#### `mcp_bridge.js` 🌟
+**Core orchestration layer** for managing Claude instances. This is the primary interface for all inter-instance communication and control.
+
 ```bash
-node scripts/mcpBridge.js <command> <params>
+# List all active instances
+node scripts/mcp_bridge.js list '{}'
+
+# Spawn a new instance
+node scripts/mcp_bridge.js spawn '{"role":"manager","workDir":"/path","context":"Instructions","parentId":"exec_1"}'
+
+# Send message to instance
+node scripts/mcp_bridge.js send '{"instanceId":"mgr_1","text":"Your message"}'
+
+# Read instance output
+node scripts/mcp_bridge.js read '{"instanceId":"mgr_1","lines":50}'
+
+# Terminate instance
+node scripts/mcp_bridge.js terminate '{"instanceId":"mgr_1"}'
 ```
+
+The bridge provides centralized control, better error handling, and is the architectural standard for orchestration.
 
 ### Testing
 

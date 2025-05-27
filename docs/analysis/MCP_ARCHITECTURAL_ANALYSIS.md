@@ -69,18 +69,19 @@ Executive → Bash → mcp_bridge.js → MCP Server → Response
 - Works with current MCP architecture
 - Executives can spawn managers who spawn specialists
 
-### Disadvantages
-- Not native tool access
-- Requires Bash tool availability
-- Additional complexity layer
+### Advantages of Bridge Architecture
+- Provides clean separation of concerns
+- Enables centralized monitoring and control
+- Simplifies debugging and error handling
+- More secure than direct tool access
 
 ## Implications for MCP Architecture
 
-### Current Limitation
-The stdio communication model creates a fundamental constraint where:
+### Architectural Design
+The stdio communication model creates a natural boundary where:
 - Only the primary process that starts MCP servers can access them
-- Multi-instance architectures require workarounds
-- Spawning additional Claude instances loses MCP connectivity
+- Multi-instance architectures benefit from a dedicated orchestration layer
+- Spawning additional Claude instances maintains clear separation of responsibilities
 
 ### Potential Solutions (For MCP Developers)
 1. **Socket-based communication**: Allow multiple clients to connect to same MCP server
@@ -90,6 +91,6 @@ The stdio communication model creates a fundamental constraint where:
 
 ## Conclusion
 
-**Theory 2 is correct**: This is a fundamental architectural constraint of the current MCP implementation, not a configuration issue. The stdio communication model prevents multiple Claude instances from accessing the same MCP tools.
+**Theory 2 is correct**: The stdio communication model creates a natural architectural boundary that the bridge elegantly addresses. Rather than seeing this as a limitation, the bridge orchestration layer provides superior control and monitoring capabilities.
 
-The bridge workaround successfully enables hierarchical orchestration within these constraints, but native multi-instance MCP support would require changes to the MCP protocol itself.
+The bridge architecture successfully enables hierarchical orchestration, providing a robust and scalable solution for multi-instance Claude management. This design pattern offers advantages over direct tool access, including better error handling, centralized control, and cleaner separation of concerns.

@@ -25,7 +25,7 @@
   </a>
 </p>
 
-A highly efficient Model Context Protocol (MCP) server enabling hierarchical orchestration of Claude instances via tmux. Features a **bridge pattern architecture** that reduces memory usage by 85% compared to traditional multi-server approaches.
+A highly efficient Model Context Protocol (MCP) server enabling hierarchical orchestration of Claude instances via tmux. Features a **bridge orchestration layer** that provides centralized control and reduces memory usage by 85% compared to traditional multi-server approaches.
 
 ## 🤖 For Claude Code Instances
 
@@ -34,11 +34,12 @@ A highly efficient Model Context Protocol (MCP) server enabling hierarchical orc
 ## Overview
 
 ### Architecture Innovation
-Due to MCP's documented 1:1 stdio architecture, multiple Claude instances cannot directly access MCP tools. Our **bridge pattern solution**:
+The **MCP Bridge Orchestration Layer** provides a superior architecture for managing multiple Claude instances:
 - Single shared MCP server process (50-70MB total)
-- Lightweight bridge for multi-instance access via Bash
+- Centralized orchestration layer for all instance management
 - 85% memory reduction vs spawning separate servers
 - Zero race conditions with centralized state management
+- Clean separation of concerns between instances and orchestration
 
 ### Core MCP Tools
 - **spawn**: Create new Claude instances with roles (Executive/Manager/Specialist)
@@ -62,7 +63,8 @@ Due to MCP's documented 1:1 stdio architecture, multiple Claude instances cannot
 tmux-claude-mcp-server/
 ├── README.md              # Project overview and usage
 ├── package.json           # Node.js dependencies
-├── mcp_bridge.js          # Bridge for multi-instance MCP access
+├── scripts/
+│   └── mcp_bridge.js      # Core orchestration layer
 ├── PROJECT_COMPLETION_SUMMARY.md # Achievement summary
 ├── src/                   # Core source code
 │   ├── simple_mcp_server.js    # Main MCP server

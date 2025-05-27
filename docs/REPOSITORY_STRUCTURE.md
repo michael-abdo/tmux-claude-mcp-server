@@ -20,9 +20,9 @@ tmux-claude-mcp-server/
 │   └── ...                      # Other source files
 │
 ├── scripts/                      # Utility scripts
+│   ├── 🌟 mcp_bridge.js         # Core orchestration layer
 │   ├── spawn_test_executive.js  # Spawn test instances
 │   ├── cleanup_test_instances.js # Clean up instances
-│   ├── mcp_bridge.js            # MCP bridge utility
 │   └── ...                      # Other scripts
 │
 ├── tests/                        # Test files
@@ -33,6 +33,7 @@ tmux-claude-mcp-server/
 │
 ├── docs/                         # Documentation
 │   ├── README.md                # Documentation index
+│   ├── 🌟 ORCHESTRATION_LAYER.md # Bridge architecture guide
 │   ├── MCP_CONFIGURATION_GUIDE.md # Setup guide
 │   ├── analysis/                # Technical analysis
 │   │   └── ...                  # Architecture docs
@@ -64,6 +65,8 @@ The following are excluded from version control:
 
 - **README.md** - Start here for project overview
 - **DOCUMENTATION_INDEX.md** - Navigate all documentation
+- **scripts/mcp_bridge.js** - Core orchestration layer for Claude instances
+- **docs/ORCHESTRATION_LAYER.md** - Understand the bridge architecture
 - **package.json** - Node.js configuration and scripts
 - **src/simple_mcp_server.js** - Main MCP server entry point
 

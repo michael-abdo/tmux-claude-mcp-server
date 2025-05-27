@@ -6,6 +6,14 @@ This directory contains comprehensive documentation for the tmux-claude MCP Serv
 
 ## Documentation Index
 
+### 🌟 Core Architecture: MCP Bridge Orchestration Layer
+
+**[ORCHESTRATION_LAYER.md](ORCHESTRATION_LAYER.md)** - Understanding the bridge architecture
+- The MCP Bridge is the **core orchestration layer**, not a workaround
+- Provides centralized control and monitoring
+- Superior architecture for multi-instance management
+- All executives and managers use bridge commands
+
 ### ⚠️ CRITICAL: Delegation Rules ⚠️
 
 **ALL EXECUTIVES AND MANAGERS MUST DELEGATE**

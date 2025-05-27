@@ -3,6 +3,7 @@
 ## 🚀 Quick Start
 - [README.md](README.md) - Project overview and quick start
 - [CLAUDE_GETTING_STARTED.md](CLAUDE_GETTING_STARTED.md) - **Essential guide for Claude Code instances**
+- [ORCHESTRATION_LAYER.md](docs/ORCHESTRATION_LAYER.md) - **Understanding the bridge architecture**
 - [MCP_CONFIGURATION_GUIDE.md](docs/MCP_CONFIGURATION_GUIDE.md) - **START HERE** for setup
 - [PROJECT_COMPLETION_SUMMARY.md](docs/PROJECT_COMPLETION_SUMMARY.md) - Project capabilities summary
 - [CONTRIBUTING.md](CONTRIBUTING.md) - How to contribute
@@ -27,7 +28,7 @@
 ## 🔍 Technical Analysis
 - [MCP_ARCHITECTURAL_ANALYSIS.md](docs/analysis/MCP_ARCHITECTURAL_ANALYSIS.md) - Architecture deep dive
 - [MCP_PERFORMANCE_ANALYSIS.md](docs/analysis/MCP_PERFORMANCE_ANALYSIS.md) - Performance benchmarks
-- [MCP_BRIDGE_USAGE.md](docs/analysis/MCP_BRIDGE_USAGE.md) - Bridge pattern explanation
+- [MCP_BRIDGE_USAGE.md](docs/analysis/MCP_BRIDGE_USAGE.md) - Bridge orchestration layer usage
 - [PRODUCTION_READINESS.md](docs/analysis/PRODUCTION_READINESS.md) - Production deployment guide
 
 ## 🧪 Test Results
