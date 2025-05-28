@@ -264,29 +264,24 @@ Create necessary documentation based on project needs.`
             if (!fs.existsSync(claudeDir)) {
                 fs.mkdirSync(claudeDir, { recursive: true });
                 
-                // Copy MCP settings
-                const settingsSource = path.join(this.rootDir, 'exec_497307', '.claude', 'settings.json');
+                // Create settings file
                 const settingsDest = path.join(claudeDir, 'settings.json');
                 
-                if (fs.existsSync(settingsSource)) {
-                    fs.copyFileSync(settingsSource, settingsDest);
-                } else {
-                    // Create default settings
-                    const defaultSettings = {
-                        mcpServers: {
-                            "tmux-claude": {
-                                command: "node",
-                                args: [path.join(this.rootDir, "src", "simple_mcp_server.js")],
-                                env: {
-                                    NODE_ENV: "production",
-                                    PHASE: "3",
-                                    ALLOWED_TOOLS: '["spawn","send","read","list","terminate"]'
-                                }
+                // Always create fresh settings with correct paths
+                const defaultSettings = {
+                    mcpServers: {
+                        "tmux-claude": {
+                            command: "node",
+                            args: [path.join(this.rootDir, "src", "simple_mcp_server.js")],
+                            env: {
+                                NODE_ENV: "production",
+                                PHASE: "3",
+                                ALLOWED_TOOLS: '["spawn","send","read","list","terminate"]'
                             }
                         }
-                    };
-                    fs.writeFileSync(settingsDest, JSON.stringify(defaultSettings, null, 2));
-                }
+                    }
+                };
+                fs.writeFileSync(settingsDest, JSON.stringify(defaultSettings, null, 2));
             }
 
             // Create session info
