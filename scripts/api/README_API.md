@@ -1,12 +1,59 @@
 # Programmatic API for tmux-claude-mcp-server
 
-This directory contains utilities for programmatically integrating with tmux-claude-mcp-server from external applications.
+Connect any project on your computer to Claude's AI orchestration system using these API scripts.
 
-## Overview
+## 📌 For External Documentation - Copy This Section
+
+If you're documenting how to use this tool in another project, copy this section:
+
+```markdown
+### AI Project Orchestration
+
+This project can use Claude's AI orchestration to automatically implement features. 
+
+**Quick Start:**
+1. Create a `requirements.md` file describing what you want built
+2. Run: `node /Users/Mike/.claude/user/tmux-claude-mcp-server/scripts/api/spawn_project_executive.js --project-dir . --project-type web-app`
+3. Monitor: `node /Users/Mike/.claude/user/tmux-claude-mcp-server/scripts/api/monitor_project.js --project-dir .`
+
+**Requirements:** tmux, Node.js 16+, Claude Code CLI authenticated
+
+**Full docs:** `/Users/Mike/.claude/user/tmux-claude-mcp-server/scripts/api/README_API.md`
+```
+
+## 🚀 Quick Start - Connect Your Project
+
+From ANY directory on your computer, you can use these commands:
+
+```bash
+# Start AI development on your project
+node /Users/Mike/.claude/user/tmux-claude-mcp-server/scripts/api/spawn_project_executive.js \
+  --project-dir /path/to/your/project \
+  --requirements-file requirements.md \
+  --project-type web-app
+
+# Monitor the AI's progress
+node /Users/Mike/.claude/user/tmux-claude-mcp-server/scripts/api/monitor_project.js \
+  --project-dir /path/to/your/project
+
+# Get completion percentage
+node /Users/Mike/.claude/user/tmux-claude-mcp-server/scripts/api/get_project_progress.js \
+  --project-dir /path/to/your/project \
+  --format percentage
+```
+
+## 📋 Prerequisites
+
+1. **tmux installed**: `brew install tmux` (macOS) or `apt-get install tmux` (Linux)
+2. **Claude Code CLI authenticated**: Run `claude` once to login
+3. **Node.js installed**: Version 16 or higher
+4. **A project directory** with a `requirements.md` file describing what you want built
+
+## 🎯 What This Does
 
 These utilities enable external applications to:
-- Spawn executive instances to manage projects
-- Monitor project progress in real-time
+- Spawn executive Claude instances to manage projects
+- Monitor project progress in real-time with interactive controls
 - Track completion status and milestones
 - Get structured data about orchestration activities
 
@@ -88,9 +135,25 @@ node scripts/api/get_project_progress.js --project-dir /my/project --format json
 - `--format`: Output format (text, json, percentage)
 - `--verbose`: Show detailed progress information
 
-## Integration Examples
+## 🔧 Direct Integration - Copy & Paste Ready
 
-### Python Wrapper Example
+### From Command Line (Any Directory)
+
+```bash
+# Define the API path once
+export CLAUDE_API="/Users/Mike/.claude/user/tmux-claude-mcp-server/scripts/api"
+
+# Start your project
+node $CLAUDE_API/spawn_project_executive.js --project-dir . --project-type web-app
+
+# Monitor progress
+node $CLAUDE_API/monitor_project.js --project-dir .
+
+# Get status
+node $CLAUDE_API/get_project_progress.js --project-dir . --format percentage
+```
+
+### Python Integration (Copy This)
 
 ```python
 import subprocess
@@ -100,7 +163,7 @@ import os
 class TmuxClaudeProject:
     def __init__(self, project_dir):
         self.project_dir = project_dir
-        self.api_dir = "/path/to/tmux-claude-mcp-server/scripts/api"
+        self.api_dir = "/Users/Mike/.claude/user/tmux-claude-mcp-server/scripts/api"
         
     def start(self, requirements_file="requirements.md", project_type="generic"):
         """Start the project with an executive"""
@@ -148,7 +211,7 @@ progress = project.get_progress()
 print(f"Progress: {progress}")
 ```
 
-### Node.js Wrapper Example
+### Node.js Integration (Copy This)
 
 ```javascript
 import { exec } from 'child_process';
@@ -156,8 +219,9 @@ import { promisify } from 'util';
 const execAsync = promisify(exec);
 
 class TmuxClaudeWrapper {
-    constructor(apiPath) {
-        this.apiPath = apiPath;
+    constructor() {
+        // Hard-coded path - just copy and use!
+        this.apiPath = '/Users/Mike/.claude/user/tmux-claude-mcp-server/scripts/api';
     }
 
     async startProject(projectDir, options = {}) {
@@ -201,25 +265,47 @@ class TmuxClaudeWrapper {
     }
 }
 
-// Usage
-const wrapper = new TmuxClaudeWrapper('/path/to/api');
+// Usage - Just copy and run!
+const wrapper = new TmuxClaudeWrapper();
 const result = await wrapper.startProject('/my/project', {
     projectType: 'web-app'
 });
 ```
 
-## Project Structure Requirements
+## 📁 Simple Project Setup
 
-Your project directory should contain:
+### Step 1: Create your project folder with requirements
+```bash
+mkdir my-awesome-app
+cd my-awesome-app
+echo "# Build a todo list web app with React" > requirements.md
+```
 
+### Step 2: Start Claude orchestration
+```bash
+node /Users/Mike/.claude/user/tmux-claude-mcp-server/scripts/api/spawn_project_executive.js \
+  --project-dir . \
+  --project-type web-app
+```
+
+### Step 3: Monitor progress
+```bash
+node /Users/Mike/.claude/user/tmux-claude-mcp-server/scripts/api/monitor_project.js \
+  --project-dir .
+```
+
+That's it! Claude will read your requirements and start building.
+
+## Project Structure
+
+### Before (what you provide):
 ```
 /your/project/
-├── requirements.md      # Project requirements (or custom filename)
-├── [other project files]
+├── requirements.md      # What you want built
+└── [any existing files]
 ```
 
-After launching, the system will create:
-
+### After (what Claude creates):
 ```
 /your/project/
 ├── requirements.md      # Original (preserved)
@@ -227,7 +313,7 @@ After launching, the system will create:
 ├── PROJECT_PLAN.md     # Created by executive
 ├── DESIGN_SYSTEM.md    # Created by executive (if applicable)
 ├── .tmux_session_info.json  # Session tracking
-├── [implementation files]    # Created by managers/specialists
+├── [all your implementation files]    # Created by AI team
 ```
 
 ## Best Practices
