@@ -299,8 +299,11 @@ Create necessary documentation based on project needs.`
                 // Create tmux session
                 execSync(`tmux new-session -d -s ${sessionName} -c "${this.options.projectDir}"`);
                 
-                // Start Claude Code with permissions bypass for automation
-                execSync(`tmux send-keys -t ${sessionName}:0.0 'claude --dangerously-skip-permissions' Enter`);
+                // Prepare initial message
+                const initialMessage = `Read the CLAUDE.md file in this directory and begin orchestrating the project according to the requirements in ${this.options.requirementsFile}`;
+                
+                // Start Claude Code with permissions bypass and initial message
+                execSync(`tmux send-keys -t ${sessionName}:0.0 'claude --dangerously-skip-permissions "${initialMessage}"' Enter`);
                 
                 this.log(`✅ Executive spawned successfully!`);
                 this.log(`Session: ${sessionName}`);
