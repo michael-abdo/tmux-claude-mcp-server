@@ -18,6 +18,22 @@ Cleans up all test instances and their tmux sessions.
 node scripts/cleanupTestInstances.js
 ```
 
+#### `shutdown_instances.js`
+Provides targeted shutdown commands for different instance types.
+```bash
+# Shutdown specific instance types
+node scripts/shutdown_instances.js specialists
+node scripts/shutdown_instances.js managers
+node scripts/shutdown_instances.js executive
+node scripts/shutdown_instances.js all
+
+# List active instances
+node scripts/shutdown_instances.js list
+
+# Show help
+node scripts/shutdown_instances.js help
+```
+
 ### Monitoring
 
 #### `monitorExecutive.js`

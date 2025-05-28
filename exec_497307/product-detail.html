@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details - AI Agent Store</title>
+    <style>
+        /* CSS Variables */
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --secondary-color: #64748b;
+            --accent-color: #10b981;
+            --danger-color: #ef4444;
+            --background: #ffffff;
+            --surface: #f8fafc;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+        }
+
+        /* Reset & Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: var(--text-primary);
+            background: var(--background);
+            line-height: 1.6;
+        }
+
+        /* Typography */
+        h1 { font-size: 2.5rem; line-height: 1.2; font-weight: 700; }
+        h2 { font-size: 2rem; line-height: 1.3; font-weight: 600; }
+        h3 { font-size: 1.5rem; line-height: 1.4; font-weight: 600; }
+        h4 { font-size: 1.25rem; line-height: 1.5; font-weight: 500; }
+        p { font-size: 1rem; line-height: 1.6; }
+        .text-large { font-size: 1.125rem; }
+        .text-small { font-size: 0.875rem; }
+
+        /* Spacing Utilities */
+        .mt-1 { margin-top: 0.5rem; }
+        .mt-2 { margin-top: 1rem; }
+        .mt-3 { margin-top: 1.5rem; }
+        .mt-4 { margin-top: 2rem; }
+        .mt-5 { margin-top: 3rem; }
+        .mb-1 { margin-bottom: 0.5rem; }
+        .mb-2 { margin-bottom: 1rem; }
+        .mb-3 { margin-bottom: 1.5rem; }
+        .mb-4 { margin-bottom: 2rem; }
+        .mb-5 { margin-bottom: 3rem; }
+        .p-1 { padding: 0.5rem; }
+        .p-2 { padding: 1rem; }
+        .p-3 { padding: 1.5rem; }
+        .p-4 { padding: 2rem; }
+        .p-5 { padding: 3rem; }
+
+        /* Container & Layout */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .section {
+            padding: 4rem 0;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: var(--background);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-link {
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-color);
+        }
+
+        .cart-link {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .cart-count {
+            background: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            width: 1.5rem;
+            height: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+        }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background: var(--text-primary);
+            margin: 3px 0;
+            transition: 0.3s;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.375rem;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .btn-secondary {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #475569;
+        }
+
+        .btn-large {
+            padding: 1rem 2rem;
+            font-size: 1.125rem;
+        }
+
+        /* Product Detail Layout */
+        .product-detail {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            margin-top: 2rem;
+        }
+
+        .product-image-section {
+            background: var(--surface);
+            border-radius: 0.5rem;
+            padding: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8rem;
+            color: var(--primary-color);
+            min-height: 400px;
+        }
+
+        .product-info-section h1 {
+            margin-bottom: 1rem;
+        }
+
+        .product-price {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 2rem;
+        }
+
+        .product-description {
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Features List */
+        .features-list {
+            list-style: none;
+            margin-bottom: 2rem;
+        }
+
+        .features-list li {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .features-list li:last-child {
+            border-bottom: none;
+        }
+
+        .feature-icon {
+            color: var(--accent-color);
+            font-size: 1.25rem;
+        }
+
+        /* Pricing Tiers */
+        .pricing-tiers {
+            background: var(--surface);
+            padding: 2rem;
+            border-radius: 0.5rem;
+            margin-top: 3rem;
+        }
+
+        .tier-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .tier-card {
+            background: var(--background);
+            padding: 2rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .tier-card.featured {
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.1);
+        }
+
+        .tier-name {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .tier-price {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        /* Use Cases */
+        .use-cases {
+            margin-top: 3rem;
+        }
+
+        .use-case-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .use-case-card {
+            background: var(--surface);
+            padding: 2rem;
+            border-radius: 0.5rem;
+        }
+
+        /* Reviews Section */
+        .reviews-section {
+            margin-top: 4rem;
+            padding-top: 3rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .review-card {
+            background: var(--surface);
+            padding: 2rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .reviewer-name {
+            font-weight: 600;
+        }
+
+        .review-rating {
+            color: #f59e0b;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--text-primary);
+            color: white;
+            padding: 2rem 0;
+            margin-top: 4rem;
+        }
+
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .footer-links a {
+            color: white;
+            text-decoration: none;
+            transition: opacity 0.3s;
+        }
+
+        .footer-links a:hover {
+            opacity: 0.8;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hamburger {
+                display: flex;
+            }
+            
+            .nav-menu {
+                position: fixed;
+                left: -100%;
+                top: 70px;
+                flex-direction: column;
+                background-color: var(--background);
+                width: 100%;
+                text-align: center;
+                transition: 0.3s;
+                box-shadow: 0 10px 27px rgba(0,0,0,0.05);
+                padding: 2rem 0;
+            }
+            
+            .nav-menu.active {
+                left: 0;
+            }
+            
+            .product-detail {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            
+            .tier-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .footer-container {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">AI Agent Store</a>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="products.html" class="nav-link">Products</a></li>
+                <li><a href="cart.html" class="nav-link cart-link">
+                    Cart <span class="cart-count" id="cartCount">0</span>
+                </a></li>
+            </ul>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container section">
+        <div id="productDetail" class="product-detail">
+            <!-- Product details will be dynamically loaded here -->
+        </div>
+
+        <!-- Pricing Tiers -->
+        <div class="pricing-tiers">
+            <h2>Choose Your Plan</h2>
+            <div id="pricingTiers" class="tier-grid">
+                <!-- Pricing tiers will be dynamically loaded here -->
+            </div>
+        </div>
+
+        <!-- Use Cases -->
+        <div class="use-cases">
+            <h2>Use Cases</h2>
+            <div id="useCases" class="use-case-grid">
+                <!-- Use cases will be dynamically loaded here -->
+            </div>
+        </div>
+
+        <!-- Reviews Section -->
+        <div class="reviews-section">
+            <h2>Customer Reviews</h2>
+            <div id="reviews">
+                <!-- Reviews will be dynamically loaded here -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <p>&copy; 2024 AI Agent Store. All rights reserved.</p>
+            <div class="footer-links">
+                <a href="index.html">Home</a>
+                <a href="products.html">Products</a>
+                <a href="cart.html">Cart</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Product data (same as in products.html)
+        const productData = {
+            'dataminer-pro': {
+                name: 'DataMiner Pro',
+                description: 'Transform your raw data into actionable insights with our most advanced data analysis AI agent. DataMiner Pro processes complex datasets, identifies patterns, and generates comprehensive reports in minutes.',
+                price: 299,
+                icon: '📊',
+                features: [
+                    'Real-time data processing and analysis',
+                    'Advanced pattern recognition',
+                    'Automated report generation',
+                    'Integration with 50+ data sources',
+                    'Custom dashboard creation',
+                    'Predictive analytics capabilities'
+                ],
+                tiers: [
+                    { name: 'Starter', price: 299, features: ['Up to 100GB/month', '5 data sources', 'Basic reports'] },
+                    { name: 'Professional', price: 599, features: ['Up to 1TB/month', '25 data sources', 'Advanced analytics'], featured: true },
+                    { name: 'Enterprise', price: 999, features: ['Unlimited data', 'All integrations', 'Custom models'] }
+                ],
+                useCases: [
+                    { title: 'Financial Analysis', description: 'Analyze market trends, track portfolio performance, and generate investment insights.' },
+                    { title: 'Sales Forecasting', description: 'Predict future sales patterns and optimize inventory management.' },
+                    { title: 'Customer Analytics', description: 'Understand customer behavior and improve retention strategies.' }
+                ]
+            },
+            'customerbot-3000': {
+                name: 'CustomerBot 3000',
+                description: 'Provide exceptional customer service 24/7 with our intelligent customer support agent. CustomerBot 3000 handles inquiries, resolves issues, and ensures customer satisfaction round the clock.',
+                price: 199,
+                icon: '🤖',
+                features: [
+                    'Natural language processing',
+                    'Multi-language support (25+ languages)',
+                    'Sentiment analysis',
+                    'Ticket routing and prioritization',
+                    'Knowledge base integration',
+                    'Live agent handoff capability'
+                ],
+                tiers: [
+                    { name: 'Basic', price: 199, features: ['Up to 1,000 conversations/month', '5 languages', 'Email support'] },
+                    { name: 'Pro', price: 399, features: ['Up to 10,000 conversations/month', '15 languages', 'Priority support'], featured: true },
+                    { name: 'Scale', price: 799, features: ['Unlimited conversations', 'All languages', 'Dedicated support'] }
+                ],
+                useCases: [
+                    { title: 'E-commerce Support', description: 'Handle order inquiries, returns, and product questions automatically.' },
+                    { title: 'Technical Support', description: 'Provide first-level technical assistance and troubleshooting.' },
+                    { title: 'Appointment Booking', description: 'Manage scheduling and appointment confirmations effortlessly.' }
+                ]
+            },
+            'contentgenius': {
+                name: 'ContentGenius',
+                description: 'Create compelling content at scale with our AI writing assistant. From blog posts to social media, ContentGenius produces high-quality content that engages your audience.',
+                price: 149,
+                icon: '✍️',
+                features: [
+                    'SEO-optimized content generation',
+                    'Multiple content formats',
+                    'Brand voice customization',
+                    'Plagiarism checking',
+                    'Content calendar management',
+                    'A/B testing suggestions'
+                ],
+                tiers: [
+                    { name: 'Freelancer', price: 149, features: ['50 articles/month', 'Basic SEO', '3 brand voices'] },
+                    { name: 'Business', price: 299, features: ['200 articles/month', 'Advanced SEO', '10 brand voices'], featured: true },
+                    { name: 'Agency', price: 599, features: ['Unlimited articles', 'Custom features', 'API access'] }
+                ],
+                useCases: [
+                    { title: 'Blog Content', description: 'Generate engaging blog posts on any topic with perfect SEO optimization.' },
+                    { title: 'Social Media', description: 'Create compelling social media posts that drive engagement.' },
+                    { title: 'Email Campaigns', description: 'Write persuasive email copy that converts.' }
+                ]
+            },
+            'codehelper-ai': {
+                name: 'CodeHelper AI',
+                description: 'Accelerate your development process with an AI coding assistant that writes, reviews, and optimizes code. CodeHelper AI supports multiple programming languages and frameworks.',
+                price: 249,
+                icon: '💻',
+                features: [
+                    'Support for 20+ programming languages',
+                    'Code generation and completion',
+                    'Bug detection and fixing',
+                    'Code review and optimization',
+                    'Documentation generation',
+                    'Test case creation'
+                ],
+                tiers: [
+                    { name: 'Individual', price: 249, features: ['Personal use', '5 projects', 'Community support'] },
+                    { name: 'Team', price: 499, features: ['5 developers', 'Unlimited projects', 'Priority support'], featured: true },
+                    { name: 'Enterprise', price: 999, features: ['Unlimited developers', 'Custom integration', 'SLA'] }
+                ],
+                useCases: [
+                    { title: 'Rapid Prototyping', description: 'Build MVPs and prototypes faster with AI-assisted coding.' },
+                    { title: 'Code Refactoring', description: 'Improve code quality and performance automatically.' },
+                    { title: 'Learning & Training', description: 'Help junior developers learn best practices.' }
+                ]
+            },
+            'salesboost-agent': {
+                name: 'SalesBoost Agent',
+                description: 'Supercharge your sales team with AI-powered lead qualification and nurturing. SalesBoost Agent identifies hot leads, personalizes outreach, and maximizes conversion rates.',
+                price: 349,
+                icon: '💼',
+                features: [
+                    'Lead scoring and qualification',
+                    'Automated email sequences',
+                    'CRM integration',
+                    'Meeting scheduling',
+                    'Performance analytics',
+                    'Multi-channel outreach'
+                ],
+                tiers: [
+                    { name: 'Startup', price: 349, features: ['Up to 1,000 leads/month', 'Basic automation', 'Email only'] },
+                    { name: 'Growth', price: 699, features: ['Up to 10,000 leads/month', 'Advanced automation', 'Multi-channel'], featured: true },
+                    { name: 'Enterprise', price: 1299, features: ['Unlimited leads', 'Custom workflows', 'Dedicated CSM'] }
+                ],
+                useCases: [
+                    { title: 'B2B Sales', description: 'Qualify enterprise leads and personalize outreach at scale.' },
+                    { title: 'SaaS Sales', description: 'Convert trial users into paying customers automatically.' },
+                    { title: 'Real Estate', description: 'Nurture property leads and schedule viewings efficiently.' }
+                ]
+            },
+            'researchbot-plus': {
+                name: 'ResearchBot Plus',
+                description: 'Conduct comprehensive market research and competitive analysis automatically. ResearchBot Plus gathers data from multiple sources and delivers actionable insights.',
+                price: 199,
+                icon: '🔍',
+                features: [
+                    'Web scraping and data collection',
+                    'Competitor monitoring',
+                    'Trend analysis',
+                    'Report automation',
+                    'Real-time alerts',
+                    'API integrations'
+                ],
+                tiers: [
+                    { name: 'Basic', price: 199, features: ['10 research projects/month', 'Weekly reports', 'Email alerts'] },
+                    { name: 'Professional', price: 399, features: ['50 research projects/month', 'Daily reports', 'Real-time alerts'], featured: true },
+                    { name: 'Enterprise', price: 799, features: ['Unlimited projects', 'Custom reports', 'API access'] }
+                ],
+                useCases: [
+                    { title: 'Market Analysis', description: 'Track market trends and identify opportunities.' },
+                    { title: 'Competitor Intelligence', description: 'Monitor competitor activities and strategies.' },
+                    { title: 'Product Research', description: 'Gather customer feedback and product insights.' }
+                ]
+            }
+        };
+
+        // Get product ID from URL
+        function getProductId() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('id') || 'dataminer-pro';
+        }
+
+        // Display product details
+        function displayProductDetails() {
+            const productId = getProductId();
+            const product = productData[productId];
+
+            if (!product) {
+                document.getElementById('productDetail').innerHTML = '<h2>Product not found</h2>';
+                return;
+            }
+
+            // Update page title
+            document.title = `${product.name} - AI Agent Store`;
+
+            // Product detail section
+            document.getElementById('productDetail').innerHTML = `
+                <div class="product-image-section">
+                    ${product.icon}
+                </div>
+                <div class="product-info-section">
+                    <h1>${product.name}</h1>
+                    <div class="product-price">$${product.price}/month</div>
+                    <p class="product-description">${product.description}</p>
+                    
+                    <h3 class="mb-2">Key Features</h3>
+                    <ul class="features-list">
+                        ${product.features.map(feature => `
+                            <li>
+                                <span class="feature-icon">✓</span>
+                                <span>${feature}</span>
+                            </li>
+                        `).join('')}
+                    </ul>
+                    
+                    <button class="btn btn-primary btn-large" onclick="addToCart('${productId}', '${product.name}', ${product.price})">
+                        Add to Cart - $${product.price}/mo
+                    </button>
+                </div>
+            `;
+
+            // Pricing tiers
+            document.getElementById('pricingTiers').innerHTML = product.tiers.map(tier => `
+                <div class="tier-card ${tier.featured ? 'featured' : ''}">
+                    <h3 class="tier-name">${tier.name}</h3>
+                    <div class="tier-price">$${tier.price}</div>
+                    <p class="text-small text-secondary mb-2">per month</p>
+                    <ul style="list-style: none; padding: 0;">
+                        ${tier.features.map(feature => `
+                            <li class="mb-1">
+                                <span style="color: var(--accent-color);">✓</span> ${feature}
+                            </li>
+                        `).join('')}
+                    </ul>
+                    <button class="btn ${tier.featured ? 'btn-primary' : 'btn-secondary'} mt-3" 
+                            onclick="addToCart('${productId}-${tier.name.toLowerCase()}', '${product.name} ${tier.name}', ${tier.price})">
+                        Select Plan
+                    </button>
+                </div>
+            `).join('');
+
+            // Use cases
+            document.getElementById('useCases').innerHTML = product.useCases.map(useCase => `
+                <div class="use-case-card">
+                    <h3>${useCase.title}</h3>
+                    <p>${useCase.description}</p>
+                </div>
+            `).join('');
+
+            // Mock reviews
+            const reviews = [
+                { name: 'Sarah Johnson', rating: 5, comment: 'This AI agent has transformed our workflow. Highly recommended!' },
+                { name: 'Michael Chen', rating: 5, comment: 'Incredible value for money. The features exceed our expectations.' },
+                { name: 'Emily Davis', rating: 4, comment: 'Great product with excellent support. Looking forward to new features.' }
+            ];
+
+            document.getElementById('reviews').innerHTML = reviews.map(review => `
+                <div class="review-card">
+                    <div class="review-header">
+                        <span class="reviewer-name">${review.name}</span>
+                        <span class="review-rating">${'⭐'.repeat(review.rating)}</span>
+                    </div>
+                    <p>${review.comment}</p>
+                </div>
+            `).join('');
+        }
+
+        // Cart management functions
+        function updateCartCount() {
+            const cart = JSON.parse(localStorage.getItem('cart') || '{"items": []}');
+            const count = cart.items.reduce((sum, item) => sum + item.quantity, 0);
+            document.getElementById('cartCount').textContent = count;
+        }
+
+        function addToCart(id, name, price) {
+            const cart = JSON.parse(localStorage.getItem('cart') || '{"items": [], "total": 0}');
+            
+            // Check if item already exists
+            const existingItem = cart.items.find(item => item.id === id);
+            
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.items.push({
+                    id: id,
+                    name: name,
+                    price: price,
+                    quantity: 1
+                });
+            }
+            
+            // Recalculate total
+            cart.total = cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            // Save to localStorage
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartCount();
+            
+            // Show feedback
+            alert(`${name} added to cart!`);
+        }
+
+        // Mobile menu toggle
+        const hamburger = document.querySelector('.hamburger');
+        const navMenu = document.querySelector('.nav-menu');
+
+        hamburger.addEventListener('click', function() {
+            navMenu.classList.toggle('active');
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCartCount();
+            displayProductDetails();
+        });
+    </script>
+</body>
+</html>
