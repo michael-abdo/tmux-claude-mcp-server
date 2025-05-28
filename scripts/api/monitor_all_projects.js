@@ -165,9 +165,9 @@ Examples:
     }
 
     /**
-     * Get active instances for all projects
+     * Get active instances from MCP bridge
      */
-    async getAllInstances() {
+    async getMCPInstances() {
         try {
             const result = execSync(`node "${this.bridgePath}" list '{}'`, {
                 encoding: 'utf8',
@@ -176,13 +176,82 @@ Examples:
             
             const response = JSON.parse(result);
             if (response.success) {
-                // Handle both response.data and response.instances formats
                 return response.data || response.instances || [];
             }
             return [];
         } catch (error) {
             return [];
         }
+    }
+
+    /**
+     * Get all Claude tmux sessions and convert to instance format
+     */
+    async getAllTmuxSessions() {
+        try {
+            const result = execSync('tmux list-sessions', {
+                encoding: 'utf8'
+            });
+            
+            const sessions = [];
+            const lines = result.split('\n').filter(line => line.trim());
+            
+            for (const line of lines) {
+                const match = line.match(/^claude_(\w+)_(.+?):/);
+                if (match) {
+                    const [, role, id] = match;
+                    
+                    // Try to get working directory from tmux
+                    let workDir = null;
+                    try {
+                        const sessionName = `claude_${role}_${id}`;
+                        const cwdResult = execSync(`tmux display-message -p -t ${sessionName} '#{pane_current_path}'`, {
+                            encoding: 'utf8'
+                        });
+                        workDir = cwdResult.trim();
+                    } catch (e) {
+                        // Ignore if we can't get working directory
+                    }
+                    
+                    sessions.push({
+                        instanceId: `${role}_${id}`,
+                        role: role === 'exec' ? 'executive' : role,
+                        parentId: null,
+                        workDir: workDir,
+                        status: 'active',
+                        source: 'tmux'
+                    });
+                }
+            }
+            
+            return sessions;
+        } catch (error) {
+            return [];
+        }
+    }
+
+    /**
+     * Get all active instances (both MCP and tmux)
+     */
+    async getAllInstances() {
+        const mcpInstances = await this.getMCPInstances();
+        const tmuxInstances = await this.getAllTmuxSessions();
+        
+        // Merge instances, preferring MCP data when available
+        const allInstances = [...mcpInstances];
+        
+        // Add tmux instances that aren't already in MCP list
+        for (const tmuxInstance of tmuxInstances) {
+            const existsInMCP = mcpInstances.some(mcp => 
+                mcp.instanceId === tmuxInstance.instanceId
+            );
+            
+            if (!existsInMCP) {
+                allInstances.push(tmuxInstance);
+            }
+        }
+        
+        return allInstances;
     }
 
     /**
@@ -302,7 +371,18 @@ Examples:
                         return acc;
                     }, { executive: 0, manager: 0, specialist: 0 });
                     
-                    output += `    Executive: ${byRole.executive}  Managers: ${byRole.manager}  Specialists: ${byRole.specialist}\n`;
+                    // Count sources
+                    const sources = project.instances.reduce((acc, inst) => {
+                        const source = inst.source || 'mcp';
+                        acc[source] = (acc[source] || 0) + 1;
+                        return acc;
+                    }, {});
+                    
+                    const sourceInfo = Object.entries(sources).map(([source, count]) => 
+                        `${count} ${source}`
+                    ).join(', ');
+                    
+                    output += `    Executive: ${byRole.executive}  Managers: ${byRole.manager}  Specialists: ${byRole.specialist}  (${sourceInfo})\n`;
                 } else {
                     output += `    No active instances\n`;
                 }
