@@ -29,10 +29,10 @@ A highly efficient Model Context Protocol (MCP) server enabling hierarchical orc
 
 ## 📸 Screenshots
 
-![Demo 1 - Hierarchical Instance Management](demo1.png)
+![Demo 1 - Hierarchical Instance Management](demo2.png)
 *Hierarchical orchestration showing Executive, Manager, and Specialist instances working together*
 
-![Demo 2 - Real-time Monitoring Dashboard](demo2.png)
+![Demo 2 - Real-time Monitoring Dashboard](demo1.png)
 *Web-based monitoring dashboard displaying active instances and system metrics*
 
 ## 🤖 For Claude Code Instances
