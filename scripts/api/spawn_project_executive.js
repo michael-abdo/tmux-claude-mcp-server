@@ -151,26 +151,41 @@ Requirements file: ${this.options.requirementsFile}
 ## Project Type: ${this.options.projectType}
 ${projectGuidance}
 
-## MCP Bridge Usage
-Remember to use the MCP bridge for all orchestration:
+## Adaptive Implementation Strategy
+
+### PHASE 1: Test MCP Bridge Health
+First check if orchestration infrastructure is working:
+\`\`\`bash
+node ${path.join(this.rootDir, 'scripts', 'mcp_bridge.js')} list '{}'
+\`\`\`
+
+### PHASE 2A: Full Orchestration (if bridge works)
+If MCP bridge responds successfully:
 - Spawn managers: node ${path.join(this.rootDir, 'scripts', 'mcp_bridge.js')} spawn ...
 - Send messages: node ${path.join(this.rootDir, 'scripts', 'mcp_bridge.js')} send ...
 - Read output: node ${path.join(this.rootDir, 'scripts', 'mcp_bridge.js')} read ...
-- List instances: node ${path.join(this.rootDir, 'scripts', 'mcp_bridge.js')} list ...
+- Delegate implementation to specialized managers
 
-## Workflow
+### PHASE 2B: Direct Implementation (if bridge fails)
+If MCP bridge is unresponsive or returns errors:
+- **IMPLEMENT DIRECTLY** - Don't get stuck waiting for orchestration
+- Create all required files yourself in the project directory
+- Focus on working demos and functional requirements
+- **Bypass orchestration when infrastructure fails**
+
+## Adaptive Workflow
 1. First analyze requirements and create PROJECT_PLAN.md
-2. Create any necessary design/specification documents
-3. Spawn managers with clear scope boundaries
-4. Distribute design docs to ALL managers
-5. Monitor progress and coordinate integration
+2. Create any necessary design/specification documents  
+3. **TEST MCP BRIDGE HEALTH** - Run list command to check connectivity
+4. **IF BRIDGE WORKS**: Spawn managers and delegate implementation
+5. **IF BRIDGE FAILS**: Implement directly without delegation
 6. Test the complete solution before declaring done
 
-## Important
-- NEVER implement code yourself - always delegate to managers
-- Ensure all managers confirm understanding before starting work
-- Use scope contracts to prevent managers from overstepping boundaries
-- Test functional requirements, not just file existence
+## Context-Aware Role Boundaries
+- **Preferred**: Delegate to managers when orchestration infrastructure works
+- **Fallback**: Implement directly when infrastructure fails or is unavailable
+- **Priority**: Always deliver working results, adapt approach as needed
+- **No Infinite Loops**: If unable to spawn managers after 2 attempts, switch to direct implementation
 `;
 
         // Use custom template if provided
@@ -186,35 +201,40 @@ Remember to use the MCP bridge for all orchestration:
         const guidance = {
             'web-app': `
 For this web application:
-- Ensure consistent UI/UX across all pages
+- **Orchestration Strategy**: Complex multi-page apps benefit from manager delegation
+- **Direct Implementation**: Simple demos/prototypes can be built directly
 - Create a DESIGN_SYSTEM.md with styling standards
-- Test cross-browser compatibility
-- Verify responsive design on mobile/desktop`,
+- Ensure consistent UI/UX across all pages
+- Test cross-browser compatibility and responsive design`,
             
             'api': `
 For this API project:
+- **Orchestration Strategy**: Large APIs with multiple endpoints benefit from delegation
+- **Direct Implementation**: Simple REST demos can be built directly  
 - Create an API_SPEC.md with endpoint documentation
-- Ensure consistent error handling
-- Include authentication/authorization patterns
+- Ensure consistent error handling and authentication patterns
 - Test all endpoints with example requests`,
             
             'cli': `
 For this CLI tool:
-- Define clear command structure
-- Include comprehensive help documentation
-- Ensure consistent error messages
-- Test all commands and edge cases`,
+- **Orchestration Strategy**: Complex CLI tools with multiple commands benefit from delegation
+- **Direct Implementation**: Simple utilities can be built directly
+- Define clear command structure and comprehensive help
+- Ensure consistent error messages and edge case handling`,
             
             'library': `
 For this library:
-- Create clear API documentation
-- Include usage examples
-- Ensure backward compatibility considerations
-- Test all public interfaces`,
+- **Orchestration Strategy**: Large libraries with multiple modules benefit from delegation
+- **Direct Implementation**: Simple libraries can be built directly
+- Create clear API documentation with usage examples
+- Ensure backward compatibility and test all public interfaces`,
             
             'generic': `
-Analyze the requirements to determine appropriate architecture and design patterns.
-Create necessary documentation based on project needs.`
+**Implementation Decision Tree**:
+- **Small/Demo Projects**: Implement directly for faster results
+- **Large/Complex Projects**: Use orchestration when MCP bridge is working
+- **Always Adapt**: Switch strategies based on infrastructure availability
+- Analyze requirements to determine appropriate architecture and patterns`
         };
 
         return guidance[this.options.projectType] || guidance.generic;
@@ -294,8 +314,8 @@ Create necessary documentation based on project needs.`
                 // Create tmux session
                 execSync(`tmux new-session -d -s ${sessionName} -c "${this.options.projectDir}"`);
                 
-                // Prepare initial message
-                const initialMessage = `Read the CLAUDE.md file in this directory and begin orchestrating the project according to the requirements in ${this.options.requirementsFile}`;
+                // Prepare initial message with bridge health check
+                const initialMessage = `Read the CLAUDE.md file in this directory. FIRST test MCP bridge health by running the list command, then begin project implementation according to the requirements in ${this.options.requirementsFile}. Use orchestration if bridge works, implement directly if it fails.`;
                 
                 // Start Claude Code with permissions bypass and initial message
                 execSync(`tmux send-keys -t ${sessionName}:0.0 'claude --dangerously-skip-permissions "${initialMessage}"' Enter`);

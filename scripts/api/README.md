@@ -143,9 +143,35 @@ node scripts/api/get_project_progress.js --project-dir /my/project --format json
 - `--format`: Output format (text, json, percentage)
 - `--verbose`: Show detailed progress information
 
-### 4. `monitor_all_projects.js` (NEW!)
+### 4. `monitor_all_projects.js`
 
 Monitor multiple projects in a directory tree with a unified dashboard.
+
+### 5. `fix_stuck_sessions.js` (NEW!)
+
+Automatically detect and fix Claude sessions stuck in orchestration loops.
+
+```bash
+# Diagnose stuck sessions
+node scripts/api/fix_stuck_sessions.js --scan-dir /my/projects
+
+# Auto-fix stuck sessions
+node scripts/api/fix_stuck_sessions.js --scan-dir /my/projects --auto-fix
+
+# Preview fixes without executing
+node scripts/api/fix_stuck_sessions.js --scan-dir /my/projects --auto-fix --dry-run
+```
+
+**Options:**
+- `--scan-dir` (required): Root directory to scan for projects
+- `--auto-fix`: Automatically send fix commands to stuck sessions
+- `--dry-run`: Show what would be done without taking action
+
+**Detects Common Stuck Patterns:**
+- Orchestration loops (repeated manager spawn attempts)
+- MCP bridge failures (bridge connectivity issues) 
+- Planning loops (stuck in planning, no implementation)
+- Permission loops ("Bypassing Permissions" with no progress)
 
 ```bash
 # Monitor all projects in a directory
