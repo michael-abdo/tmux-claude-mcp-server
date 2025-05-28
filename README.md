@@ -27,6 +27,14 @@
 
 A highly efficient Model Context Protocol (MCP) server enabling hierarchical orchestration of Claude instances via tmux. Features a **bridge pattern architecture** that reduces memory usage by 85% compared to traditional multi-server approaches.
 
+## 📸 Screenshots
+
+![Demo 1 - Hierarchical Instance Management](demo1.png)
+*Hierarchical orchestration showing Executive, Manager, and Specialist instances working together*
+
+![Demo 2 - Real-time Monitoring Dashboard](demo2.png)
+*Web-based monitoring dashboard displaying active instances and system metrics*
+
 ## 🤖 For Claude Code Instances
 
 **New to this repository?** If you're a Claude Code instance, start with the **[Claude Getting Started Guide](CLAUDE_GETTING_STARTED.md)** for a quick orientation and practical examples.
@@ -335,10 +343,38 @@ Each spawned instance:
 
 The MCP interface is designed to support all phases without code changes - only configuration differences.
 
+## Project Structure
+
+```
+tmux-claude-mcp-server/
+├── src/                          # Core source code
+│   ├── mcp_tools.js             # MCP tool implementations
+│   ├── instance_manager.js      # Instance lifecycle management
+│   ├── tmux_interface.js        # tmux session operations
+│   ├── dashboard/               # Web monitoring dashboard
+│   ├── orchestration/           # Orchestration helpers
+│   └── role_templates/          # Standardized role templates
+├── scripts/                      # Utility scripts
+│   ├── mcp_bridge.js            # Bridge for multi-instance access
+│   └── run_all_tests.sh        # Test runner
+├── tests/                       # Test suites
+│   ├── unit/                    # Unit tests
+│   ├── integration/             # Integration tests
+│   ├── e2e/                     # End-to-end tests
+│   └── performance/             # Performance benchmarks
+├── docs/                        # Documentation
+│   ├── archive/                 # Historical documents
+│   └── analysis/                # Analysis reports
+├── config/                      # Configuration files
+├── package.json                 # NPM configuration
+└── README.md                    # This file
+```
+
 ## Testing
 
 ```bash
-npm test
+npm test                         # Run all tests
+./scripts/run_all_tests.sh      # Run comprehensive test suite
 ```
 
 ## Development
