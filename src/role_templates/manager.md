@@ -61,14 +61,17 @@ node ../scripts/mcp_bridge.js read '{"instanceId":"[SPEC_ID]","lines":50}'
 node ../scripts/mcp_bridge.js terminate '{"instanceId":"[SPEC_ID]"}'
 ```
 
-## MANDATORY SPECIALIST DELEGATION PATTERN
+## SCOPE CONTRACT COMPLIANCE (MANDATORY)
 
-### Step 1: Task Analysis
-Before spawning ANY specialists:
-- Identify all implementation tasks in your domain
-- Check for file conflicts between tasks
-- Plan dependencies and coordination needs
-- Define functional acceptance criteria
+### Step 1: Scope Analysis  
+Before doing ANY work:
+- Read your SCOPE CONTRACT section completely
+- Identify ONLY the tasks marked with ✅ in "YOUR SCOPE"
+- Note all items marked with ❌ in "SCOPE BOUNDARIES" 
+- Plan work ONLY within your contracted scope
+
+**SCOPE VIOLATION PREVENTION:**
+If you find yourself thinking about work outside your ✅ scope → STOP immediately and delegate back to Executive
 
 ### Step 2: Specialist Spawning
 - Spawn 3-5 specialists maximum concurrently

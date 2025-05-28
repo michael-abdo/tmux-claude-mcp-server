@@ -1,7 +1,10 @@
 /**
  * Executive Context Builder
  * Generates standardized context for Executive instances with MCP Bridge knowledge
+ * Updated to include Scope Contract architecture to prevent manager scope creep
  */
+
+import { buildLandingPagesManagerContract, buildCartCheckoutManagerContract } from '../scope_contract_builder.js';
 
 export function buildExecutiveContext(projectRequirements, instanceId = 'exec_' + Date.now(), workDir = null) {
     // Determine the actual working directory and paths
@@ -90,6 +93,33 @@ node ${mcpBridgePath} send '{"instanceId":"[MANAGER_ID]","text":"Reply with CONF
 
 **You MUST send ALL THREE messages to EVERY manager before they start work!**
 
+## 🎯 SCOPE CONTRACT ARCHITECTURE (Prevents Manager Scope Creep)
+
+**CRITICAL**: To prevent managers from working outside their assigned scope, you MUST provide explicit scope contracts when spawning managers.
+
+### Why Scope Contracts Are Essential:
+- Managers receive full project context (DESIGN_SYSTEM.md, requirements) 
+- But they should only work on their assigned portion
+- Without explicit boundaries, managers will implement the entire project
+- Scope contracts create clear "you do this, not that" boundaries
+
+### Scope Contract Template Example:
+\`\`\`
+Manager 1 Scope Contract:
+✅ YOUR SCOPE:
+- index.html (landing page)
+- products.html (catalog) 
+- product-detail.html (details)
+
+❌ NOT YOUR SCOPE:
+- cart.html (Manager 2's responsibility)
+- checkout.html (Manager 2's responsibility)
+- Integration testing (Executive's responsibility)
+\`\`\`
+
+### Implementation:
+When spawning managers, include their specific scope contract in the context to prevent scope creep.
+
 ## Workflow Pattern
 
 1. Analyze requirements and create PROJECT_PLAN.md
@@ -109,14 +139,24 @@ When ready, respond with: "READY: Executive ${instanceId} - understood bridge or
 }
 
 /**
- * Build Manager context with bridge knowledge
+ * Build Manager context with bridge knowledge and scope contract
  */
-export function buildManagerContext(role, tasks, managerId = 'mgr_' + Date.now(), workDir = null, parentId = null) {
+export function buildManagerContext(role, tasks, managerId = 'mgr_' + Date.now(), workDir = null, parentId = null, scopeContract = null) {
     // Determine paths and context
     const mgrWorkDir = workDir || `/Users/Mike/.claude/user/tmux-claude-mcp-server/${parentId || 'shared'}`;
     const mcpBridgePath = '../scripts/mcp_bridge.js';
     const tasksString = typeof tasks === 'string' ? tasks : tasks.map((t, i) => `${i + 1}. ${t}`).join('\\n');
     
+    // If scope contract provided, use it; otherwise fall back to old format
+    const scopeSection = scopeContract ? `
+${scopeContract}
+` : `
+## Your Role
+You are a ${role} Manager responsible for ${tasks.length > 1 ? 'coordinating Specialists to complete specific tasks' : 'implementing the assigned work directly'}.
+
+## Assigned Tasks
+${tasksString}`;
+
     return `You are manager with ID ${managerId}
 
 ## 🗺️ YOUR CURRENT LOCATION
@@ -124,12 +164,7 @@ export function buildManagerContext(role, tasks, managerId = 'mgr_' + Date.now()
 - **Your instance ID**: ${managerId}
 - **Your parent (Executive) ID**: ${parentId || 'unknown'}
 - **MCP Bridge location**: ${mcpBridgePath} (relative to your directory)
-
-## Your Role
-You are a ${role} Manager responsible for ${tasks.length > 1 ? 'coordinating Specialists to complete specific tasks' : 'implementing the assigned work directly'}.
-
-## Assigned Tasks
-${tasksString}
+${scopeSection}
 
 ## 📋 COPY-PASTE MCP BRIDGE COMMANDS
 
