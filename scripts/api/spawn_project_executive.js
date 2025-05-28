@@ -299,8 +299,8 @@ Create necessary documentation based on project needs.`
                 // Create tmux session
                 execSync(`tmux new-session -d -s ${sessionName} -c "${this.options.projectDir}"`);
                 
-                // Start Claude Code
-                execSync(`tmux send-keys -t ${sessionName}:0.0 'claude' Enter`);
+                // Start Claude Code with permissions bypass for automation
+                execSync(`tmux send-keys -t ${sessionName}:0.0 'claude --dangerously-skip-permissions' Enter`);
                 
                 this.log(`✅ Executive spawned successfully!`);
                 this.log(`Session: ${sessionName}`);
