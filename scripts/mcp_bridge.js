@@ -42,10 +42,12 @@ async function main() {
                 const instanceId = `${params.role.substring(0,3)}_${Date.now()}_${Math.floor(Math.random() * 100000)}`;
                 
                 // Build context using role template + project-specific context
+                const bridgePath = new URL(import.meta.url).pathname;
                 const completeContext = roleTemplateManager.buildContext(
                     params.role, 
                     params.context, 
-                    instanceId
+                    instanceId,
+                    { bridgePath }
                 );
                 
                 // Update params with complete context

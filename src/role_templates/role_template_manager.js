@@ -31,10 +31,17 @@ export class RoleTemplateManager {
      * @param {string} role - executive, manager, or specialist  
      * @param {string} projectContext - Project-specific instructions
      * @param {string} instanceId - Instance identifier
+     * @param {object} options - Additional options like bridgePath
      * @returns {string} Complete context
      */
-    buildContext(role, projectContext, instanceId) {
-        const roleTemplate = this.getRoleTemplate(role);
+    buildContext(role, projectContext, instanceId, options = {}) {
+        let roleTemplate = this.getRoleTemplate(role);
+        
+        // Perform path substitutions if bridgePath is provided
+        if (options.bridgePath && (role === 'executive' || role === 'manager')) {
+            // Replace all instances of ../scripts/mcp_bridge.js with absolute path
+            roleTemplate = roleTemplate.replace(/\.\.\/scripts\/mcp_bridge\.js/g, options.bridgePath);
+        }
         
         return `${roleTemplate}
 
@@ -50,14 +57,15 @@ ${projectContext}`;
      * @param {string} role - Role type
      * @param {string} projectContext - Project-specific context
      * @param {string} instanceId - Instance ID
+     * @param {object} options - Additional options like bridgePath
      */
-    saveContextToInstance(instanceDir, role, projectContext, instanceId) {
+    saveContextToInstance(instanceDir, role, projectContext, instanceId, options = {}) {
         // Ensure instance directory exists
         if (!fs.existsSync(instanceDir)) {
             fs.mkdirSync(instanceDir, { recursive: true });
         }
 
-        const completeContext = this.buildContext(role, projectContext, instanceId);
+        const completeContext = this.buildContext(role, projectContext, instanceId, options);
         const claudeFilePath = path.join(instanceDir, 'CLAUDE.md');
         
         fs.writeFileSync(claudeFilePath, completeContext);
