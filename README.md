@@ -27,13 +27,13 @@
 
 A highly efficient Model Context Protocol (MCP) server enabling hierarchical orchestration of Claude instances via tmux. Features a **bridge pattern architecture** that reduces memory usage by 85% compared to traditional multi-server approaches.
 
-## 📸 Screenshots
+## 📸 Architecture Overview
 
-![Demo 1 - Hierarchical Instance Management](demo2.png)
-*Hierarchical orchestration showing Executive, Manager, and Specialist instances working together*
+<p align="center">
+  <img src="logos/logo.png" alt="tmux-claude Architecture" width="300">
+</p>
 
-![Demo 2 - Real-time Monitoring Dashboard](demo1.png)
-*Web-based monitoring dashboard displaying active instances and system metrics*
+*Hierarchical orchestration system enabling Executive → Manager → Specialist delegation patterns with shared MCP bridge architecture*
 
 ## 🤖 For Claude Code Instances
 
@@ -70,7 +70,7 @@ Due to MCP's documented 1:1 stdio architecture, multiple Claude instances cannot
 tmux-claude-mcp-server/
 ├── README.md              # Project overview and usage
 ├── package.json           # Node.js dependencies
-├── mcp_bridge.js          # Bridge for multi-instance MCP access
+├── scripts/mcp_bridge.js  # Bridge for multi-instance MCP access
 ├── PROJECT_COMPLETION_SUMMARY.md # Achievement summary
 ├── src/                   # Core source code
 │   ├── simple_mcp_server.js    # Main MCP server
