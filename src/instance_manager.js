@@ -29,6 +29,7 @@ export class InstanceManager {
         this.stateDir = stateDir;
         this.instancesFile = path.join(stateDir, 'instances.json');
         this.tmux = new TmuxInterface();
+        this.silent = options.silent || false;
         
         // Phase 3: Use Redis state store if enabled
         this.useRedis = options.useRedis || process.env.PHASE === '3';
@@ -51,10 +52,14 @@ export class InstanceManager {
             });
             await this.stateStore.initialize();
             this.instances = await this.stateStore.getAllInstances();
-            console.error(`=== Instance Manager initialized with Redis (${Object.keys(this.instances).length} instances) ===`);
+            if (!this.silent) {
+                console.error(`=== Instance Manager initialized with Redis (${Object.keys(this.instances).length} instances) ===`);
+            }
         } else {
             this.instances = this.loadInstances();
-            console.error(`=== Instance Manager initialized with JSON (${Object.keys(this.instances).length} instances) ===`);
+            if (!this.silent) {
+                console.error(`=== Instance Manager initialized with JSON (${Object.keys(this.instances).length} instances) ===`);
+            }
         }
     }
 
@@ -616,7 +621,9 @@ IMPORTANT: You're in an isolated worktree, so:
             }
             
             const data = fs.readJsonSync(this.instancesFile);
-            console.error(`Loaded ${Object.keys(data.instances || {}).length} instances from ${this.instancesFile}`);
+            if (!this.silent) {
+                console.error(`Loaded ${Object.keys(data.instances || {}).length} instances from ${this.instancesFile}`);
+            }
             return data.instances || {};
         } catch (error) {
             console.error(`!!! ERROR !!! Failed to load instances: ${error.message}`);

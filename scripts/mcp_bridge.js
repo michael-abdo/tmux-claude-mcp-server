@@ -25,7 +25,7 @@ async function main() {
     }
     
     try {
-        const manager = new InstanceManager();
+        const manager = new InstanceManager('./state', { silent: true });
         await manager.loadInstances();
         const tools = new MCPTools(manager);
         const roleTemplateManager = new RoleTemplateManager();
