@@ -27,14 +27,31 @@
     "test:bridge:errors": "node tests/e2e/test_bridge_error_scenarios.js",
     "test:bridge:stress": "node tests/performance/test_bridge_stress.js",
     "test:bridge:stress:heavy": "node tests/performance/test_bridge_stress.js heavy",
-    "bridge:demo": "node scripts/bridge_example.js"
+    "bridge:demo": "node scripts/bridge_example.js",
+    "vm:create": "node vm-integration/vm-cli.js create",
+    "vm:list": "node vm-integration/vm-cli.js list",
+    "vm:ssh": "node vm-integration/vm-cli.js ssh",
+    "vm:stop": "node vm-integration/vm-cli.js stop",
+    "vm:start": "node vm-integration/vm-cli.js start",
+    "vm:terminate": "node vm-integration/vm-cli.js terminate",
+    "vm:status": "node vm-integration/vm-cli.js status",
+    "vm:image": "node vm-integration/vm-cli.js image",
+    "vm:test": "node vm-integration/tests/test_vm_integration.js",
+    "vm:test:verbose": "VM_TEST_VERBOSE=true node vm-integration/tests/test_vm_integration.js",
+    "vm:test:live": "VM_TEST_MOCK=false node vm-integration/tests/test_vm_integration.js",
+    "vm:demo": "node vm-integration/demo_vm_integration.js",
+    "vm:help": "node vm-integration/vm-cli.js --help"
   },
   "keywords": [
     "MCP",
     "Claude",
     "tmux",
     "orchestration",
-    "automation"
+    "automation",
+    "aws",
+    "ec2",
+    "vm",
+    "cloud"
   ],
   "author": "Claude Code Assistant",
   "license": "MIT",

@@ -56,6 +56,7 @@ Due to MCP's documented 1:1 stdio architecture, multiple Claude instances cannot
 - **terminate**: Stop instances and optionally their children
 
 ### New Features
+- **VM Integration**: Complete cloud VM management for development environments
 - **Scheduled Continue**: Schedule "Plz continue" messages to all tmux sessions at specified times
 - **Workspace Modes**: Support for isolated (default) and shared workspace modes
 - **Git Integration**: Automatic branch management for shared workspaces
@@ -109,7 +110,17 @@ tmux-claude-mcp-server/
 │   └── performance/      # Performance benchmarks
 ├── state/                # Default state directory
 ├── config/               # Configuration files
-└── logs/                 # Log directory
+├── logs/                 # Log directory
+└── vm-integration/       # Cloud VM management
+    ├── README.md              # VM integration documentation
+    ├── vm_manager.js          # Core VM management class
+    ├── vm_cli.js              # Command-line interface
+    ├── vm_mcp_tools.js        # MCP tools integration
+    ├── integrate_vm_mcp.js    # MCP server integration
+    ├── setup-scripts/         # VM initialization scripts
+    │   └── claude-dev-setup.sh
+    └── tests/                 # VM integration tests
+        └── test_vm_integration.js
 ```
 
 ## Architecture
