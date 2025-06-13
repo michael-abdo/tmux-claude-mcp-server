@@ -314,8 +314,8 @@ For this library:
                 // Create tmux session
                 execSync(`tmux new-session -d -s ${sessionName} -c "${this.options.projectDir}"`);
                 
-                // Prepare initial message with bridge health check
-                const initialMessage = `Read the CLAUDE.md file in this directory. FIRST test MCP bridge health by running the list command, then begin project implementation according to the requirements in ${this.options.requirementsFile}. Use orchestration if bridge works, implement directly if it fails.`;
+                // Prepare initial message - direct action focused
+                const initialMessage = `Read the ${this.options.requirementsFile} file and immediately start building the required features. Create the main files first.`;
                 
                 // Start Claude Code with permissions bypass and initial message
                 execSync(`tmux send-keys -t ${sessionName}:0.0 'claude --dangerously-skip-permissions "${initialMessage}"' Enter`);

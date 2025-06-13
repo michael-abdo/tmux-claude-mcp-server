@@ -1,0 +1,203 @@
+1. Project Analysis & Setup
+  a. Analyze existing codebase components
+    1. Review src/tmux_interface.js for session discovery capabilities
+    2. Review src/reliable_tmux_sender.js for message sending patterns
+    3. Review scripts/send_enter_to_all.js for existing batch command patterns
+    4. Review scripts/mcp_bridge.js for orchestration patterns
+  b. Validate dependencies and requirements
+    1. Verify Node.js ES module support
+    2. Confirm tmux command availability
+    3. Check child_process utilities access
+    4. Validate file system permissions for script creation
+
+2. Design Time Parser Utility
+  a. Define supported time formats
+    1. Standard 24-hour format (15:30, 09:45)
+    2. 12-hour format with AM/PM (3:30pm, 9:45am)
+    3. Relative time formats (+30m, +2h, +90s)
+    4. Natural language formats (in 2 hours, in 30 minutes)
+  b. Design parsing logic architecture
+    1. Create regex patterns for each format type
+    2. Design format detection and validation
+    3. Plan timezone handling strategy
+    4. Design error handling for invalid inputs
+  c. Plan time conversion logic
+    1. Convert all formats to milliseconds from now
+    2. Handle edge cases (midnight rollover, DST changes)
+    3. Validate future time constraints
+    4. Plan maximum scheduling window limits
+
+3. Create Time Parser Implementation
+  a. Create scripts/utils directory structure
+    1. Create scripts/utils/ directory if not exists
+    2. Design utils/time_parser.js module structure
+    3. Plan export interface for time parsing functions
+  b. Implement core parsing functions
+    1. Implement standard time format parser (HH:MM)
+    2. Implement 12-hour format parser with AM/PM
+    3. Implement relative time parser (+Nm, +Nh formats)
+    4. Implement natural language parser (basic phrases)
+  c. Add validation and error handling
+    1. Add input validation for all format types
+    2. Add bounds checking for reasonable time windows
+    3. Add error messages for invalid formats
+    4. Add timezone awareness and handling
+  d. Create utility helper functions
+    1. Add getCurrentTime() helper
+    2. Add isValidFutureTime() validator
+    3. Add formatTimeForLogging() display helper
+    4. Add calculateDelayMs() conversion function
+
+4. Design Main Scheduling Script Architecture
+  a. Plan command-line interface
+    1. Design argument parsing for time input
+    2. Plan help text and usage examples
+    3. Design optional flags (--dry-run, --verbose, --message)
+    4. Plan error handling for missing/invalid arguments
+  b. Plan session discovery integration
+    1. Import and configure TmuxInterface class
+    2. Design session filtering logic (active sessions only)
+    3. Plan session validation before scheduling
+    4. Design handling for zero sessions found
+  c. Plan scheduling mechanism
+    1. Choose between setTimeout vs system 'at' command
+    2. Design process persistence strategy
+    3. Plan cleanup and signal handling
+    4. Design scheduling confirmation and logging
+  d. Plan message delivery integration
+    1. Import and configure ReliableTmuxSender class
+    2. Design batch message sending logic
+    3. Plan per-session error handling
+    4. Design delivery confirmation logging
+
+5. Implement Main Scheduling Script
+  a. Create scripts/scheduled_continue.js file
+    1. Set up ES module imports and dependencies
+    2. Add command-line argument parsing
+    3. Add help text and usage information display
+    4. Add input validation and error handling
+  b. Implement session discovery logic
+    1. Initialize TmuxInterface instance
+    2. Implement listSessions() call with error handling
+    3. Add session filtering for active sessions only
+    4. Add logging for sessions found/filtered
+  c. Implement time parsing integration
+    1. Import time parser utility functions
+    2. Parse command-line time input
+    3. Calculate delay in milliseconds
+    4. Add time validation and error reporting
+  d. Implement scheduling mechanism
+    1. Choose and implement setTimeout-based scheduling
+    2. Add process persistence logging and warnings
+    3. Implement graceful shutdown signal handling
+    4. Add scheduling confirmation output
+  e. Implement message delivery logic
+    1. Create message delivery function for all sessions
+    2. Implement ReliableTmuxSender for each session
+    3. Add per-session error handling and logging
+    4. Add delivery success/failure reporting
+  f. Add comprehensive logging
+    1. Add startup logging with time and sessions info
+    2. Add scheduling confirmation with calculated delay
+    3. Add delivery attempt logging per session
+    4. Add final completion/error summary logging
+
+6. Error Handling & Edge Cases
+  a. Handle system-level edge cases
+    1. Add handling for system sleep/hibernate interruption
+    2. Add handling for tmux server shutdown during wait
+    3. Add handling for script termination signals
+    4. Add handling for system time changes
+  b. Handle session lifecycle edge cases
+    1. Add handling for sessions dying before scheduled time
+    2. Add re-validation of sessions at delivery time
+    3. Add graceful handling of partial delivery failures
+    4. Add logging for session state changes
+  c. Handle time parsing edge cases
+    1. Add handling for invalid time formats
+    2. Add handling for past times (error or immediate delivery)
+    3. Add handling for extreme future times (24+ hours)
+    4. Add handling for DST transitions and timezone issues
+  d. Add process management features
+    1. Add --dry-run flag for testing without actual scheduling
+    2. Add --verbose flag for detailed logging
+    3. Add --message flag for custom message override
+    4. Add graceful cleanup on SIGINT/SIGTERM
+
+7. Testing & Validation
+  a. Unit testing for time parser
+    1. Test all supported time formats with valid inputs
+    2. Test invalid inputs and error handling
+    3. Test edge cases (midnight, DST, leap years)
+    4. Test timezone handling and conversion accuracy
+  b. Integration testing for main script
+    1. Test with mock tmux sessions
+    2. Test scheduling with very short delays (1-2 seconds)
+    3. Test error handling with no sessions found
+    4. Test graceful shutdown and cleanup
+  c. End-to-end testing
+    1. Test with real tmux sessions and short delays
+    2. Test message delivery reliability
+    3. Test with various time formats in real scenarios
+    4. Test error recovery and logging output
+  d. Performance and reliability testing
+    1. Test with many tmux sessions (stress test)
+    2. Test long-running scheduling (hours-long delays)
+    3. Test system resource usage during wait periods
+    4. Test reliability of message delivery to all sessions
+
+8. Documentation & Usage
+  a. Create inline code documentation
+    1. Add JSDoc comments to all functions
+    2. Add usage examples in function headers
+    3. Add parameter and return value documentation
+    4. Add error condition documentation
+  b. Create usage documentation
+    1. Add comprehensive README section for the feature
+    2. Add command-line usage examples
+    3. Add troubleshooting guide for common issues
+    4. Add integration examples with existing workflows
+  c. Add logging and monitoring guidance
+    1. Document log output formats and meanings
+    2. Add guidance for monitoring long-running schedules
+    3. Add debugging tips for delivery failures
+    4. Add performance optimization recommendations
+
+9. Integration & Deployment
+  a. Integrate with existing script patterns
+    1. Follow existing scripts/ directory naming conventions
+    2. Match existing error handling patterns
+    3. Use consistent logging formats with other scripts
+    4. Follow existing ES module import patterns
+  b. Add to package.json scripts
+    1. Add convenient npm script commands
+    2. Add testing script commands
+    3. Add example usage in npm script descriptions
+    4. Update package.json keywords if needed
+  c. Update project documentation
+    1. Add feature description to main README
+    2. Update DOCUMENTATION_INDEX.md with new files
+    3. Add to relevant workflow documentation
+    4. Add cross-references to related existing features
+
+10. Advanced Features (Optional)
+  a. Persistent scheduling (survive restarts)
+    1. Design file-based persistence for schedules
+    2. Implement schedule recovery on script restart
+    3. Add schedule management commands (list, cancel)
+    4. Add cleanup for expired/completed schedules
+  b. Multiple message types
+    1. Support custom message content
+    2. Add preset message types beyond "Plz continue"
+    3. Add message templating capabilities
+    4. Add per-session custom messages
+  c. Recurring schedules
+    1. Add support for recurring time patterns
+    2. Add cron-like scheduling syntax
+    3. Add schedule persistence for recurring tasks
+    4. Add schedule management interface
+  d. Web interface integration
+    1. Add scheduling via existing dashboard
+    2. Add visual schedule management
+    3. Add real-time scheduling status display
+    4. Add historical delivery logging display

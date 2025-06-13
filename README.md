@@ -27,17 +27,17 @@
 
 A highly efficient Model Context Protocol (MCP) server enabling hierarchical orchestration of Claude instances via tmux. Features a **bridge pattern architecture** that reduces memory usage by 85% compared to traditional multi-server approaches.
 
-## 📸 Architecture Overview
+## 📸 Screenshots
 
-<p align="center">
-  <img src="logos/logo.png" alt="tmux-claude Architecture" width="300">
-</p>
+![Demo 1 - Hierarchical Instance Management](demo2.png)
+*Hierarchical orchestration showing Executive, Manager, and Specialist instances working together*
 
-*Hierarchical orchestration system enabling Executive → Manager → Specialist delegation patterns with shared MCP bridge architecture*
+![Demo 2 - Real-time Monitoring Dashboard](demo1.png)
+*Web-based monitoring dashboard displaying active instances and system metrics*
 
 ## 🤖 For Claude Code Instances
 
-**New to this repository?** If you're a Claude Code instance, start with the **[Claude Getting Started Guide](CLAUDE_GETTING_STARTED.md)** for a quick orientation and practical examples.
+**New to this repository?** If you're a Claude Code instance, start with the **[Claude Getting Started Guide](docs/CLAUDE_GETTING_STARTED.md)** for a quick orientation and practical examples.
 
 ## Overview
 
@@ -69,39 +69,46 @@ Due to MCP's documented 1:1 stdio architecture, multiple Claude instances cannot
 ```
 tmux-claude-mcp-server/
 ├── README.md              # Project overview and usage
+├── LICENSE                # MIT license
+├── CHANGELOG.md           # Version history
+├── CONTRIBUTING.md        # Contribution guidelines
 ├── package.json           # Node.js dependencies
-├── scripts/mcp_bridge.js  # Bridge for multi-instance MCP access
-├── PROJECT_COMPLETION_SUMMARY.md # Achievement summary
+├── package-lock.json      # Locked dependencies
 ├── src/                   # Core source code
 │   ├── simple_mcp_server.js    # Main MCP server
 │   ├── instance_manager.js     # Instance lifecycle management
 │   ├── mcp_tools.js            # MCP tool implementations
 │   ├── tmux_interface.js       # tmux integration layer
+│   ├── reliable_tmux_sender.js # High-reliability message delivery
 │   ├── orchestration/          # Orchestration components
-│   └── dashboard/              # Web monitoring dashboard
+│   ├── dashboard/              # Web monitoring dashboard
+│   └── role_templates/         # Standardized role templates
+├── scripts/               # Utility scripts
+│   ├── mcp_bridge.js           # Bridge for multi-instance MCP access
+│   ├── scheduled_continue.js   # Schedule "Plz continue" messages
+│   ├── check/                  # Session checking utilities
+│   ├── restart/                # Session restart utilities
+│   ├── utils/                  # Shared utilities
+│   │   └── time_parser.js     # Time parsing for scheduling
+│   └── api/                    # API scripts for monitoring
 ├── docs/                  # Documentation
+│   ├── CLAUDE_GETTING_STARTED.md    # Quick start for Claude instances
+│   ├── DOCUMENTATION_INDEX.md       # Documentation map
+│   ├── scheduled_continue/          # Scheduled continue feature docs
+│   │   ├── CLI_INTERFACE_DESIGN.md
+│   │   ├── TIME_FORMAT_SPECIFICATION.md
+│   │   └── SCHEDULING_MECHANISM_ANALYSIS.md
 │   ├── analysis/          # Technical analysis & findings
-│   │   ├── MCP_ARCHITECTURAL_ANALYSIS.md
-│   │   ├── MCP_PERFORMANCE_ANALYSIS.md
-│   │   └── DELEGATION_PATTERNS.md
-│   ├── testing/           # Test files and utilities
-│   │   ├── empirical_mcp_init_test.js
-│   │   ├── test_native_mcp.js
-│   │   └── stress_test_send_enter.py
+│   ├── archive/           # Historical documentation
 │   └── guides/            # User guides and specifications
-│   ├── GIT_INTEGRATION_GUIDE.md # Git integration guide
-│   ├── PERFORMANCE_OPTIMIZATION_GUIDE.md # Performance guide
-│   ├── MONITORING_DASHBOARD_GUIDE.md # Dashboard guide
-│   └── ...              # Other guides and specs
-├── scripts/             # Utility scripts
-│   ├── cleanup_test_instances.js # Instance cleanup
-│   ├── run_all_tests.sh # Test runner
-│   ├── spawn_*.js       # Spawn helpers
-│   └── monitor_*.js     # Monitoring scripts
-├── state/              # Default state directory
-├── package.json        # NPM configuration
-├── README.md          # This file
-└── .gitignore        # Git ignore rules
+├── tests/                 # Test suites
+│   ├── unit/             # Unit tests
+│   ├── integration/      # Integration tests
+│   ├── e2e/              # End-to-end tests
+│   └── performance/      # Performance benchmarks
+├── state/                # Default state directory
+├── config/               # Configuration files
+└── logs/                 # Log directory
 ```
 
 ## Architecture
@@ -343,32 +350,6 @@ Each spawned instance:
 
 The MCP interface is designed to support all phases without code changes - only configuration differences.
 
-## Project Structure
-
-```
-tmux-claude-mcp-server/
-├── src/                          # Core source code
-│   ├── mcp_tools.js             # MCP tool implementations
-│   ├── instance_manager.js      # Instance lifecycle management
-│   ├── tmux_interface.js        # tmux session operations
-│   ├── dashboard/               # Web monitoring dashboard
-│   ├── orchestration/           # Orchestration helpers
-│   └── role_templates/          # Standardized role templates
-├── scripts/                      # Utility scripts
-│   ├── mcp_bridge.js            # Bridge for multi-instance access
-│   └── run_all_tests.sh        # Test runner
-├── tests/                       # Test suites
-│   ├── unit/                    # Unit tests
-│   ├── integration/             # Integration tests
-│   ├── e2e/                     # End-to-end tests
-│   └── performance/             # Performance benchmarks
-├── docs/                        # Documentation
-│   ├── archive/                 # Historical documents
-│   └── analysis/                # Analysis reports
-├── config/                      # Configuration files
-├── package.json                 # NPM configuration
-└── README.md                    # This file
-```
 
 ## Testing
 

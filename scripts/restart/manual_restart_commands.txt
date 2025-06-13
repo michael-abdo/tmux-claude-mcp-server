@@ -1,0 +1,47 @@
+MANUAL RESTART COMMANDS FOR THE TWO SPECIFIC PROJECTS
+=======================================================
+
+Due to shell environment issues, here are the exact commands to run manually:
+
+STEP 1: Kill existing sessions
+------------------------------
+tmux kill-session -t claude_exec_1749140389829
+tmux kill-session -t claude_exec_1749140212897
+
+STEP 2: Restart Project 1 (~021929506694170832611)
+-------------------------------------------------
+cd /Users/Mike/.claude/user/tmux-claude-mcp-server
+
+node scripts/api/spawn_project_executive.js \
+  --project-dir "/Users/Mike/Desktop/programming/2_proposals/upwork/~021929506694170832611" \
+  --project-type web-app \
+  --requirements-file instructions.md
+
+STEP 3: Restart Project 2 (~021929597245880692451)
+-------------------------------------------------
+node scripts/api/spawn_project_executive.js \
+  --project-dir "/Users/Mike/Desktop/programming/2_proposals/upwork/~021929597245880692451" \
+  --project-type web-app \
+  --requirements-file instructions.md
+
+STEP 4: Verify projects are running
+-----------------------------------
+tmux list-sessions | grep claude
+
+OR use the monitor:
+node scripts/api/monitor_all_projects.js --scan-dir /Users/Mike/Desktop/programming/2_proposals/upwork
+
+ALTERNATIVE: Run the script
+--------------------------
+If the shell environment works in your terminal:
+bash /Users/Mike/.claude/user/tmux-claude-mcp-server/restart_specific_projects.sh
+
+PROJECT PATHS CONFIRMED:
+- /Users/Mike/Desktop/programming/2_proposals/upwork/~021929506694170832611
+- /Users/Mike/Desktop/programming/2_proposals/upwork/~021929597245880692451
+
+Both projects contain:
+- instructions.md (requirements file)
+- CLAUDE.md (current context)
+- HTML files (existing implementation)
+- exec_* subdirectories (active executives)
