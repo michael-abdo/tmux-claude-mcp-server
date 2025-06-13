@@ -40,6 +40,7 @@
     "vm:test:verbose": "VM_TEST_VERBOSE=true node vm-integration/tests/test_vm_integration.js",
     "vm:test:live": "VM_TEST_MOCK=false node vm-integration/tests/test_vm_integration.js",
     "vm:demo": "node vm-integration/demo_vm_integration.js",
+    "vm:demo:logging": "node vm-integration/demo_enhanced_logging.js",
     "vm:help": "node vm-integration/vm-cli.js --help"
   },
   "keywords": [
@@ -65,6 +66,7 @@
     "p-queue": "^7.4.1",
     "redis": "^4.6.0",
     "uuid": "^9.0.0",
+    "winston": "^3.11.0",
     "ws": "^8.18.2"
   },
   "devDependencies": {

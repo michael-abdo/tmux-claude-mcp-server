@@ -11,6 +11,7 @@ import { spawn } from 'child_process';
 import { readFile, writeFile, mkdir } from 'fs/promises';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { VMLogger, logStateChange, BatchLogger } from './utils/logger.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -28,9 +29,19 @@ export class VMManager {
     this.stateFile = options.stateFile || join(__dirname, 'vm-state.json');
     this.setupScriptPath = join(__dirname, 'setup-scripts', 'claude-dev-setup.sh');
     
+    // Initialize logging
+    this.logger = new VMLogger('vm-manager');
+    
     // Load existing state
     this.state = { instances: {}, templates: {} };
     this.loadState();
+    
+    this.logger.info('VM Manager initialized', null, {
+      provider: this.provider,
+      region: this.region,
+      defaultInstanceType: this.defaultInstanceType,
+      stateFile: this.stateFile
+    });
   }
 
   /**
@@ -107,24 +118,51 @@ export class VMManager {
    * Create a new VM instance
    */
   async createInstance(name, options = {}) {
-    const instanceConfig = {
-      imageId: options.imageId || 'ami-0c02fb55956c7d316', // Ubuntu 20.04 LTS
-      instanceType: options.instanceType || this.defaultInstanceType,
-      keyName: options.keyName || this.keyName,
-      securityGroups: options.securityGroups || [this.securityGroup],
-      userData: options.userData || await this.getDefaultUserData(),
-      spot: options.spot || false,
-      maxPrice: options.maxPrice || '0.10'
-    };
-
-    console.log(`🚀 Creating VM instance: ${name}`);
-    console.log(`   Instance Type: ${instanceConfig.instanceType}`);
-    console.log(`   Region: ${this.region}`);
-    console.log(`   Spot Instance: ${instanceConfig.spot ? 'Yes' : 'No'}`);
+    const operationId = this.logger.startOperation('vm_create', {
+      vmName: name,
+      region: this.region,
+      requestedInstanceType: options.instanceType,
+      spotRequested: options.spot || false
+    });
 
     try {
+      const instanceConfig = {
+        imageId: options.imageId || 'ami-0c02fb55956c7d316', // Ubuntu 20.04 LTS
+        instanceType: options.instanceType || this.defaultInstanceType,
+        keyName: options.keyName || this.keyName,
+        securityGroups: options.securityGroups || [this.securityGroup],
+        userData: options.userData || await this.getDefaultUserData(),
+        spot: options.spot || false,
+        maxPrice: options.maxPrice || '0.10'
+      };
+
+      this.logger.info('Starting VM instance creation', operationId, {
+        vmName: name,
+        instanceType: instanceConfig.instanceType,
+        region: this.region,
+        spot: instanceConfig.spot,
+        imageId: instanceConfig.imageId
+      });
+
+      // Log cost implications
+      this.logger.logCostEvent('vm_creation_requested', operationId, {
+        estimated: this.estimateInstanceCost(instanceConfig),
+        instanceType: instanceConfig.instanceType,
+        spot: instanceConfig.spot,
+        region: this.region
+      });
+
+      // Log security-sensitive operations
+      this.logger.logSecurityEvent('vm_creation_with_key', operationId, {
+        keyName: instanceConfig.keyName,
+        securityGroups: instanceConfig.securityGroups
+      });
+
       const command = this.buildRunInstancesCommand(instanceConfig, name);
+      this.logger.logAWSCommand(operationId, command, { region: this.region });
+      
       const result = await this.executeAWS(command);
+      this.logger.logAWSResponse(operationId, command, result, true);
       
       const instanceId = result.Instances[0].InstanceId;
       const instance = {
@@ -137,19 +175,36 @@ export class VMManager {
         privateIp: result.Instances[0].PrivateIpAddress
       };
 
+      // Log state change
+      const previousState = { ...this.state };
       this.state.instances[instanceId] = instance;
+      logStateChange('vm_instances', previousState.instances, this.state.instances, operationId);
+      
       await this.saveState();
 
-      console.log(`✅ VM instance created: ${instanceId}`);
-      console.log(`   Waiting for instance to start...`);
+      this.logger.info('VM instance created, waiting for startup', operationId, {
+        instanceId,
+        privateIp: instance.privateIp,
+        status: 'pending'
+      });
 
       // Wait for instance to be running
-      await this.waitForInstanceState(instanceId, 'running');
-      await this.updateInstanceInfo(instanceId);
+      await this.waitForInstanceState(instanceId, 'running', operationId);
+      await this.updateInstanceInfo(instanceId, operationId);
+
+      this.logger.completeOperation(operationId, {
+        instanceId,
+        publicIp: instance.publicIp,
+        finalStatus: 'running'
+      });
 
       return instance;
     } catch (error) {
-      console.error(`❌ Failed to create VM instance: ${error.message}`);
+      this.logger.failOperation(operationId, error, {
+        vmName: name,
+        region: this.region,
+        provider: this.provider
+      });
       throw error;
     }
   }
@@ -206,32 +261,68 @@ echo "Basic VM setup complete"`;
   /**
    * Wait for instance to reach desired state
    */
-  async waitForInstanceState(instanceId, desiredState, maxWaitTime = 300000) {
+  async waitForInstanceState(instanceId, desiredState, operationId = null, maxWaitTime = 300000) {
     const startTime = Date.now();
+    
+    this.logger.info('Waiting for instance state transition', operationId, {
+      instanceId,
+      desiredState,
+      maxWaitTime,
+      currentTime: new Date().toISOString()
+    });
     
     while (Date.now() - startTime < maxWaitTime) {
       try {
-        const result = await this.executeAWS([
+        const command = [
           'ec2', 'describe-instances',
           '--instance-ids', instanceId,
           '--region', this.region
-        ]);
-
+        ];
+        
+        this.logger.debug('Checking instance state', operationId, {
+          instanceId,
+          timeElapsed: Date.now() - startTime
+        });
+        
+        const result = await this.executeAWS(command);
         const instance = result.Reservations[0]?.Instances[0];
+        
         if (instance && instance.State.Name === desiredState) {
-          console.log(`✅ Instance ${instanceId} is now ${desiredState}`);
+          this.logger.info('Instance state transition completed', operationId, {
+            instanceId,
+            finalState: desiredState,
+            duration: Date.now() - startTime
+          });
           return instance;
         }
 
-        console.log(`⏳ Instance ${instanceId} is ${instance?.State.Name || 'unknown'}, waiting for ${desiredState}...`);
+        const currentState = instance?.State.Name || 'unknown';
+        this.logger.debug('Instance state check', operationId, {
+          instanceId,
+          currentState,
+          desiredState,
+          timeElapsed: Date.now() - startTime
+        });
+        
         await new Promise(resolve => setTimeout(resolve, 10000)); // Wait 10 seconds
       } catch (error) {
-        console.warn(`Warning: Error checking instance state: ${error.message}`);
+        this.logger.warn('Error checking instance state', operationId, {
+          instanceId,
+          error: error.message,
+          timeElapsed: Date.now() - startTime
+        });
         await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds on error
       }
     }
 
-    throw new Error(`Instance ${instanceId} did not reach ${desiredState} state within ${maxWaitTime}ms`);
+    const timeoutError = new Error(`Instance ${instanceId} did not reach ${desiredState} state within ${maxWaitTime}ms`);
+    this.logger.error('Instance state transition timeout', operationId, {
+      instanceId,
+      desiredState,
+      maxWaitTime,
+      actualWaitTime: Date.now() - startTime
+    });
+    throw timeoutError;
   }
 
   /**
@@ -487,6 +578,29 @@ echo "Basic VM setup complete"`;
       console.error(`❌ Failed to create AMI: ${error.message}`);
       throw error;
     }
+  }
+
+  /**
+   * Estimate instance cost (simplified calculation)
+   */
+  estimateInstanceCost(instanceConfig) {
+    const hourlyRates = {
+      't3.micro': 0.0104,
+      't3.small': 0.0208,
+      't3.medium': 0.0416,
+      'm5.large': 0.096,
+      'm5.xlarge': 0.192,
+      'm5.2xlarge': 0.384
+    };
+    
+    const baseRate = hourlyRates[instanceConfig.instanceType] || 0.1;
+    const spotDiscount = instanceConfig.spot ? 0.7 : 1.0; // ~70% discount for spot
+    
+    return {
+      hourly: baseRate * spotDiscount,
+      daily: baseRate * spotDiscount * 24,
+      monthly: baseRate * spotDiscount * 24 * 30
+    };
   }
 
   /**
