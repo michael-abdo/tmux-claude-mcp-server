@@ -56,6 +56,7 @@ Due to MCP's documented 1:1 stdio architecture, multiple Claude instances cannot
 - **terminate**: Stop instances and optionally their children
 
 ### New Features
+- **Scheduled Continue**: Schedule "Plz continue" messages to all tmux sessions at specified times
 - **Workspace Modes**: Support for isolated (default) and shared workspace modes
 - **Git Integration**: Automatic branch management for shared workspaces
 - **Conflict Detection**: Proactive identification of merge conflicts
@@ -350,6 +351,62 @@ Each spawned instance:
 
 The MCP interface is designed to support all phases without code changes - only configuration differences.
 
+
+## Scheduled Continue Feature
+
+The Scheduled Continue feature allows you to schedule "Plz continue" messages to all tmux sessions at a specified time. This is useful for automating session management and ensuring work resumes at specific times.
+
+### Basic Usage
+
+```bash
+# Schedule in 30 minutes
+node scripts/scheduled_continue.js "+30m"
+
+# Schedule at 3:30 PM today
+node scripts/scheduled_continue.js "15:30"
+
+# Schedule at 9:45 AM with AM/PM format
+node scripts/scheduled_continue.js "9:45am"
+
+# Schedule using natural language
+node scripts/scheduled_continue.js "in 2 hours"
+```
+
+### Advanced Options
+
+```bash
+# Custom message
+node scripts/scheduled_continue.js "+1h" -m "Time to review progress"
+
+# Dry run (test without executing)
+node scripts/scheduled_continue.js "+5m" --dry-run
+
+# Verbose logging
+node scripts/scheduled_continue.js "+15m" --verbose
+
+# Show help
+node scripts/scheduled_continue.js --help
+```
+
+### Supported Time Formats
+
+- **Relative**: `+30m`, `+2h`, `+90m`
+- **24-hour**: `15:30`, `09:45`, `23:59`
+- **12-hour**: `3:30pm`, `9:45am`, `11:59PM`
+- **Natural language**: `"in 30 minutes"`, `"in 2 hours"`
+
+### Important Notes
+
+- The process must remain running until execution time
+- System sleep/hibernate may interrupt scheduling
+- Maximum scheduling window is 24 hours
+- Sessions are re-validated at execution time
+- Uses high-reliability message delivery
+
+For detailed documentation, see:
+- [Time Format Specification](docs/scheduled_continue/TIME_FORMAT_SPECIFICATION.md)
+- [CLI Interface Design](docs/scheduled_continue/CLI_INTERFACE_DESIGN.md)
+- [Scheduling Mechanism Analysis](docs/scheduled_continue/SCHEDULING_MECHANISM_ANALYSIS.md)
 
 ## Testing
 
