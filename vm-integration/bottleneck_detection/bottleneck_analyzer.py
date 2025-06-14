@@ -4,6 +4,7 @@ import subprocess
 import json
 import time
 import re
+import os
 from datetime import datetime
 
 class ClaudeBottleneckAnalyzer:
@@ -284,6 +285,123 @@ class ClaudeBottleneckAnalyzer:
         
         return analysis
     
+    def run_comprehensive_suite(self):
+        """Run all available analysis tools for comprehensive assessment"""
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        results = {}
+        
+        print("🔍 Running Comprehensive Bottleneck Analysis Suite")
+        print("=" * 60)
+        
+        # 1. Run system info collection
+        print("\n📋 SYSTEM INFORMATION COLLECTION")
+        print("-" * 40)
+        try:
+            result = subprocess.run([os.path.join(script_dir, 'system_info_script.sh')], 
+                                 capture_output=True, text=True, timeout=60)
+            results['system_info_output'] = result.stdout
+            print("✅ System information collected")
+        except Exception as e:
+            results['system_info_error'] = str(e)
+            print(f"❌ System info collection failed: {e}")
+        
+        # 2. Run network speed analysis
+        print("\n🌐 NETWORK SPEED ANALYSIS")
+        print("-" * 40)
+        try:
+            result = subprocess.run([os.path.join(script_dir, 'network_speed_script.sh')], 
+                                 capture_output=True, text=True, timeout=120)
+            results['network_speed_output'] = result.stdout
+            print("✅ Network speed analysis completed")
+        except Exception as e:
+            results['network_speed_error'] = str(e)
+            print(f"❌ Network speed analysis failed: {e}")
+        
+        # 3. Run Claude monitor
+        print("\n👁️ CLAUDE PROCESS MONITORING")
+        print("-" * 40)
+        try:
+            result = subprocess.run([os.path.join(script_dir, 'claude_monitor.sh')], 
+                                 capture_output=True, text=True, timeout=30)
+            results['claude_monitor_output'] = result.stdout
+            print("✅ Claude process monitoring completed")
+        except Exception as e:
+            results['claude_monitor_error'] = str(e)
+            print(f"❌ Claude monitoring failed: {e}")
+        
+        # 4. Run quick network analysis (limited time)
+        print("\n🔗 NETWORK CONNECTION ANALYSIS (Quick)")
+        print("-" * 40)
+        try:
+            # Run with timeout to avoid hanging
+            result = subprocess.run(['timeout', '30s', os.path.join(script_dir, 'claude_network_analysis.sh')], 
+                                 capture_output=True, text=True, timeout=35)
+            results['network_analysis_output'] = result.stdout
+            print("✅ Network connection analysis completed")
+        except Exception as e:
+            results['network_analysis_error'] = str(e)
+            print(f"❌ Network analysis failed: {e}")
+        
+        # 5. Check if monitoring scripts exist and are executable
+        monitoring_scripts = [
+            'claude_bottleneck_test.sh',
+            'claude_deep_analysis.sh'
+        ]
+        
+        print("\n📊 ADDITIONAL MONITORING TOOLS STATUS")
+        print("-" * 40)
+        for script in monitoring_scripts:
+            script_path = os.path.join(script_dir, script)
+            if os.path.exists(script_path) and os.access(script_path, os.X_OK):
+                print(f"✅ {script} - Available (run separately for detailed analysis)")
+            else:
+                print(f"❌ {script} - Not available or not executable")
+        
+        # 6. Check Python monitoring tools
+        python_tools = [
+            'claude-wrapper.py',
+            'monitor_claude_connections.py'
+        ]
+        
+        print("\n🐍 PYTHON MONITORING TOOLS STATUS")
+        print("-" * 40)
+        for tool in python_tools:
+            tool_path = os.path.join(script_dir, tool)
+            if os.path.exists(tool_path):
+                print(f"✅ {tool} - Available")
+            else:
+                print(f"❌ {tool} - Not found")
+        
+        return results
+    
+    def generate_comprehensive_report(self):
+        """Generate a comprehensive report combining all analysis methods"""
+        
+        print("🚀 STARTING COMPREHENSIVE BOTTLENECK ANALYSIS")
+        print("=" * 80)
+        
+        # Run the comprehensive suite first
+        suite_results = self.run_comprehensive_suite()
+        
+        # Run our built-in analysis
+        print("\n🧪 BUILT-IN BOTTLENECK ANALYSIS")
+        print("-" * 40)
+        analysis = self.analyze_bottlenecks()
+        
+        # Combine all results
+        comprehensive_report = {
+            'timestamp': datetime.now().isoformat(),
+            'built_in_analysis': analysis,
+            'external_tools_results': suite_results,
+            'summary': {
+                'total_tools_run': len([k for k in suite_results.keys() if 'output' in k]),
+                'failed_tools': len([k for k in suite_results.keys() if 'error' in k]),
+                'analysis_duration_estimate': '3-5 minutes'
+            }
+        }
+        
+        return comprehensive_report
+    
     def print_analysis(self, analysis):
         """Print formatted analysis"""
         print(f"\n=== Comprehensive System Analysis - {analysis['timestamp']} ===\n")
@@ -439,12 +557,49 @@ class ClaudeBottleneckAnalyzer:
         print("• python3 bottleneck_analyzer.py - This comprehensive analysis")
 
 if __name__ == "__main__":
+    import sys
+    
     analyzer = ClaudeBottleneckAnalyzer()
-    analysis = analyzer.analyze_bottlenecks()
-    analyzer.print_analysis(analysis)
     
-    # Save analysis to file
-    with open('/tmp/claude_bottleneck_analysis.json', 'w') as f:
-        json.dump(analysis, f, indent=2)
+    # Check if --comprehensive flag is provided
+    if '--comprehensive' in sys.argv:
+        print("🚀 RUNNING COMPREHENSIVE ANALYSIS SUITE")
+        print("This will run ALL available monitoring tools")
+        print("Estimated time: 3-5 minutes")
+        print("=" * 60)
+        
+        # Generate comprehensive report
+        comprehensive_report = analyzer.generate_comprehensive_report()
+        
+        # Print the built-in analysis
+        analyzer.print_analysis(comprehensive_report['built_in_analysis'])
+        
+        # Print summary of external tools
+        print(f"\n📋 EXTERNAL TOOLS SUMMARY")
+        print(f"Tools successfully run: {comprehensive_report['summary']['total_tools_run']}")
+        print(f"Tools that failed: {comprehensive_report['summary']['failed_tools']}")
+        
+        # Save comprehensive report
+        with open('/tmp/claude_comprehensive_analysis.json', 'w') as f:
+            json.dump(comprehensive_report, f, indent=2)
+        
+        print(f"\n💾 SAVED REPORTS:")
+        print(f"• Comprehensive report: /tmp/claude_comprehensive_analysis.json")
+        print(f"• Built-in analysis: /tmp/claude_bottleneck_analysis.json")
+        
+        # Also save the built-in analysis separately
+        with open('/tmp/claude_bottleneck_analysis.json', 'w') as f:
+            json.dump(comprehensive_report['built_in_analysis'], f, indent=2)
     
-    print(f"\nDetailed analysis saved to: /tmp/claude_bottleneck_analysis.json")
+    else:
+        # Standard analysis (existing behavior)
+        analysis = analyzer.analyze_bottlenecks()
+        analyzer.print_analysis(analysis)
+        
+        # Save analysis to file
+        with open('/tmp/claude_bottleneck_analysis.json', 'w') as f:
+            json.dump(analysis, f, indent=2)
+        
+        print(f"\nDetailed analysis saved to: /tmp/claude_bottleneck_analysis.json")
+        print(f"\n💡 TIP: Run with --comprehensive flag for full suite analysis:")
+        print(f"   python3 bottleneck_analyzer.py --comprehensive")

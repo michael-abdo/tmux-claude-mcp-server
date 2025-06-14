@@ -1,6 +1,6 @@
 # MacBook Pro System Information Report
 
-**Generated:** $(date)  
+**Generated:** Fri Jun 13 20:12:28 PDT 2025 (Auto-generated system report)  
 **Computer Name:** David's MacBook Pro  
 **User:** Mike Abdo (Mike)
 

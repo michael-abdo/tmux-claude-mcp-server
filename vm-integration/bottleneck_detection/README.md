@@ -23,17 +23,25 @@ chmod +x claude_monitor.sh
 ```
 
 #### `bottleneck_analyzer.py`
-**Purpose**: Automated bottleneck detection and analysis  
+**Purpose**: Automated bottleneck detection and comprehensive analysis orchestrator  
 **Features**:
 - Intelligent resource bottleneck identification
 - Severity ratings (HIGH/MEDIUM/LOW) with recommendations
 - CPU, memory, and system load threshold monitoring
 - Structured JSON output for programmatic use
 - Top resource consumer identification
+- **NEW**: Comprehensive suite mode running ALL available tools
+- Network performance integration and speed testing
+- System information collection automation
+- Performance scoring (0-100 scale) with actionable recommendations
 
 **Usage:**
 ```bash
+# Standard analysis (fast)
 python3 bottleneck_analyzer.py
+
+# Comprehensive analysis (runs all tools, 3-5 minutes)
+python3 bottleneck_analyzer.py --comprehensive
 ```
 
 ### System Information Collection
@@ -66,6 +74,84 @@ chmod +x system_info_script.sh
 ```bash
 chmod +x network_speed_script.sh
 ./network_speed_script.sh
+```
+
+### Advanced Analysis Tools
+
+#### `claude_bottleneck_test.sh`
+**Purpose**: Real-time Claude process monitoring with pattern detection  
+**Features**:
+- 30-second real-time monitoring of Claude processes
+- CPU usage patterns and context switching analysis
+- Network connection counting per process
+- System I/O wait detection and classification
+- Identifies compute-bound vs I/O-bound behavior patterns
+
+**Usage:**
+```bash
+chmod +x claude_bottleneck_test.sh
+./claude_bottleneck_test.sh
+```
+
+#### `claude_deep_analysis.sh`
+**Purpose**: Deep forensic analysis of Claude process behavior  
+**Features**:
+- Process state analysis (R/S/D/Z states)
+- CPU vs I/O wait correlation testing
+- File descriptor usage patterns
+- Memory pressure monitoring
+- Process activity sampling with system calls
+- Network activity correlation with CPU usage
+
+**Usage:**
+```bash
+chmod +x claude_deep_analysis.sh
+./claude_deep_analysis.sh
+```
+
+#### `claude_network_analysis.sh`
+**Purpose**: Comprehensive network connection forensics  
+**Features**:
+- Detailed host destination analysis
+- Connection state breakdown (ESTABLISHED/TIME_WAIT/etc)
+- Port usage patterns and ephemeral port tracking
+- Real-time connection creation monitoring
+- Connection leak detection over time
+- Service identification (HTTPS/API/local connections)
+
+**Usage:**
+```bash
+chmod +x claude_network_analysis.sh
+./claude_network_analysis.sh
+```
+
+### Testing and Optimization Tools
+
+#### `claude-wrapper.py`
+**Purpose**: Connection-limited Claude wrapper for testing  
+**Features**:
+- HTTP connection pooling with strict limits (2 connections max)
+- Request retry handling with backoff
+- Environment variable configuration for Claude
+- Testing tool for connection optimization scenarios
+
+**Usage:**
+```bash
+python3 claude-wrapper.py [claude-code-args]
+```
+
+#### `monitor_claude_connections.py`
+**Purpose**: Real-time connection growth monitoring  
+**Features**:
+- Spawns fresh Claude instance for clean monitoring
+- Tracks connection count growth over 5 minutes
+- CPU and memory correlation monitoring
+- Abnormal connection detection (>50 connections)
+- Detailed connection listing when thresholds exceeded
+
+**Usage:**
+```bash
+python3 monitor_claude_connections.py
 ```
 
 ### Documentation
@@ -194,6 +280,49 @@ watch -n 30 './claude_monitor.sh'
 ./network_speed_script.sh | grep -E "(Download|Upload|Ping)"
 python3 bottleneck_analyzer.py | grep -A5 "Resource Summary"
 ```
+
+## Complete Tool Suite Summary
+
+The bottleneck detection directory now contains **11 specialized tools** for comprehensive system analysis:
+
+### Core Analysis Tools (4)
+- `bottleneck_analyzer.py` - Main orchestrator with comprehensive mode
+- `claude_monitor.sh` - Real-time process monitoring  
+- `system_info_script.sh` - Hardware profiling
+- `network_speed_script.sh` - Network performance testing
+
+### Advanced Forensics (3)
+- `claude_deep_analysis.sh` - Process behavior analysis
+- `claude_network_analysis.sh` - Network connection forensics  
+- `claude_bottleneck_test.sh` - Real-time pattern detection
+
+### Testing & Optimization (2)
+- `claude-wrapper.py` - Connection-limited testing wrapper
+- `monitor_claude_connections.py` - Connection growth monitoring
+
+### Documentation (2)
+- `computer_information.md` - Static system specifications
+- `README.md` - Complete tool documentation
+
+### Usage Recommendations
+
+**For Quick Assessment:**
+```bash
+python3 bottleneck_analyzer.py
+```
+
+**For Complete Analysis:**
+```bash
+python3 bottleneck_analyzer.py --comprehensive
+```
+
+**For Specific Issues:**
+- **High CPU**: `./claude_deep_analysis.sh`
+- **Network Problems**: `./claude_network_analysis.sh`  
+- **Real-time Monitoring**: `./claude_bottleneck_test.sh`
+- **Connection Testing**: `python3 monitor_claude_connections.py`
+
+The suite provides layered analysis from quick 30-second assessments to comprehensive 5-minute deep-dives, with all results saved to JSON for further analysis.
 
 ---
 
