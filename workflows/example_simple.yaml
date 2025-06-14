@@ -1,0 +1,41 @@
+name: "Simple Hello World"
+version: "1.0"
+description: "A simple workflow that demonstrates basic prompt chaining"
+
+settings:
+  poll_interval: 2
+  timeout: 60
+  instance_role: "specialist"
+
+stages:
+  - id: "greet"
+    name: "Say Hello"
+    prompt: |
+      Say hello and introduce yourself as a helpful assistant.
+      Then count from 1 to 5.
+      
+      WHEN YOU ARE DONE YOU MUST SAY "***GREETING_COMPLETE***"
+    
+    trigger_keyword: "***GREETING_COMPLETE***"
+    
+    on_success:
+      - action: "log"
+        message: "Greeting completed successfully"
+      
+      - action: "send_prompt"
+        target: "same_instance"
+        prompt: |
+          Great! Now please tell me a short joke.
+          
+          WHEN YOU ARE DONE YOU MUST SAY "***JOKE_TOLD***"
+        next_stage: "respond_to_joke"
+  
+  - id: "respond_to_joke"
+    name: "Respond to Joke"
+    trigger_keyword: "***JOKE_TOLD***"
+    
+    on_success:
+      - action: "log"
+        message: "Workflow completed - joke was told!"
+      
+      - action: "complete_workflow"

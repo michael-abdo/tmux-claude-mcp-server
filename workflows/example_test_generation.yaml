@@ -1,0 +1,196 @@
+name: "Automated Test Generation"
+version: "1.0"
+description: "Analyze code, generate tests, run them, and iterate until passing"
+
+settings:
+  poll_interval: 3
+  timeout: 240
+  instance_role: "specialist"
+
+stages:
+  - id: "analyze_for_tests"
+    name: "Analyze Code for Test Generation"
+    prompt: |
+      You are a test generation specialist. Your task is to:
+      
+      1. Examine the source code in the src/ directory
+      2. Identify functions/classes that lack test coverage
+      3. Understand the testing framework being used
+      
+      Start by exploring the codebase structure.
+      
+      WHEN YOU ARE DONE YOU MUST SAY "***ANALYSIS_FOR_TESTS_COMPLETE***"
+    
+    trigger_keyword: "***ANALYSIS_FOR_TESTS_COMPLETE***"
+    
+    on_success:
+      # Check current test coverage
+      - action: "run_script"
+        script: "npm run test:coverage || echo 'No coverage script found'"
+        capture_output: true
+        output_var: "initial_coverage"
+        on_failure: "continue"
+      
+      - action: "send_prompt"
+        target: "same_instance"
+        next_stage: "generate_tests"
+
+  - id: "generate_tests"
+    name: "Generate Missing Tests"
+    prompt: |
+      Based on your analysis, generate comprehensive tests for the uncovered code.
+      
+      Focus on:
+      1. Unit tests for pure functions
+      2. Integration tests for API endpoints
+      3. Edge cases and error scenarios
+      4. Mock external dependencies appropriately
+      
+      Create the test files in the appropriate test directory.
+      
+      WHEN YOU ARE DONE YOU MUST SAY "***TESTS_GENERATED***"
+    
+    trigger_keyword: "***TESTS_GENERATED***"
+    
+    on_success:
+      # Run the newly generated tests
+      - action: "run_script"
+        script: "npm test"
+        capture_output: true
+        output_var: "test_run_1"
+        on_failure: "continue"
+      
+      # Check if tests pass
+      - action: "conditional"
+        condition: "${test_run_1.exit_code} !== 0"
+        if_true:
+          - action: "send_prompt"
+            target: "same_instance"
+            next_stage: "fix_generated_tests"
+        if_false:
+          - action: "log"
+            message: "All generated tests passing on first try!"
+          - action: "send_prompt"
+            target: "same_instance"
+            next_stage: "enhance_tests"
+
+  - id: "fix_generated_tests"
+    name: "Fix Failing Generated Tests"
+    prompt: |
+      The generated tests are failing with:
+      
+      ${test_run_1.stderr}
+      ${test_run_1.stdout}
+      
+      Please fix the test issues. Common problems:
+      1. Import paths
+      2. Mock setup
+      3. Async handling
+      4. Assertion values
+      
+      WHEN YOU ARE DONE YOU MUST SAY "***TESTS_FIXED***"
+    
+    trigger_keyword: "***TESTS_FIXED***"
+    
+    on_success:
+      # Re-run tests
+      - action: "run_script"
+        script: "npm test"
+        capture_output: true
+        output_var: "test_run_2"
+        expect_exit_code: 0
+        on_failure: "continue"
+      
+      # If still failing, try once more
+      - action: "conditional"
+        condition: "${test_run_2.exit_code} !== 0"
+        if_true:
+          - action: "send_prompt"
+            target: "same_instance"
+            prompt: |
+              Tests still failing. One more attempt to fix:
+              ${test_run_2.stderr}
+              
+              WHEN YOU ARE DONE YOU MUST SAY "***FINAL_FIX_DONE***"
+            wait_for_keyword: "***FINAL_FIX_DONE***"
+          
+          - action: "run_script"
+            script: "npm test"
+            expect_exit_code: 0
+        
+        if_false:
+          - action: "log"
+            message: "Tests fixed and passing!"
+      
+      - action: "send_prompt"
+        target: "same_instance"
+        next_stage: "enhance_tests"
+
+  - id: "enhance_tests"
+    name: "Enhance Test Quality"
+    prompt: |
+      Now enhance the test suite by:
+      
+      1. Adding property-based tests for complex logic
+      2. Including performance benchmarks for critical paths
+      3. Adding snapshot tests for UI components (if applicable)
+      4. Ensuring good test descriptions and organization
+      
+      WHEN YOU ARE DONE YOU MUST SAY "***TESTS_ENHANCED***"
+    
+    trigger_keyword: "***TESTS_ENHANCED***"
+    
+    on_success:
+      # Run final test suite with coverage
+      - action: "run_script"
+        script: "npm run test:coverage || npm test"
+        capture_output: true
+        output_var: "final_coverage"
+      
+      # Extract coverage percentage
+      - action: "run_script"
+        script: |
+          echo "${final_coverage.stdout}" | grep -oE 'All files[^|]*\|[^|]*\|[^|]*\|[^|]*\|[^|]*' || echo "Coverage: Unknown"
+        capture_output: true
+        output_var: "coverage_summary"
+      
+      # Generate test report
+      - action: "template"
+        template: |
+          # Test Generation Report
+          
+          ## Summary
+          - Workflow completed in: ${Math.round((Date.now() - workflow.start_time) / 1000)}s
+          - Test generation iterations: ${stages.fix_generated_tests ? 2 : 1}
+          
+          ## Coverage Improvement
+          ### Before:
+          \`\`\`
+          ${initial_coverage.stdout ? initial_coverage.stdout.split('\n').slice(-10).join('\n') : 'No initial coverage data'}
+          \`\`\`
+          
+          ### After:
+          \`\`\`
+          ${coverage_summary.stdout}
+          \`\`\`
+          
+          ## Generated Test Types
+          ${stage.output}
+          
+          ## Final Test Results
+          - Total tests: ${final_coverage.stdout.match(/(\d+) passing/)?.[1] || 'Unknown'}
+          - Status: ${final_coverage.exit_code === 0 ? '✅ All Passing' : '❌ Some Failing'}
+          
+          ---
+          Generated by: ${workflow.name}
+          Run ID: ${workflow.run_id}
+        output_var: "test_report"
+      
+      - action: "save_file"
+        path: "./reports/test_generation_${workflow.run_id}.md"
+        content: "${test_report}"
+      
+      - action: "log"
+        message: "Test generation complete! Report saved."
+      
+      - action: "complete_workflow"

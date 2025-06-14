@@ -1,0 +1,208 @@
+name: "Parallel Code Review"
+version: "1.0"
+description: "Multiple specialists review different aspects of code in parallel"
+
+settings:
+  poll_interval: 5
+  timeout: 300
+  instance_role: "specialist"
+  workspace_mode: "shared"  # Allow instances to share workspace
+
+stages:
+  - id: "spawn_reviewers"
+    name: "Initialize Review Team"
+    prompt: |
+      You are the review coordinator. We're going to spawn multiple specialists to review different aspects of the codebase.
+      
+      First, identify the main components to review:
+      1. Security vulnerabilities
+      2. Performance bottlenecks
+      3. Code style and best practices
+      4. Test coverage
+      
+      Say "***READY_TO_SPAWN***" when ready to begin.
+    
+    trigger_keyword: "***READY_TO_SPAWN***"
+    
+    on_success:
+      # Spawn multiple specialists in parallel
+      - action: "parallel"
+        max_concurrent: 4
+        actions:
+          # Security specialist
+          - action: "spawn"
+            role: "specialist"
+            context: "You are a security specialist. Focus on finding vulnerabilities."
+            output_var: "security_instance"
+          
+          # Performance specialist  
+          - action: "spawn"
+            role: "specialist"
+            context: "You are a performance specialist. Focus on optimization opportunities."
+            output_var: "performance_instance"
+          
+          # Code quality specialist
+          - action: "spawn"
+            role: "specialist"
+            context: "You are a code quality specialist. Focus on best practices and patterns."
+            output_var: "quality_instance"
+          
+          # Testing specialist
+          - action: "spawn"
+            role: "specialist"
+            context: "You are a testing specialist. Focus on test coverage and quality."
+            output_var: "testing_instance"
+      
+      - action: "log"
+        message: "Review team spawned successfully"
+      
+      - action: "send_prompt"
+        target: "same_instance"
+        next_stage: "coordinate_review"
+
+  - id: "coordinate_review"
+    name: "Coordinate Parallel Reviews"
+    prompt: |
+      The review team is ready. Now coordinate their work.
+      
+      Say "***START_REVIEWS***" to begin the parallel review process.
+    
+    trigger_keyword: "***START_REVIEWS***"
+    
+    on_success:
+      # Send prompts to all specialists in parallel
+      - action: "parallel"
+        wait_all: true
+        actions:
+          # Security review
+          - action: "send_prompt"
+            target: "specific_id"
+            instance_id: "${security_instance.instanceId}"
+            prompt: |
+              Perform a security review of the codebase. Look for:
+              - SQL injection vulnerabilities
+              - XSS vulnerabilities  
+              - Insecure dependencies
+              - Hardcoded secrets
+              
+              When complete, say "***SECURITY_REVIEW_DONE***"
+            wait_for_keyword: "***SECURITY_REVIEW_DONE***"
+            timeout: 180
+            output_var: "security_review"
+          
+          # Performance review
+          - action: "send_prompt"
+            target: "specific_id"
+            instance_id: "${performance_instance.instanceId}"
+            prompt: |
+              Perform a performance review. Look for:
+              - N+1 query problems
+              - Inefficient algorithms
+              - Memory leaks
+              - Unnecessary computations
+              
+              When complete, say "***PERFORMANCE_REVIEW_DONE***"
+            wait_for_keyword: "***PERFORMANCE_REVIEW_DONE***"
+            timeout: 180
+            output_var: "performance_review"
+          
+          # Code quality review
+          - action: "send_prompt"
+            target: "specific_id"
+            instance_id: "${quality_instance.instanceId}"
+            prompt: |
+              Review code quality. Check for:
+              - SOLID principle violations
+              - Code duplication
+              - Complex functions that need refactoring
+              - Missing documentation
+              
+              When complete, say "***QUALITY_REVIEW_DONE***"
+            wait_for_keyword: "***QUALITY_REVIEW_DONE***"
+            timeout: 180
+            output_var: "quality_review"
+          
+          # Test coverage review
+          - action: "send_prompt"
+            target: "specific_id"
+            instance_id: "${testing_instance.instanceId}"
+            prompt: |
+              Review test coverage. Check for:
+              - Untested critical paths
+              - Missing edge case tests
+              - Test quality issues
+              - Integration test gaps
+              
+              When complete, say "***TESTING_REVIEW_DONE***"
+            wait_for_keyword: "***TESTING_REVIEW_DONE***"
+            timeout: 180
+            output_var: "testing_review"
+      
+      - action: "log"
+        message: "All reviews completed"
+      
+      - action: "send_prompt"
+        target: "same_instance"
+        next_stage: "consolidate_findings"
+
+  - id: "consolidate_findings"
+    name: "Consolidate Review Findings"
+    prompt: |
+      All specialists have completed their reviews. Now consolidate their findings into a comprehensive report.
+      
+      Create a prioritized list of issues found and recommendations.
+      
+      When complete, say "***CONSOLIDATION_DONE***"
+    
+    trigger_keyword: "***CONSOLIDATION_DONE***"
+    
+    on_success:
+      # Clean up specialist instances
+      - action: "parallel"
+        actions:
+          - action: "terminate"
+            instance_id: "${security_instance.instanceId}"
+          - action: "terminate"
+            instance_id: "${performance_instance.instanceId}"
+          - action: "terminate"
+            instance_id: "${quality_instance.instanceId}"
+          - action: "terminate"
+            instance_id: "${testing_instance.instanceId}"
+      
+      # Generate comprehensive report
+      - action: "template"
+        template: |
+          # Comprehensive Code Review Report
+          
+          ## Executive Summary
+          Parallel review completed by 4 specialists in ${Math.round((Date.now() - workflow.start_time) / 1000)}s
+          
+          ## Security Findings
+          ${security_review}
+          
+          ## Performance Findings
+          ${performance_review}
+          
+          ## Code Quality Findings
+          ${quality_review}
+          
+          ## Test Coverage Findings
+          ${testing_review}
+          
+          ## Consolidated Recommendations
+          ${stage.output}
+          
+          ---
+          Generated by: ${workflow.name}
+          Run ID: ${workflow.run_id}
+          Date: ${new Date().toISOString()}
+        output_var: "final_report"
+      
+      - action: "save_file"
+        path: "./reports/parallel_review_${workflow.run_id}.md"
+        content: "${final_report}"
+      
+      - action: "log"
+        message: "Parallel review complete! Report saved."
+      
+      - action: "complete_workflow"

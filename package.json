@@ -41,7 +41,12 @@
     "vm:test:live": "VM_TEST_MOCK=false node vm-integration/tests/test_vm_integration.js",
     "vm:demo": "node vm-integration/demo_vm_integration.js",
     "vm:demo:logging": "node vm-integration/demo_enhanced_logging.js",
-    "vm:help": "node vm-integration/vm-cli.js --help"
+    "vm:help": "node vm-integration/vm-cli.js --help",
+    "workflow:run": "node src/workflow/run_workflow.js",
+    "workflow:simple": "node src/workflow/run_workflow.js workflows/example_simple.yaml",
+    "workflow:analysis": "node src/workflow/run_workflow.js workflows/example_code_analysis.yaml",
+    "workflow:parallel": "node src/workflow/run_workflow.js workflows/example_parallel_review.yaml",
+    "workflow:tests": "node src/workflow/run_workflow.js workflows/example_test_generation.yaml"
   },
   "keywords": [
     "MCP",
@@ -57,6 +62,7 @@
   "author": "Claude Code Assistant",
   "license": "MIT",
   "dependencies": {
+    "axios": "^1.6.0",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "express": "^4.18.0",
@@ -67,7 +73,8 @@
     "redis": "^4.6.0",
     "uuid": "^9.0.0",
     "winston": "^3.11.0",
-    "ws": "^8.18.2"
+    "ws": "^8.18.2",
+    "yaml": "^2.3.4"
   },
   "devDependencies": {
     "@jest/globals": "^29.0.0",
