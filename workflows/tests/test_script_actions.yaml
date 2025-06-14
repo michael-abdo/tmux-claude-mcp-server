@@ -1,0 +1,58 @@
+name: "Script Actions Test"
+version: "1.0"
+description: "Test script execution without Claude instances"
+
+settings:
+  poll_interval: 1
+  timeout: 30
+
+stages:
+  - id: "script_test"
+    name: "Test Script Execution"
+    # No prompt - action-only stage
+    
+    on_success:
+      - action: "log"
+        message: "Testing script actions..."
+      
+      - action: "run_script"
+        script: "echo"
+        args: ["Hello from echo command!"]
+        capture_output: true
+        output_var: "echo_result"
+      
+      - action: "log"
+        message: "Echo output: ${actions.echo_result.stdout}"
+      
+      - action: "run_script"
+        script: "date"
+        capture_output: true
+        output_var: "date_result"
+      
+      - action: "log"
+        message: "Date output: ${actions.date_result.stdout}"
+      
+      - action: "run_script"
+        script: "ls"
+        args: ["-la", "workflows/tests"]
+        capture_output: true
+        output_var: "ls_result"
+      
+      - action: "save_file"
+        path: "./workflows/tests/script_test_output.txt"
+        content: |
+          Script Test Results:
+          
+          Echo: ${actions.echo_result.stdout}
+          Date: ${actions.date_result.stdout}
+          Files: ${actions.ls_result.stdout}
+          
+          Exit codes:
+          Echo: ${actions.echo_result.exit_code}
+          Date: ${actions.date_result.exit_code}
+          LS: ${actions.ls_result.exit_code}
+      
+      - action: "log"
+        message: "Script actions test completed successfully!"
+      
+      - action: "complete_workflow"

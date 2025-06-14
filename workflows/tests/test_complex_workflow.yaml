@@ -1,0 +1,130 @@
+name: "Complex Workflow Test"
+version: "1.0"
+description: "Test complex workflow with multiple file ops, scripts, and data processing"
+
+settings:
+  poll_interval: 1
+  timeout: 60
+
+stages:
+  - id: "complex_test"
+    name: "Complex Operations Test"
+    # No prompt - action-only stage
+    
+    on_success:
+      # Step 1: Create test directory structure
+      - action: "log"
+        message: "Step 1: Creating directory structure..."
+      
+      - action: "create_directory"
+        path: "./workflows/tests/temp_test"
+      
+      # Step 2: Generate test data with script
+      - action: "log"
+        message: "Step 2: Generating test data..."
+      
+      - action: "run_script"
+        script: "ls"
+        args: ["-la", "src/workflow"]
+        capture_output: true
+        output_var: "dir_listing"
+      
+      # Step 3: Save script output to file
+      - action: "save_file"
+        path: "./workflows/tests/temp_test/directory_listing.txt"
+        content: |
+          Directory Listing Report
+          Generated: ${timestamp()}
+          Run ID: ${workflow.run_id}
+          
+          Source Directory Contents:
+          ${actions.dir_listing.stdout}
+          
+          Exit Code: ${actions.dir_listing.exit_code}
+      
+      # Step 4: Create a data file with JSON content
+      - action: "run_script"
+        script: "echo"
+        args: ["{\"test\": true, \"timestamp\": \"${timestamp()}\", \"files\": 10}"]
+        capture_output: true
+        output_var: "json_data"
+      
+      - action: "save_file"
+        path: "./workflows/tests/temp_test/data.json"
+        content: "${actions.json_data.stdout}"
+      
+      # Step 5: Read files back and verify
+      - action: "read_file"
+        path: "./workflows/tests/temp_test/directory_listing.txt"
+        output_var: "listing_content"
+      
+      - action: "read_file"
+        path: "./workflows/tests/temp_test/data.json"
+        output_var: "json_content"
+      
+      # Step 6: List created files
+      - action: "list_files"
+        path: "./workflows/tests/temp_test"
+        output_var: "created_files"
+      
+      - action: "log"
+        message: "Created ${actions.created_files.count} files in temp directory"
+      
+      # Step 7: Copy and manipulate files
+      - action: "copy_file"
+        source: "./workflows/tests/temp_test/data.json"
+        destination: "./workflows/tests/temp_test/data_backup.json"
+      
+      - action: "append_file"
+        path: "./workflows/tests/temp_test/directory_listing.txt"
+        content: |
+          
+          --- APPENDED CONTENT ---
+          Backup created at: ${timestamp()}
+          Original JSON: ${actions.json_content.content}
+      
+      # Step 8: Verify file operations with script
+      - action: "run_script"
+        script: "wc"
+        args: ["-l", "./workflows/tests/temp_test/directory_listing.txt"]
+        capture_output: true
+        output_var: "file_stats"
+      
+      - action: "log"
+        message: "Directory listing file has ${actions.file_stats.stdout} lines"
+      
+      # Step 9: Generate summary report
+      - action: "save_file"
+        path: "./workflows/tests/complex_test_report.txt"
+        content: |
+          COMPLEX WORKFLOW TEST REPORT
+          ============================
+          Executed: ${timestamp()}
+          Run ID: ${workflow.run_id}
+          
+          Operations Performed:
+          1. Created directory: ./workflows/tests/temp_test
+          2. Generated directory listing of src/workflow
+          3. Created JSON data file
+          4. Read and verified file contents
+          5. Listed created files (found ${actions.created_files.count} files)
+          6. Copied data file as backup
+          7. Appended content to listing file
+          8. Checked file statistics: ${actions.file_stats.stdout}
+          
+          All operations completed successfully!
+      
+      # Step 10: Cleanup
+      - action: "log"
+        message: "Step 10: Cleaning up temporary files..."
+      
+      - action: "run_script"
+        script: "rm"
+        args: ["-rf", "./workflows/tests/temp_test"]
+        capture_output: true
+        output_var: "cleanup_result"
+      
+      - action: "log"
+        message: "Complex workflow test completed successfully!"
+      
+      - action: "complete_workflow"

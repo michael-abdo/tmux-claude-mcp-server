@@ -72,10 +72,9 @@ Due to MCP's documented 1:1 stdio architecture, multiple Claude instances cannot
 tmux-claude-mcp-server/
 ├── README.md              # Project overview and usage
 ├── LICENSE                # MIT license
-├── CHANGELOG.md           # Version history
-├── CONTRIBUTING.md        # Contribution guidelines
 ├── package.json           # Node.js dependencies
 ├── package-lock.json      # Locked dependencies
+├── .gitignore            # Version control ignore patterns
 ├── src/                   # Core source code
 │   ├── simple_mcp_server.js    # Main MCP server
 │   ├── instance_manager.js     # Instance lifecycle management
@@ -84,7 +83,11 @@ tmux-claude-mcp-server/
 │   ├── reliable_tmux_sender.js # High-reliability message delivery
 │   ├── orchestration/          # Orchestration components
 │   ├── dashboard/              # Web monitoring dashboard
-│   └── role_templates/         # Standardized role templates
+│   ├── role_templates/         # Standardized role templates
+│   └── workflow/               # Workflow orchestration system
+│       ├── actions/            # Modular action implementations
+│       ├── workflow_engine.cjs # Main workflow engine
+│       └── run_workflow.cjs    # Workflow runner CLI
 ├── scripts/               # Utility scripts
 │   ├── mcp_bridge.js           # Bridge for multi-instance MCP access
 │   ├── scheduled_continue.js   # Schedule "Plz continue" messages
@@ -94,6 +97,9 @@ tmux-claude-mcp-server/
 │   │   └── time_parser.js     # Time parsing for scheduling
 │   └── api/                    # API scripts for monitoring
 ├── docs/                  # Documentation
+│   ├── CHANGELOG.md             # Version history
+│   ├── CONTRIBUTING.md          # Contribution guidelines
+│   ├── WORKFLOW_GUIDE.md        # Workflow system guide
 │   ├── CLAUDE_GETTING_STARTED.md    # Quick start for Claude instances
 │   ├── DOCUMENTATION_INDEX.md       # Documentation map
 │   ├── scheduled_continue/          # Scheduled continue feature docs
@@ -104,10 +110,20 @@ tmux-claude-mcp-server/
 │   ├── archive/           # Historical documentation
 │   └── guides/            # User guides and specifications
 ├── tests/                 # Test suites
+│   ├── test_workflow_standalone.cjs  # Standalone workflow tests
 │   ├── unit/             # Unit tests
 │   ├── integration/      # Integration tests
 │   ├── e2e/              # End-to-end tests
 │   └── performance/      # Performance benchmarks
+├── workflows/             # Workflow system
+│   ├── README.md              # Workflow documentation
+│   ├── CURRENT_STATUS.md      # Current status and usage
+│   ├── library/               # Reusable workflow components
+│   ├── examples/              # Example workflows
+│   ├── tests/                 # Workflow test files
+│   ├── scripts/               # Workflow utilities
+│   ├── state/                 # Workflow state storage
+│   └── user/                  # User-created workflows
 ├── state/                # Default state directory
 ├── config/               # Configuration files
 ├── logs/                 # Log directory

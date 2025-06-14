@@ -1,0 +1,74 @@
+{
+  "workflow": {
+    "start_time": 1749917680947,
+    "id": "a9ac2146-2677-47be-b402-6b220c34d42a",
+    "name": "Engine Only Test",
+    "version": "1.0",
+    "run_id": "run_1749917680947_1eito3bwo"
+  },
+  "settings": {
+    "poll_interval": 1,
+    "timeout": 10
+  },
+  "stage": {
+    "id": "no_prompt_test",
+    "name": "Test Without Prompts",
+    "status": "completed",
+    "start_time": 1749917680948,
+    "end_time": 1749917680948,
+    "output": ""
+  },
+  "instance": {},
+  "actions": {},
+  "stages": {
+    "no_prompt_test": {
+      "id": "no_prompt_test",
+      "name": "Test Without Prompts",
+      "status": "completed",
+      "start_time": 1749917680948,
+      "end_time": 1749917680948,
+      "output": ""
+    }
+  },
+  "vars": {
+    "test_var": "hello world"
+  },
+  "env": {
+    "NVM_INC": "/Users/Mike/.nvm/versions/node/v22.13.0/include/node",
+    "LDFLAGS": "-L/usr/local/opt/icu4c/lib",
+    "TERM_PROGRAM": "Apple_Terminal",
+    "NVM_CD_FLAGS": "-q",
+    "SHELL": "/bin/zsh",
+    "TERM": "xterm-256color",
+    "CPPFLAGS": "-I/usr/local/opt/icu4c/include",
+    "TMPDIR": "/var/folders/g1/7y3w2j8s2qd7qmvkpd8byklw0000gp/T/",
+    "TERM_PROGRAM_VERSION": "455",
+    "TERM_SESSION_ID": "D20AAB70-0599-4FBE-B46F-C481F30C691D",
+    "NVM_DIR": "/Users/Mike/.nvm",
+    "USER": "Mike",
+    "OPENAI_API_KEY": "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",
+    "SSH_AUTH_SOCK": "/private/tmp/com.apple.launchd.pnPHvZI7eL/Listeners",
+    "PATH": "/usr/local/bin:/Users/Mike/.nvm/versions/node/v22.13.0/bin:/Users/Mike/.nvm/versions/node/v22.13.0/bin:/Users/Mike/.nvm/versions/node/v22.13.0/bin:/Users/Mike/google-cloud-sdk/bin:/usr/local/opt/icu4c/sbin:/usr/local/opt/icu4c/bin:/Users/Mike/Library/Python/3.11/bin:/Library/Frameworks/Python.framework/Versions/3.12/bin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/Users/Mike/google-cloud-sdk/bin",
+    "LaunchInstanceID": "4F29D3DD-5255-49A1-83F4-E203268B6C36",
+    "__CFBundleIdentifier": "com.apple.Terminal",
+    "DATABENTO_API_KEY": "db-6P7di3nVFkYBNB3tsPaXrajkdVQPH",
+    "PWD": "/Users/Mike/.claude/user/tmux-claude-mcp-server",
+    "LANG": "en_US.UTF-8",
+    "XPC_FLAGS": "0x0",
+    "XPC_SERVICE_NAME": "0",
+    "SHLVL": "2",
+    "HOME": "/Users/Mike",
+    "LOGNAME": "Mike",
+    "NVM_BIN": "/Users/Mike/.nvm/versions/node/v22.13.0/bin",
+    "PKG_CONFIG_PATH": "/usr/local/opt/icu4c/lib/pkgconfig",
+    "SECURITYSESSIONID": "186a2",
+    "__CF_USER_TEXT_ENCODING": "0x1F6:0x0:0x0",
+    "COREPACK_ENABLE_AUTO_PIN": "0",
+    "CLAUDE_CODE_ENTRYPOINT": "cli",
+    "OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE": "delta",
+    "GIT_EDITOR": "true",
+    "CLAUDECODE": "1",
+    "OLDPWD": "/Users/Mike/.claude/user/tmux-claude-mcp-server",
+    "_": "/usr/local/bin/node"
+  }
+}

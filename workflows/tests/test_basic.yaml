@@ -1,0 +1,20 @@
+name: "Basic Test"
+version: "1.0"
+description: "Simplest possible test with just logging"
+
+settings:
+  poll_interval: 1
+  timeout: 10
+
+stages:
+  - id: "test"
+    name: "Basic Test"
+    prompt: "Just say hello and then say ***DONE***"
+    
+    trigger_keyword: "***DONE***"
+    
+    on_success:
+      - action: "log"
+        message: "Test completed successfully!"
+      
+      - action: "complete_workflow"

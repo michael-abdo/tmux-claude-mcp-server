@@ -1,0 +1,60 @@
+name: "File Operations Test"
+version: "1.0"
+description: "Test file creation and reading within workflow directory"
+
+settings:
+  poll_interval: 2
+  timeout: 60
+
+stages:
+  - id: "create_test_file"
+    name: "Create Test File"
+    prompt: |
+      I'm going to create a test file. Say "***READY_FOR_FILE_TEST***"
+    
+    trigger_keyword: "***READY_FOR_FILE_TEST***"
+    
+    on_success:
+      # Create a test file in the workflows directory
+      - action: "save_file"
+        path: "./workflows/test_output.txt"
+        content: |
+          Workflow Test File
+          Created at: ${new Date().toISOString()}
+          Run ID: ${workflow.run_id}
+          
+          This file was created by the workflow system!
+      
+      - action: "log"
+        message: "Created test file: workflows/test_output.txt"
+      
+      # Read the file back
+      - action: "read_file"
+        path: "./workflows/test_output.txt"
+        output_var: "file_content"
+      
+      - action: "send_prompt"
+        target: "same_instance"
+        prompt: |
+          File operations completed! The test file contains:
+          
+          ${file_content.content}
+          
+          Say "***FILE_TEST_COMPLETE***"
+        next_stage: "cleanup"
+
+  - id: "cleanup"
+    name: "Cleanup Test"
+    trigger_keyword: "***FILE_TEST_COMPLETE***"
+    
+    on_success:
+      # Clean up the test file
+      - action: "run_script"
+        script: "rm"
+        args: ["./workflows/test_output.txt"]
+        on_failure: "continue"
+      
+      - action: "log"
+        message: "SUCCESS: File operations test completed and cleaned up!"
+      
+      - action: "complete_workflow"

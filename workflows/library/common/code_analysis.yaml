@@ -1,0 +1,155 @@
+# Common Code Analysis Pattern
+# Can be included in other workflows or used as a base
+
+name: "Code Analysis Pattern"
+version: "1.0"
+description: "Reusable pattern for analyzing codebases"
+
+settings:
+  poll_interval: 5
+  timeout: 300
+  instance_role: "specialist"
+
+# Define reusable actions as templates
+action_templates:
+  analyze_structure: &analyze_structure
+    action: "send_prompt"
+    prompt: |
+      Analyze the code structure in the project. Look for:
+      1. Main programming language and frameworks
+      2. Project organization and architecture patterns
+      3. File structure and naming conventions
+      4. Dependencies and external libraries
+      
+      Provide a clear summary of your findings.
+      Say "***STRUCTURE_ANALYZED***" when complete.
+    wait_for_keyword: "***STRUCTURE_ANALYZED***"
+    timeout: 180
+
+  check_quality: &check_quality
+    action: "send_prompt"
+    prompt: |
+      Check code quality and best practices:
+      1. Look for SOLID principle violations
+      2. Identify code smells and anti-patterns
+      3. Check for proper error handling
+      4. Review documentation quality
+      
+      Provide specific recommendations for improvement.
+      Say "***QUALITY_CHECKED***" when complete.
+    wait_for_keyword: "***QUALITY_CHECKED***"
+    timeout: 240
+
+  security_scan: &security_scan
+    action: "send_prompt"
+    prompt: |
+      Perform a security analysis:
+      1. Look for common vulnerabilities (SQL injection, XSS, etc.)
+      2. Check for hardcoded secrets or credentials
+      3. Review dependency security
+      4. Assess input validation and sanitization
+      
+      List any security concerns found.
+      Say "***SECURITY_SCANNED***" when complete.
+    wait_for_keyword: "***SECURITY_SCANNED***"
+    timeout: 300
+
+stages:
+  - id: "structure_analysis"
+    name: "Analyze Code Structure"
+    <<: *analyze_structure
+    
+    on_success:
+      - action: "log"
+        message: "Structure analysis completed"
+      
+      - action: "save_file"
+        path: "./reports/structure_analysis.md"
+        content: |
+          # Code Structure Analysis
+          
+          ${stage.output}
+          
+          Generated: ${new Date().toISOString()}
+
+  - id: "quality_check"
+    name: "Check Code Quality"
+    <<: *check_quality
+    
+    on_success:
+      - action: "log"
+        message: "Quality check completed"
+      
+      - action: "save_file"
+        path: "./reports/quality_analysis.md"
+        content: |
+          # Code Quality Analysis
+          
+          ${stage.output}
+          
+          Generated: ${new Date().toISOString()}
+
+  - id: "security_scan"
+    name: "Security Scan"
+    <<: *security_scan
+    
+    on_success:
+      - action: "log"
+        message: "Security scan completed"
+      
+      - action: "save_file"
+        path: "./reports/security_analysis.md"
+        content: |
+          # Security Analysis
+          
+          ${stage.output}
+          
+          Generated: ${new Date().toISOString()}
+
+  - id: "generate_report"
+    name: "Generate Comprehensive Report"
+    prompt: |
+      Based on all the analysis completed, generate a comprehensive code review report.
+      
+      Include:
+      1. Executive summary
+      2. Key findings from each analysis
+      3. Prioritized recommendations
+      4. Action items for the development team
+      
+      Say "***REPORT_GENERATED***" when complete.
+    
+    trigger_keyword: "***REPORT_GENERATED***"
+    
+    on_success:
+      - action: "template"
+        template: |
+          # Comprehensive Code Analysis Report
+          
+          ## Executive Summary
+          ${stage.output}
+          
+          ## Detailed Findings
+          
+          ### Structure Analysis
+          ${stages.structure_analysis.output}
+          
+          ### Quality Assessment  
+          ${stages.quality_check.output}
+          
+          ### Security Review
+          ${stages.security_scan.output}
+          
+          ---
+          Report generated: ${new Date().toISOString()}
+          Workflow: ${workflow.name}
+        output_var: "comprehensive_report"
+      
+      - action: "save_file"
+        path: "./reports/comprehensive_analysis.md"
+        content: "${comprehensive_report}"
+      
+      - action: "log"
+        message: "Comprehensive analysis report generated"
+      
+      - action: "complete_workflow"

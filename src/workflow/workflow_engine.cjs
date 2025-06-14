@@ -7,9 +7,9 @@ const fs = require('fs').promises;
 const path = require('path');
 const yaml = require('yaml');
 const { spawn } = require('child_process');
-const KeywordMonitor = require('./keyword_monitor');
-const ActionExecutor = require('./action_executor');
-const WorkflowContext = require('./workflow_context');
+const KeywordMonitor = require('./keyword_monitor.cjs');
+const ActionExecutor = require('./action_executor.cjs');
+const WorkflowContext = require('./workflow_context.cjs');
 const { v4: uuidv4 } = require('uuid');
 
 class WorkflowEngine extends EventEmitter {
@@ -90,26 +90,33 @@ class WorkflowEngine extends EventEmitter {
     this.emit('stage_start', stage);
 
     try {
-      // Get or create instance for this stage
-      const instanceId = await this.getOrCreateInstance(stage);
-      
-      // Interpolate prompt with current context
-      const interpolatedPrompt = this.context.interpolate(stage.prompt);
-      
-      // Send the prompt
-      await this.actionExecutor.execute({
-        action: 'send_prompt',
-        target: 'specific_id',
-        instance_id: instanceId,
-        prompt: interpolatedPrompt
-      });
+      // Check if this stage has a prompt (requires Claude instance)
+      if (stage.prompt) {
+        // Get or create instance for this stage
+        const instanceId = await this.getOrCreateInstance(stage);
+        
+        // Interpolate prompt with current context
+        const interpolatedPrompt = this.context.interpolate(stage.prompt);
+        
+        // Send the prompt
+        await this.actionExecutor.execute({
+          action: 'send_prompt',
+          target: 'specific_id',
+          instance_id: instanceId,
+          prompt: interpolatedPrompt
+        });
 
-      // Set up keyword monitoring
-      if (stage.trigger_keyword) {
-        await this.monitorForKeyword(stage, instanceId);
+        // Set up keyword monitoring
+        if (stage.trigger_keyword) {
+          await this.monitorForKeyword(stage, instanceId);
+        } else {
+          // No keyword to wait for, immediately process success actions
+          await this.handleStageSuccess(stage, instanceId, '');
+        }
       } else {
-        // No keyword to wait for, immediately process success actions
-        await this.handleStageSuccess(stage, instanceId, '');
+        // No prompt - this is an action-only stage, skip Claude interaction
+        console.log('Stage has no prompt, executing actions directly');
+        await this.handleStageSuccess(stage, null, '');
       }
 
     } catch (error) {

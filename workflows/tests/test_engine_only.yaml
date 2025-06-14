@@ -1,0 +1,38 @@
+name: "Engine Only Test"
+version: "1.0"
+description: "Test workflow engine without Claude instances"
+
+settings:
+  poll_interval: 1
+  timeout: 10
+
+stages:
+  - id: "no_prompt_test"
+    name: "Test Without Prompts"
+    # No prompt - skip Claude interaction entirely
+    
+    on_success:
+      - action: "log"
+        message: "SUCCESS: Engine can execute actions!"
+      
+      - action: "set_var"
+        name: "test_var"
+        value: "hello world"
+      
+      - action: "log"
+        message: "Variable test: ${vars.test_var}"
+      
+      - action: "save_file"
+        path: "./workflows/tests/engine_test_output.txt"
+        content: |
+          Engine test completed successfully!
+          Time: ${new Date().toISOString()}
+          Workflow: ${workflow.name}
+      
+      - action: "wait"
+        seconds: 1
+      
+      - action: "log"
+        message: "File operations and variables work!"
+      
+      - action: "complete_workflow"

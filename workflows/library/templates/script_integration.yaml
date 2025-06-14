@@ -1,0 +1,92 @@
+# Script Integration Workflow Template
+name: "{WORKFLOW_NAME}"
+version: "1.0"
+description: "Template for workflows that integrate with external scripts"
+
+settings:
+  poll_interval: 5
+  timeout: 300
+  instance_role: "specialist"
+
+stages:
+  - id: "prepare"
+    name: "Prepare for Script Execution"
+    prompt: |
+      {PREPARATION_PROMPT}
+      
+      When ready to run the script, say "***READY_FOR_SCRIPT***"
+    
+    trigger_keyword: "***READY_FOR_SCRIPT***"
+    
+    on_success:
+      # Execute the main script
+      - action: "run_script"
+        script: "{SCRIPT_PATH}"
+        args: {SCRIPT_ARGS}
+        capture_output: true
+        output_var: "script_result"
+        timeout: {SCRIPT_TIMEOUT}
+        on_failure: "continue"
+      
+      # Process script results
+      - action: "conditional"
+        condition: "${script_result.exit_code} === 0"
+        if_true:
+          - action: "send_prompt"
+            target: "same_instance"
+            prompt: |
+              The script executed successfully with output:
+              ${script_result.stdout}
+              
+              Please {SUCCESS_ACTION}
+              
+              Say "***PROCESSING_COMPLETE***" when done.
+            next_stage: "finalize"
+        if_false:
+          - action: "send_prompt"
+            target: "same_instance"
+            prompt: |
+              The script failed with error:
+              ${script_result.stderr}
+              
+              Please {ERROR_ACTION}
+              
+              Say "***ERROR_HANDLED***" when done.
+            next_stage: "handle_error"
+
+  - id: "finalize"
+    name: "Finalize Successful Execution"
+    trigger_keyword: "***PROCESSING_COMPLETE***"
+    
+    on_success:
+      - action: "save_file"
+        path: "{OUTPUT_PATH}"
+        content: |
+          Workflow: {WORKFLOW_NAME}
+          Status: Success
+          Script Output: ${script_result.stdout}
+          Timestamp: ${new Date().toISOString()}
+      
+      - action: "log"
+        message: "Workflow completed successfully!"
+      
+      - action: "complete_workflow"
+
+  - id: "handle_error"
+    name: "Handle Script Error"
+    trigger_keyword: "***ERROR_HANDLED***"
+    
+    on_success:
+      - action: "save_file"
+        path: "{ERROR_LOG_PATH}"
+        content: |
+          Workflow: {WORKFLOW_NAME}
+          Status: Error
+          Script Error: ${script_result.stderr}
+          Timestamp: ${new Date().toISOString()}
+      
+      - action: "log"
+        message: "Error handled and logged"
+        level: "warn"
+      
+      - action: "complete_workflow"

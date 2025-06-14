@@ -5,15 +5,15 @@
  */
 
 const path = require('path');
-const WorkflowEngine = require('./workflow_engine');
+const WorkflowEngine = require('./workflow_engine.cjs');
 
 async function main() {
   const args = process.argv.slice(2);
   
   if (args.length === 0) {
-    console.log('Usage: node run_workflow.js <workflow-file.yaml>');
+    console.log('Usage: node run_workflow.cjs <workflow-file.yaml>');
     console.log('\nExample:');
-    console.log('  node run_workflow.js workflows/code_review.yaml');
+    console.log('  node run_workflow.cjs workflows/code_review.yaml');
     process.exit(1);
   }
   

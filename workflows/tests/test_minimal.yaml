@@ -1,0 +1,21 @@
+name: "Minimal Test Workflow"
+version: "1.0"
+description: "Simplest possible test - just log messages"
+
+settings:
+  poll_interval: 2
+  timeout: 30
+
+stages:
+  - id: "test_log"
+    name: "Test Logging"
+    prompt: |
+      This is a minimal test. Just say hello and then say "***TEST_COMPLETE***"
+    
+    trigger_keyword: "***TEST_COMPLETE***"
+    
+    on_success:
+      - action: "log"
+        message: "SUCCESS: Workflow test completed!"
+      
+      - action: "complete_workflow"

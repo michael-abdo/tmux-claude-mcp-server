@@ -42,11 +42,17 @@
     "vm:demo": "node vm-integration/demo_vm_integration.js",
     "vm:demo:logging": "node vm-integration/demo_enhanced_logging.js",
     "vm:help": "node vm-integration/vm-cli.js --help",
-    "workflow:run": "node src/workflow/run_workflow.js",
-    "workflow:simple": "node src/workflow/run_workflow.js workflows/example_simple.yaml",
-    "workflow:analysis": "node src/workflow/run_workflow.js workflows/example_code_analysis.yaml",
-    "workflow:parallel": "node src/workflow/run_workflow.js workflows/example_parallel_review.yaml",
-    "workflow:tests": "node src/workflow/run_workflow.js workflows/example_test_generation.yaml"
+    "workflow:run": "node src/workflow/run_workflow.cjs",
+    "workflow:simple": "node src/workflow/run_workflow.cjs workflows/examples/example_simple.yaml",
+    "workflow:analysis": "node src/workflow/run_workflow.cjs workflows/examples/example_code_analysis.yaml",
+    "workflow:parallel": "node src/workflow/run_workflow.cjs workflows/examples/example_parallel_review.yaml",
+    "workflow:tests": "node src/workflow/run_workflow.cjs workflows/examples/example_test_generation.yaml",
+    "workflow:test": "./workflows/tests/run_tests.sh",
+    "workflow:test:minimal": "node src/workflow/run_workflow.cjs workflows/tests/test_minimal.yaml",
+    "workflow:test:script": "node src/workflow/run_workflow.cjs workflows/tests/test_script.yaml",
+    "workflow:test:files": "node src/workflow/run_workflow.cjs workflows/tests/test_file_ops.yaml",
+    "workflow:create": "node workflows/scripts/create_workflow.js",
+    "workflow:actions": "node -e \"const lib = require('./workflows/library/actions'); console.log('Available actions:', lib.prototype.getAvailableActions ? 'Action library loaded' : 'Error loading library');\""
   },
   "keywords": [
     "MCP",

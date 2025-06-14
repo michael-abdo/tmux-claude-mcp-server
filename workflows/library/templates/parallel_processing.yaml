@@ -1,0 +1,140 @@
+# Parallel Processing Workflow Template
+name: "{WORKFLOW_NAME}"
+version: "1.0"
+description: "Template for workflows that process multiple tasks in parallel"
+
+settings:
+  poll_interval: 5
+  timeout: 600  # Longer timeout for parallel work
+  instance_role: "specialist"
+  workspace_mode: "shared"  # Share workspace for collaboration
+
+stages:
+  - id: "coordinate"
+    name: "Coordinate Parallel Work"
+    prompt: |
+      You are the coordinator for parallel processing.
+      
+      {COORDINATION_PROMPT}
+      
+      When ready to spawn workers, say "***READY_TO_SPAWN***"
+    
+    trigger_keyword: "***READY_TO_SPAWN***"
+    
+    on_success:
+      # Spawn multiple worker instances
+      - action: "parallel"
+        max_concurrent: {MAX_WORKERS}
+        wait_all: true
+        actions:
+          - action: "spawn"
+            role: "specialist"
+            context: "{WORKER_1_CONTEXT}"
+            output_var: "worker_1"
+          
+          - action: "spawn"
+            role: "specialist"
+            context: "{WORKER_2_CONTEXT}"
+            output_var: "worker_2"
+          
+          - action: "spawn"
+            role: "specialist"
+            context: "{WORKER_3_CONTEXT}"
+            output_var: "worker_3"
+      
+      # Assign work to each instance
+      - action: "parallel"
+        wait_all: true
+        actions:
+          - action: "send_prompt"
+            target: "specific_id"
+            instance_id: "${worker_1.instanceId}"
+            prompt: |
+              {WORKER_1_TASK}
+              Say "***TASK_1_COMPLETE***" when done.
+            wait_for_keyword: "***TASK_1_COMPLETE***"
+            timeout: {TASK_TIMEOUT}
+            output_var: "result_1"
+          
+          - action: "send_prompt"
+            target: "specific_id"
+            instance_id: "${worker_2.instanceId}"
+            prompt: |
+              {WORKER_2_TASK}
+              Say "***TASK_2_COMPLETE***" when done.
+            wait_for_keyword: "***TASK_2_COMPLETE***"
+            timeout: {TASK_TIMEOUT}
+            output_var: "result_2"
+          
+          - action: "send_prompt"
+            target: "specific_id"
+            instance_id: "${worker_3.instanceId}"
+            prompt: |
+              {WORKER_3_TASK}
+              Say "***TASK_3_COMPLETE***" when done.
+            wait_for_keyword: "***TASK_3_COMPLETE***"
+            timeout: {TASK_TIMEOUT}
+            output_var: "result_3"
+      
+      # Consolidate results
+      - action: "send_prompt"
+        target: "same_instance"
+        prompt: |
+          All parallel tasks completed. Results:
+          
+          Task 1: ${result_1.output}
+          Task 2: ${result_2.output}
+          Task 3: ${result_3.output}
+          
+          {CONSOLIDATION_PROMPT}
+          
+          Say "***CONSOLIDATION_COMPLETE***" when done.
+        next_stage: "cleanup"
+
+  - id: "cleanup"
+    name: "Cleanup and Finalize"
+    trigger_keyword: "***CONSOLIDATION_COMPLETE***"
+    
+    on_success:
+      # Terminate worker instances
+      - action: "parallel"
+        actions:
+          - action: "terminate"
+            instance_id: "${worker_1.instanceId}"
+          - action: "terminate"
+            instance_id: "${worker_2.instanceId}"
+          - action: "terminate"
+            instance_id: "${worker_3.instanceId}"
+      
+      # Save consolidated results
+      - action: "template"
+        template: |
+          # {WORKFLOW_NAME} Results
+          
+          ## Summary
+          Parallel processing completed at: ${new Date().toISOString()}
+          Workers used: 3
+          
+          ## Individual Results
+          
+          ### Task 1
+          ${result_1.output}
+          
+          ### Task 2
+          ${result_2.output}
+          
+          ### Task 3
+          ${result_3.output}
+          
+          ## Consolidated Analysis
+          ${stage.output}
+        output_var: "final_report"
+      
+      - action: "save_file"
+        path: "{REPORT_PATH}"
+        content: "${final_report}"
+      
+      - action: "log"
+        message: "Parallel workflow completed successfully!"
+      
+      - action: "complete_workflow"

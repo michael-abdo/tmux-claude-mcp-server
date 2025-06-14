@@ -3,7 +3,7 @@
  */
 
 const EventEmitter = require('events');
-const MCPBridge = require('../mcp_bridge');
+const MCPBridge = require('./mcp_bridge.cjs');
 
 class KeywordMonitor extends EventEmitter {
   constructor(options) {
