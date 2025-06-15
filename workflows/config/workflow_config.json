@@ -1,0 +1,51 @@
+{
+  "name": "Feature Implementation Workflow",
+  "description": "Three-phase workflow for implementing features",
+  "phases": [
+    {
+      "id": "execute",
+      "name": "Execute Phase",
+      "prompt": "workflows/docs/execute.md",
+      "completion_marker": "***EXECUTE FINISHED***",
+      "timeout_minutes": 30,
+      "required_context": ["phase_file", "codebase_state"],
+      "outputs": ["code_changes", "progress_updates", "remaining_tasks"]
+    },
+    {
+      "id": "compare",
+      "name": "Compare Phase",
+      "prompt": "workflows/docs/compare.md",
+      "completion_marker": "***COMPARISON FINISHED***",
+      "timeout_minutes": 15,
+      "required_context": ["phase_file", "git_baseline"],
+      "outputs": ["completed_items", "missing_items", "partial_items", "deviations"]
+    },
+    {
+      "id": "commit",
+      "name": "Commit Phase",
+      "prompt": "workflows/docs/commit.md",
+      "completion_marker": "***COMMIT FINISHED***",
+      "timeout_minutes": 10,
+      "required_context": ["git_status"],
+      "outputs": ["commit_message", "documentation_updates", "push_confirmation"]
+    }
+  ],
+  "transitions": {
+    "execute_to_compare": {
+      "condition": "completion_marker",
+      "action": "proceed_to_next"
+    },
+    "compare_to_execute": {
+      "condition": "missing_items_found",
+      "action": "loop_back_to_execute"
+    },
+    "compare_to_commit": {
+      "condition": "all_items_complete",
+      "action": "proceed_to_commit"
+    }
+  },
+  "error_handling": {
+    "timeout": "save_progress_and_notify",
+    "failure": "rollback_and_retry"
+  }
+}

@@ -15,3 +15,4 @@ test-state-load/
 *.jsonl
 experimental/
 config/local.json
+workflow_state/

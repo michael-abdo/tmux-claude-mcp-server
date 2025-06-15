@@ -1,0 +1,64 @@
+name: "Test Execute-Compare-Commit"
+version: "1.0"
+description: "Test the three-phase workflow locally"
+
+settings:
+  poll_interval: 2
+  timeout: 60
+  instance_role: "current"  # Use current instance instead of spawning
+
+stages:
+  - id: "execute"
+    name: "Execute Phase"
+    prompt: |
+      This is a test of the Execute phase.
+      
+      Say "Starting Execute phase" and list 3 things you would implement.
+      
+      WHEN YOU ARE DONE YOU MUST SAY "***EXECUTE FINISHED***"
+    
+    trigger_keyword: "***EXECUTE FINISHED***"
+    
+    on_success:
+      - action: "log"
+        message: "✅ Execute phase completed"
+      
+      - action: "send_prompt"
+        target: "same_instance"
+        prompt: |
+          This is a test of the Compare phase.
+          
+          Say "Starting Compare phase" and list 2 differences you found.
+          
+          WHEN YOU ARE DONE YOU MUST SAY "***COMPARISON FINISHED***"
+        
+        next_stage: "compare"
+
+  - id: "compare"
+    name: "Compare Phase"
+    trigger_keyword: "***COMPARISON FINISHED***"
+    
+    on_success:
+      - action: "log"
+        message: "✅ Compare phase completed"
+      
+      - action: "send_prompt"
+        target: "same_instance"
+        prompt: |
+          This is a test of the Commit phase.
+          
+          Say "Starting Commit phase" and describe what you would commit.
+          
+          WHEN YOU ARE DONE YOU MUST SAY "***COMMIT FINISHED***"
+        
+        next_stage: "commit"
+
+  - id: "commit"
+    name: "Commit Phase"
+    trigger_keyword: "***COMMIT FINISHED***"
+    
+    on_success:
+      - action: "log"
+        message: "✅ All phases completed successfully!"
+      
+      - action: "complete_workflow"

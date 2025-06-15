@@ -6,90 +6,124 @@ A modular, extensible workflow system for orchestrating Claude instances with pr
 
 ```
 workflows/
-├── library/           # Reusable workflow components (legacy)
-│   ├── actions/       # Original action implementations (now in src/workflow/actions/)
-└── src/workflow/      # Current action implementations
-    ├── actions/       # Modular action implementations
-    │   ├── core.cjs          # Essential actions (send_prompt, spawn, etc.)
-    │   ├── script.cjs        # Script execution actions
-    │   ├── filesystem.cjs    # File operations
-    │   ├── control.cjs       # Control flow (conditionals, loops)
-    │   ├── network.cjs       # HTTP requests, webhooks
-    │   ├── data.cjs          # Data processing and transformation
-    │   └── index.cjs         # Action library registry
-    ├── workflow_engine.cjs   # Main workflow orchestration engine
-    ├── action_executor.cjs   # Action execution layer
-    ├── workflow_context.cjs  # Context and variable management
-    ├── mcp_bridge.cjs        # MCP communication bridge
-    ├── keyword_monitor.cjs   # Keyword detection system
-    └── run_workflow.cjs      # Workflow runner CLI
-│   ├── templates/     # Workflow templates for scaffolding
-│   │   ├── basic.yaml                 # Simple workflow template
-│   │   ├── script_integration.yaml    # Script integration template
-│   │   ├── parallel_processing.yaml   # Parallel workflow template
-│   │   └── conditional_branching.yaml # Conditional logic template
-│   └── common/        # Common workflow patterns
-│       └── code_analysis.yaml         # Reusable code analysis pattern
+├── README.md          # This file - system overview and usage guide
+├── config/            # Configuration files
+│   └── workflow_config.json          # Main workflow configuration
+├── docs/              # System documentation
+│   ├── CURRENT_STATUS.md             # Current system status
+│   ├── SCALABLE_STRUCTURE_SUMMARY.md # Architecture overview
+│   ├── TEST_README.md                # Testing documentation
+│   ├── demo_workflow_test.md         # Workflow demo and examples
+│   ├── prompt_chain.md               # Execute-Compare-Commit prompt chain
+│   ├── workflow_advanced_actions.md  # Advanced action documentation
+│   ├── workflow_system_design.md     # System design specification
+│   ├── workflow_system_fix_plan.txt  # Implementation plan
+│   └── workflow_system_summary.md    # System summary
 ├── examples/          # Example workflows for learning
-│   ├── example_simple.yaml            # Basic prompt chaining
-│   ├── example_code_analysis.yaml     # Complex analysis workflow
-│   ├── example_parallel_review.yaml   # Multi-instance parallel work
-│   └── example_test_generation.yaml   # Iterative test generation
-├── tests/             # Test workflows
-│   ├── test_minimal.yaml              # Basic functionality test
-│   ├── test_script.yaml               # Script execution test
+│   ├── example_simple.yaml                  # Basic prompt chaining
+│   ├── example_code_analysis.yaml           # Complex analysis workflow
+│   ├── example_parallel_review.yaml         # Multi-instance parallel work
+│   ├── example_test_generation.yaml         # Iterative test generation
+│   ├── execute_compare_commit.yaml          # Execute-Compare-Commit workflow
+│   ├── execute_compare_commit_simple.yaml   # Simplified version
+│   └── execute_compare_commit_workflow.yaml # Full-featured version
+├── library/           # Reusable workflow components
+│   ├── actions/       # Action implementations
+│   │   ├── control.js      # Control flow actions
+│   │   ├── core.js         # Essential actions (send_prompt, spawn, etc.)
+│   │   ├── data.js         # Data processing actions
+│   │   ├── filesystem.js   # File operations
+│   │   ├── index.js        # Action library registry
+│   │   ├── network.js      # Network and HTTP actions
+│   │   └── script.js       # Script execution actions
+│   ├── common/        # Common workflow patterns
+│   │   └── code_analysis.yaml # Reusable code analysis pattern
+│   └── templates/     # Workflow templates for scaffolding
+│       ├── basic.yaml                 # Simple workflow template
+│       ├── conditional_branching.yaml # Conditional logic template
+│       ├── parallel_processing.yaml   # Parallel workflow template
+│       └── script_integration.yaml    # Script integration template
+├── scripts/           # Supporting scripts and utilities
+│   ├── chain_prompts.js     # Prompt chaining utility
+│   ├── create_workflow.cjs  # Workflow scaffolding tool
+│   ├── run_workflow.sh      # Shell script wrapper
+│   └── workflow_runner.js   # Workflow execution engine
+├── tests/             # Test workflows and test runner
+│   ├── run_tests.sh                   # Test runner script
+│   ├── test_basic.yaml                # Basic functionality test
+│   ├── test_complex_workflow.yaml     # Complex workflow test
+│   ├── test_engine_only.yaml          # Engine-only test
+│   ├── test_execute_compare_commit.yaml # Execute-Compare-Commit test
 │   ├── test_file_ops.yaml             # File operations test
-│   └── run_tests.sh                   # Test runner
-├── user/              # User-created workflows
-├── state/             # Workflow execution state
-├── reports/           # Generated reports
-├── scripts/           # Supporting scripts
-│   └── create_workflow.js             # Workflow scaffolding tool
-└── docs/              # System documentation
-    ├── workflow_system_design.md
-    ├── workflow_advanced_actions.md
-    └── workflow_system_summary.md
+│   ├── test_log_only.yaml             # Logging test
+│   ├── test_minimal.yaml              # Minimal functionality test
+│   ├── test_script.yaml               # Script execution test
+│   └── test_script_actions.yaml       # Script actions test
+└── user/              # User-created workflows (initially empty)
 ```
 
 ## 🚀 Quick Start
 
 ### 1. Run Example Workflows
 ```bash
-# Simple example
-npm run workflow:simple
+# Execute-Compare-Commit workflow (recommended starting point)
+node ../src/workflow/run_workflow.cjs examples/execute_compare_commit.yaml
 
-# Complex code analysis  
-npm run workflow:analysis
+# Simple prompt chaining example
+node ../src/workflow/run_workflow.cjs examples/example_simple.yaml
 
-# Parallel processing
-npm run workflow:parallel
+# Complex code analysis workflow
+node ../src/workflow/run_workflow.cjs examples/example_code_analysis.yaml
 
-# Test generation
-npm run workflow:tests
+# Parallel processing example
+node ../src/workflow/run_workflow.cjs examples/example_parallel_review.yaml
 ```
 
 ### 2. Create Your Own Workflow
 ```bash
 # Interactive scaffolding
-node workflows/scripts/create_workflow.cjs
+node scripts/create_workflow.cjs
 
 # Manual creation from template
-cp workflows/library/templates/basic.yaml workflows/user/my_workflow.yaml
+cp library/templates/basic.yaml user/my_workflow.yaml
 # Edit the file with your prompts and actions
 
 # Run your workflow
-node src/workflow/run_workflow.cjs workflows/user/my_workflow.yaml
+node ../src/workflow/run_workflow.cjs user/my_workflow.yaml
 ```
 
 ### 3. Test the System
 ```bash
 # Run all tests
-npm run workflow:test
+./tests/run_tests.sh
 
-# Individual tests
-npm run workflow:test:minimal
-npm run workflow:test:script
-npm run workflow:test:files
+# Run individual tests
+node ../src/workflow/run_workflow.cjs tests/test_minimal.yaml
+node ../src/workflow/run_workflow.cjs tests/test_script.yaml
+node ../src/workflow/run_workflow.cjs tests/test_file_ops.yaml
+```
+
+## 🔄 Execute-Compare-Commit Workflow
+
+The Execute-Compare-Commit workflow provides a systematic approach to feature implementation with built-in quality assurance:
+
+### Available Versions
+- **`execute_compare_commit.yaml`** - Full-featured with loop-back capability
+- **`execute_compare_commit_simple.yaml`** - Sequential execution
+- **`execute_compare_commit_workflow.yaml`** - Advanced with conditional logic
+
+### Three-Phase Process
+1. **Execute Phase** - Implement features methodically with todo tracking
+2. **Compare Phase** - Analyze implementation vs requirements, identify gaps
+3. **Commit Phase** - Clean up code, update docs, create git commit
+
+### Usage
+```bash
+# Run with a phase requirements file
+node ../src/workflow/run_workflow.cjs examples/execute_compare_commit.yaml --phase_file path/to/requirements.md
+
+# Test the workflow
+node ../src/workflow/run_workflow.cjs tests/test_execute_compare_commit.yaml
 ```
 
 ## 🧩 Action Library
@@ -303,14 +337,14 @@ message: "Results: ${security_scan_results.stdout}"
 
 ### Debug Commands
 ```bash
-# Check workflow syntax
-node -c workflows/user/my_workflow.yaml
+# Check workflow syntax (from workflows directory)
+node -c user/my_workflow.yaml
 
 # Run with verbose logging
-DEBUG=workflow:* npm run workflow:run workflows/user/my_workflow.yaml
+DEBUG=workflow:* node ../src/workflow/run_workflow.cjs user/my_workflow.yaml
 
 # Test action library
-node -e "const lib = require('./src/workflow/actions/index.cjs'); const ActionLibrary = lib; const context = require('./src/workflow/workflow_context.cjs'); const actionLib = new ActionLibrary(new context()); console.log(actionLib.getAvailableActions())"
+node -e "const lib = require('../src/workflow/actions/index.cjs'); const ActionLibrary = lib; const context = require('../src/workflow/workflow_context.cjs'); const actionLib = new ActionLibrary(new context()); console.log(actionLib.getAvailableActions())"
 ```
 
 This scalable structure enables building complex automation workflows while maintaining organization, reusability, and extensibility for dozens of workflows.
