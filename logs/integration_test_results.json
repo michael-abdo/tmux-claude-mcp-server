@@ -1,0 +1,188 @@
+{
+  "timestamp": "2025-06-16T10:37:53.294Z",
+  "summary": {
+    "passed": 8,
+    "failed": 2,
+    "total": 10
+  },
+  "results": [
+    {
+      "success": true,
+      "details": {
+        "branch": "master",
+        "hasChanges": true,
+        "remoteCount": 2
+      },
+      "name": "Git Repository Health",
+      "duration": 1553,
+      "timestamp": "2025-06-16T10:37:52.246Z"
+    },
+    {
+      "success": true,
+      "details": {
+        "totalInstances": 26,
+        "validInstances": 26,
+        "activeInstances": 24
+      },
+      "name": "Instance State Management",
+      "duration": 3,
+      "timestamp": "2025-06-16T10:37:52.253Z"
+    },
+    {
+      "success": false,
+      "error": "MCP bridge command timed out",
+      "name": "MCP Bridge Connectivity",
+      "duration": 40,
+      "timestamp": "2025-06-16T10:37:52.295Z"
+    },
+    {
+      "success": true,
+      "details": {
+        "engineExists": true,
+        "workflowCount": 9,
+        "exampleWorkflow": "advanced_development_workflow.yaml"
+      },
+      "name": "Workflow Engine Functionality",
+      "duration": 2,
+      "timestamp": "2025-06-16T10:37:52.298Z"
+    },
+    {
+      "success": true,
+      "details": {
+        "tmuxVersion": "tmux 3.5a",
+        "totalSessions": 26,
+        "claudeSessions": 26
+      },
+      "name": "Tmux Session Management",
+      "duration": 333,
+      "timestamp": "2025-06-16T10:37:52.631Z"
+    },
+    {
+      "success": true,
+      "details": {
+        "scriptsCount": 7,
+        "docsCount": 7,
+        "examplesCount": 3
+      },
+      "name": "VM Integration Scripts",
+      "duration": 2,
+      "timestamp": "2025-06-16T10:37:52.634Z"
+    },
+    {
+      "success": true,
+      "details": {
+        "monitorExists": true,
+        "optimizerExists": true,
+        "syntaxValid": true
+      },
+      "name": "Performance Monitoring",
+      "duration": 645,
+      "timestamp": "2025-06-16T10:37:53.280Z"
+    },
+    {
+      "success": true,
+      "details": {
+        "allPathsExist": true,
+        "checkedPaths": 6,
+        "pathStats": {
+          "src": {
+            "exists": true,
+            "isDirectory": true,
+            "size": 1408,
+            "modified": "2025-06-16T06:52:14.809Z"
+          },
+          "scripts": {
+            "exists": true,
+            "isDirectory": true,
+            "size": 1248,
+            "modified": "2025-06-16T10:37:42.931Z"
+          },
+          "state": {
+            "exists": true,
+            "isDirectory": true,
+            "size": 96,
+            "modified": "2025-06-03T20:04:37.740Z"
+          },
+          "workflows": {
+            "exists": true,
+            "isDirectory": true,
+            "size": 320,
+            "modified": "2025-06-16T07:06:07.405Z"
+          },
+          "vm-integration": {
+            "exists": true,
+            "isDirectory": true,
+            "size": 512,
+            "modified": "2025-06-16T06:21:55.408Z"
+          },
+          "docs": {
+            "exists": true,
+            "isDirectory": true,
+            "size": 864,
+            "modified": "2025-06-16T06:21:55.402Z"
+          }
+        }
+      },
+      "name": "File System Integrity",
+      "duration": 4,
+      "timestamp": "2025-06-16T10:37:53.284Z"
+    },
+    {
+      "success": true,
+      "details": {
+        "totalDocs": 4,
+        "existingDocs": 1,
+        "missingDocs": [
+          "docs/main/tmux-claude-implementation.md",
+          "docs/main/tmux-mvp-implementation.md",
+          "docs/main/tmux-manager-MCP.md"
+        ],
+        "docStats": {
+          "docs/main/tmux-claude-implementation.md": {
+            "exists": false
+          },
+          "docs/main/tmux-mvp-implementation.md": {
+            "exists": false
+          },
+          "docs/main/tmux-manager-MCP.md": {
+            "exists": false
+          },
+          "README.md": {
+            "exists": true,
+            "size": 12059,
+            "lines": 375
+          }
+        }
+      },
+      "name": "Documentation Completeness",
+      "duration": 3,
+      "timestamp": "2025-06-16T10:37:53.288Z"
+    },
+    {
+      "success": false,
+      "error": "Missing config file: CLAUDE.md",
+      "details": {
+        "checkedConfigs": 3,
+        "issues": [
+          "Missing config file: CLAUDE.md"
+        ],
+        "configStats": {
+          "package.json": {
+            "valid": true,
+            "size": 2366
+          },
+          ".gitignore": {
+            "valid": true,
+            "size": 361
+          },
+          "CLAUDE.md": {
+            "exists": false
+          }
+        }
+      },
+      "name": "Configuration Validation",
+      "duration": 3,
+      "timestamp": "2025-06-16T10:37:53.292Z"
+    }
+  ]
+}

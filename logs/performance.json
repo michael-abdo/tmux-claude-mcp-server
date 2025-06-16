@@ -1,0 +1,62 @@
+[
+  {
+    "timestamp": "2025-06-16T10:32:46.932Z",
+    "instances": {
+      "total": 26,
+      "active": 24,
+      "initializing": 2,
+      "stale": 26,
+      "averageAge": 344,
+      "utilizationRate": 92.3076923076923
+    },
+    "system": {
+      "loadAverage": 0,
+      "memoryUsage": 99,
+      "tmuxSessions": 26,
+      "uptime": "2 days,"
+    },
+    "workflows": {
+      "totalWorkflows": 9,
+      "executionsToday": 2,
+      "averageExecutionTime": 231,
+      "successRate": 96,
+      "failureRate": 3
+    },
+    "resources": {
+      "projectSize": "108M",
+      "worktreeDirectories": 7,
+      "gitObjects": 1233,
+      "repositorySize": "0"
+    }
+  },
+  {
+    "timestamp": "2025-06-16T10:32:56.853Z",
+    "instances": {
+      "total": 26,
+      "active": 24,
+      "initializing": 2,
+      "stale": 26,
+      "averageAge": 344,
+      "utilizationRate": 92.3076923076923
+    },
+    "system": {
+      "loadAverage": 0,
+      "memoryUsage": 95,
+      "tmuxSessions": 26,
+      "uptime": "2 days,"
+    },
+    "workflows": {
+      "totalWorkflows": 9,
+      "executionsToday": 10,
+      "averageExecutionTime": 224,
+      "successRate": 98,
+      "failureRate": 3
+    },
+    "resources": {
+      "projectSize": "108M",
+      "worktreeDirectories": 7,
+      "gitObjects": 1233,
+      "repositorySize": "0"
+    }
+  }
+]
