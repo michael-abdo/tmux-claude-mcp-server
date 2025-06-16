@@ -1,8 +1,8 @@
 {
-  "timestamp": "2025-06-16T10:37:53.294Z",
+  "timestamp": "2025-06-16T11:26:05.046Z",
   "summary": {
-    "passed": 8,
-    "failed": 2,
+    "passed": 9,
+    "failed": 1,
     "total": 10
   },
   "results": [
@@ -14,8 +14,8 @@
         "remoteCount": 2
       },
       "name": "Git Repository Health",
-      "duration": 1553,
-      "timestamp": "2025-06-16T10:37:52.246Z"
+      "duration": 1290,
+      "timestamp": "2025-06-16T11:26:04.134Z"
     },
     {
       "success": true,
@@ -26,14 +26,14 @@
       },
       "name": "Instance State Management",
       "duration": 3,
-      "timestamp": "2025-06-16T10:37:52.253Z"
+      "timestamp": "2025-06-16T11:26:04.141Z"
     },
     {
       "success": false,
       "error": "MCP bridge command timed out",
       "name": "MCP Bridge Connectivity",
-      "duration": 40,
-      "timestamp": "2025-06-16T10:37:52.295Z"
+      "duration": 37,
+      "timestamp": "2025-06-16T11:26:04.179Z"
     },
     {
       "success": true,
@@ -44,18 +44,18 @@
       },
       "name": "Workflow Engine Functionality",
       "duration": 2,
-      "timestamp": "2025-06-16T10:37:52.298Z"
+      "timestamp": "2025-06-16T11:26:04.182Z"
     },
     {
       "success": true,
       "details": {
         "tmuxVersion": "tmux 3.5a",
-        "totalSessions": 26,
-        "claudeSessions": 26
+        "totalSessions": 24,
+        "claudeSessions": 24
       },
       "name": "Tmux Session Management",
-      "duration": 333,
-      "timestamp": "2025-06-16T10:37:52.631Z"
+      "duration": 296,
+      "timestamp": "2025-06-16T11:26:04.478Z"
     },
     {
       "success": true,
@@ -66,7 +66,7 @@
       },
       "name": "VM Integration Scripts",
       "duration": 2,
-      "timestamp": "2025-06-16T10:37:52.634Z"
+      "timestamp": "2025-06-16T11:26:04.480Z"
     },
     {
       "success": true,
@@ -76,8 +76,8 @@
         "syntaxValid": true
       },
       "name": "Performance Monitoring",
-      "duration": 645,
-      "timestamp": "2025-06-16T10:37:53.280Z"
+      "duration": 555,
+      "timestamp": "2025-06-16T11:26:05.035Z"
     },
     {
       "success": true,
@@ -94,8 +94,8 @@
           "scripts": {
             "exists": true,
             "isDirectory": true,
-            "size": 1248,
-            "modified": "2025-06-16T10:37:42.931Z"
+            "size": 1440,
+            "modified": "2025-06-16T11:25:19.895Z"
           },
           "state": {
             "exists": true,
@@ -112,8 +112,8 @@
           "vm-integration": {
             "exists": true,
             "isDirectory": true,
-            "size": 512,
-            "modified": "2025-06-16T06:21:55.408Z"
+            "size": 544,
+            "modified": "2025-06-16T11:18:18.130Z"
           },
           "docs": {
             "exists": true,
@@ -124,8 +124,8 @@
         }
       },
       "name": "File System Integrity",
-      "duration": 4,
-      "timestamp": "2025-06-16T10:37:53.284Z"
+      "duration": 2,
+      "timestamp": "2025-06-16T11:26:05.037Z"
     },
     {
       "success": true,
@@ -156,16 +156,13 @@
       },
       "name": "Documentation Completeness",
       "duration": 3,
-      "timestamp": "2025-06-16T10:37:53.288Z"
+      "timestamp": "2025-06-16T11:26:05.041Z"
     },
     {
-      "success": false,
-      "error": "Missing config file: CLAUDE.md",
+      "success": true,
       "details": {
         "checkedConfigs": 3,
-        "issues": [
-          "Missing config file: CLAUDE.md"
-        ],
+        "issues": [],
         "configStats": {
           "package.json": {
             "valid": true,
@@ -176,13 +173,14 @@
             "size": 361
           },
           "CLAUDE.md": {
-            "exists": false
+            "valid": true,
+            "size": 3436
           }
         }
       },
       "name": "Configuration Validation",
       "duration": 3,
-      "timestamp": "2025-06-16T10:37:53.292Z"
+      "timestamp": "2025-06-16T11:26:05.044Z"
     }
   ]
 }

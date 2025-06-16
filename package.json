@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node src/simple_mcp_server.js",
     "dev": "node --watch src/simple_mcp_server.js",
-    "test": "NODE_ENV=test node --test tests/*.test.js",
+    "test": "node scripts/integration_tester.cjs",
     "test:unit": "NODE_ENV=test node --test tests/test_*.js",
     "test:integration": "NODE_ENV=production node --test tests/integration/*.js",
     "test:with-redis": "redis-server --daemonize yes && npm test && redis-cli shutdown",
@@ -17,7 +17,7 @@
     "test:recovery": "PHASE=3 node tests/test_auto_recovery.js",
     "start:phase2": "PHASE=2 node src/simple_mcp_server.js",
     "start:phase3": "PHASE=3 node src/simple_mcp_server.js",
-    "dashboard": "node src/monitoring_dashboard.js",
+    "dashboard": "node scripts/orchestration_dashboard.cjs",
     "dashboard:old": "PHASE=3 node src/dashboard/server.js",
     "benchmark": "node tests/performance_benchmark.js",
     "test:bridge": "./tests/run_bridge_tests.sh",
@@ -27,7 +27,19 @@
     "test:bridge:errors": "node tests/e2e/test_bridge_error_scenarios.js",
     "test:bridge:stress": "node tests/performance/test_bridge_stress.js",
     "test:bridge:stress:heavy": "node tests/performance/test_bridge_stress.js heavy",
-    "bridge:demo": "node scripts/bridge_example.js"
+    "bridge:demo": "node scripts/bridge_example.js",
+    "monitor": "node scripts/system_monitor.cjs",
+    "health": "node scripts/health_monitor.cjs --once",
+    "health:watch": "node scripts/health_monitor.cjs",
+    "cleanup": "node scripts/cleanup_instances.cjs",
+    "optimize": "node scripts/performance_optimizer.cjs",
+    "maintenance": "node scripts/maintenance_scheduler.cjs",
+    "backup": "node scripts/backup_recovery.cjs backup",
+    "restore": "node scripts/backup_recovery.cjs restore",
+    "workflow": "node src/workflow/workflow_engine.cjs",
+    "deploy": "node scripts/deployment_pipeline.cjs deploy",
+    "coordinator": "node scripts/distributed_coordinator.cjs start",
+    "quick-start": "./scripts/quick_start.sh"
   },
   "keywords": [
     "MCP",

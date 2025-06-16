@@ -1,0 +1,128 @@
+{
+  "version": "1.0",
+  "backups": [
+    {
+      "id": "mbz1rpd1_abe736ea",
+      "type": "manual",
+      "description": "Complete enterprise orchestration platform",
+      "timestamp": "2025-06-16T12:05:04.165Z",
+      "system": {
+        "platform": "darwin",
+        "arch": "x64",
+        "nodeVersion": "v23.7.0",
+        "cwd": "/Users/Mike/.claude/user/tmux-claude-mcp-server",
+        "hostname": "Davids-MacBook-Pro.local"
+      },
+      "files": [
+        {
+          "path": "state/",
+          "files": 1,
+          "size": 21855
+        },
+        {
+          "path": "config/",
+          "files": 3,
+          "size": 2613
+        },
+        {
+          "path": "workflows/",
+          "files": 1700,
+          "size": 18396527
+        },
+        {
+          "path": "logs/",
+          "files": 5,
+          "size": 9499
+        },
+        {
+          "path": "scripts/",
+          "files": 62,
+          "size": 478094
+        },
+        {
+          "path": "src/",
+          "files": 60,
+          "size": 684787
+        },
+        {
+          "path": "CLAUDE.md",
+          "files": 1,
+          "size": 3556
+        },
+        {
+          "path": "package.json",
+          "files": 1,
+          "size": 3051
+        }
+      ],
+      "size": 19599982,
+      "compressed": true,
+      "encrypted": false,
+      "totalFiles": 1833,
+      "compressedSize": 8898653,
+      "path": "backup_manual_mbz1rpd1_abe736ea.tar.gz"
+    },
+    {
+      "id": "mbz0d47k_5560f223",
+      "type": "manual",
+      "description": "System snapshot after comprehensive tooling",
+      "timestamp": "2025-06-16T11:25:43.953Z",
+      "system": {
+        "platform": "darwin",
+        "arch": "x64",
+        "nodeVersion": "v23.7.0",
+        "cwd": "/Users/Mike/.claude/user/tmux-claude-mcp-server",
+        "hostname": "Davids-MacBook-Pro.local"
+      },
+      "files": [
+        {
+          "path": "state/",
+          "files": 1,
+          "size": 21855
+        },
+        {
+          "path": "config/",
+          "files": 3,
+          "size": 2613
+        },
+        {
+          "path": "workflows/",
+          "files": 1700,
+          "size": 18396527
+        },
+        {
+          "path": "logs/",
+          "files": 5,
+          "size": 8229
+        },
+        {
+          "path": "scripts/",
+          "files": 59,
+          "size": 410825
+        },
+        {
+          "path": "src/",
+          "files": 60,
+          "size": 684787
+        },
+        {
+          "path": "CLAUDE.md",
+          "files": 1,
+          "size": 3556
+        },
+        {
+          "path": "package.json",
+          "files": 1,
+          "size": 2366
+        }
+      ],
+      "size": 19530758,
+      "compressed": true,
+      "encrypted": false,
+      "totalFiles": 1830,
+      "compressedSize": 8879916,
+      "path": "backup_manual_mbz0d47k_5560f223.tar.gz"
+    }
+  ],
+  "lastUpdated": "2025-06-16T12:05:07.537Z"
+}

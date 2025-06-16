@@ -1,0 +1,106 @@
+[
+  {
+    "timestamp": "2025-06-16T10:52:04.820Z",
+    "overallStatus": "critical",
+    "checks": {
+      "git": {
+        "status": "healthy",
+        "lastCheck": "2025-06-16T10:51:49.121Z",
+        "issues": []
+      },
+      "instances": {
+        "status": "critical",
+        "lastCheck": "2025-06-16T10:51:49.143Z",
+        "issues": [
+          "Too many stale instances (26)",
+          "Many specialists but no managers - consider hierarchical organization"
+        ]
+      },
+      "tmux": {
+        "status": "critical",
+        "lastCheck": "2025-06-16T10:51:49.147Z",
+        "issues": [
+          "Tmux server not running"
+        ]
+      },
+      "filesystem": {
+        "status": "warning",
+        "lastCheck": "2025-06-16T10:51:49.153Z",
+        "issues": [
+          "High file handle usage (1167)"
+        ]
+      },
+      "memory": {
+        "status": "critical",
+        "lastCheck": "2025-06-16T10:51:49.160Z",
+        "issues": [
+          "Low free memory (5.0%)",
+          "High swap usage (7499MB)"
+        ]
+      },
+      "workflows": {
+        "status": "healthy",
+        "lastCheck": "2025-06-16T10:51:49.167Z",
+        "issues": []
+      }
+    },
+    "metrics": {
+      "uptime": "2 days,",
+      "instanceCount": 26,
+      "sessionCount": 26
+    }
+  },
+  {
+    "timestamp": "2025-06-16T12:04:56.667Z",
+    "overallStatus": "critical",
+    "checks": {
+      "git": {
+        "status": "warning",
+        "lastCheck": "2025-06-16T12:04:43.526Z",
+        "issues": [
+          "High number of uncommitted changes (30)"
+        ]
+      },
+      "instances": {
+        "status": "critical",
+        "lastCheck": "2025-06-16T12:04:43.531Z",
+        "issues": [
+          "Too many stale instances (26)",
+          "Many specialists but no managers - consider hierarchical organization"
+        ]
+      },
+      "tmux": {
+        "status": "critical",
+        "lastCheck": "2025-06-16T12:04:43.531Z",
+        "issues": [
+          "Tmux server not running"
+        ]
+      },
+      "filesystem": {
+        "status": "warning",
+        "lastCheck": "2025-06-16T12:04:43.533Z",
+        "issues": [
+          "High file handle usage (1149)"
+        ]
+      },
+      "memory": {
+        "status": "critical",
+        "lastCheck": "2025-06-16T12:04:43.536Z",
+        "issues": [
+          "Low free memory (0.1%)",
+          "High swap usage (5873MB)"
+        ]
+      },
+      "workflows": {
+        "status": "healthy",
+        "lastCheck": "2025-06-16T12:04:43.538Z",
+        "issues": []
+      }
+    },
+    "metrics": {
+      "uptime": "2 days,",
+      "instanceCount": 26,
+      "sessionCount": 24
+    }
+  }
+]

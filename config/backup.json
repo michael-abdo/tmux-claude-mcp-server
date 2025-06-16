@@ -1,0 +1,30 @@
+{
+  "autoBackup": {
+    "enabled": true,
+    "interval": 3600000,
+    "retention": {
+      "daily": 7,
+      "weekly": 4,
+      "monthly": 3
+    }
+  },
+  "include": [
+    "state/",
+    "config/",
+    "workflows/",
+    "logs/",
+    "scripts/",
+    "src/",
+    "CLAUDE.md",
+    "package.json"
+  ],
+  "exclude": [
+    "node_modules/",
+    "backups/",
+    "*-worktrees/",
+    ".git/",
+    "*.log"
+  ],
+  "compression": true,
+  "encryption": false
+}

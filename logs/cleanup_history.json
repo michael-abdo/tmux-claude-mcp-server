@@ -1,0 +1,44 @@
+[
+  {
+    "timestamp": "2025-06-16T10:46:18.608Z",
+    "actions": [
+      {
+        "timestamp": "2025-06-16T10:46:18.432Z",
+        "action": "cleanup_instance",
+        "instanceId": "spec_1_1_930247",
+        "dryRun": true
+      },
+      {
+        "timestamp": "2025-06-16T10:46:18.607Z",
+        "action": "cleanup_instance",
+        "instanceId": "spec_1_1_488467",
+        "dryRun": true
+      }
+    ],
+    "summary": {
+      "total": 2,
+      "dryRun": true
+    }
+  },
+  {
+    "timestamp": "2025-06-16T11:02:18.933Z",
+    "actions": [
+      {
+        "timestamp": "2025-06-16T11:02:18.206Z",
+        "action": "cleanup_instance",
+        "instanceId": "spec_1_1_930247",
+        "dryRun": false
+      },
+      {
+        "timestamp": "2025-06-16T11:02:18.580Z",
+        "action": "cleanup_instance",
+        "instanceId": "spec_1_1_488467",
+        "dryRun": false
+      }
+    ],
+    "summary": {
+      "total": 2,
+      "dryRun": false
+    }
+  }
+]
