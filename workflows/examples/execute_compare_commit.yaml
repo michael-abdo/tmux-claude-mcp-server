@@ -1,0 +1,59 @@
+name: Execute Compare Commit Workflow
+description: Complete workflow for executing commands, comparing results, and committing changes
+version: 1.0
+
+settings:
+  useTaskIds: false
+  poll_interval: 5
+  timeout: 120
+  instance_role: specialist
+  workspace_mode: isolated
+
+stages:
+  - id: execute_stage
+    name: Execute Command
+    prompt: |
+      You are a specialist Claude instance for command execution.
+      
+      Please execute the following command and show me the results:
+      ls -la
+      
+      When you're done, please type: EXECUTE_FINISHED
+    trigger_keyword: EXECUTE_FINISHED
+    timeout: 60
+    on_success:
+      - action: next_stage
+        stage_id: compare_stage
+
+  - id: compare_stage
+    name: Compare Results
+    prompt: |
+      Now please compare the directory listing you just generated with this expected structure:
+      
+      Expected files:
+      - README.md
+      - package.json
+      - src/ directory
+      - docs/ directory
+      
+      Please analyze what files are present and which are missing.
+      When done with your analysis, please type: COMPARE_FINISHED
+    trigger_keyword: COMPARE_FINISHED
+    timeout: 60
+    on_success:
+      - action: next_stage
+        stage_id: commit_stage
+
+  - id: commit_stage
+    name: Commit Changes
+    prompt: |
+      Based on your analysis, please help me understand what needs to be committed.
+      
+      Run: git status
+      
+      And tell me what changes are ready to be committed.
+      When done, please type: COMMIT_FINISHED
+    trigger_keyword: COMMIT_FINISHED
+    timeout: 60
+    on_success:
+      - action: complete_workflow
