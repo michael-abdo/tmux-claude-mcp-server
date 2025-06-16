@@ -16,3 +16,7 @@ test-state-load/
 experimental/
 config/local.json
 vm-integration/tests/vm-test-pull/
+*-worktrees/
+src-worktrees/
+vm-integration-worktrees/
+workflows-worktrees/
