@@ -1,0 +1,29 @@
+name: Quick Analysis Workflow
+description: Fast analysis using existing instances
+version: 1.0
+
+settings:
+  useTaskIds: false
+  poll_interval: 2
+  timeout: 45
+  instance_role: specialist
+  workspace_mode: isolated
+
+stages:
+  - id: quick_analysis
+    name: Quick Project Analysis
+    instance_id: spec_1_1_346344
+    prompt: |
+      Please perform a quick analysis of this project:
+      
+      1. What is the main technology stack? (Check package.json if it exists)
+      2. How many directories are in the root? Run: ls -d */ | wc -l
+      3. Are there any README files? Run: ls README* 2>/dev/null || echo "No README found"
+      
+      When done, respond with: QUICK_ANALYSIS_DONE
+    trigger_keyword: QUICK_ANALYSIS_DONE
+    timeout: 30
+    on_success:
+      - action: log
+        message: "📊 Quick analysis completed successfully!"
+      - action: complete_workflow

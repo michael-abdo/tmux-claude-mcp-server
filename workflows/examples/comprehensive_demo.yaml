@@ -1,0 +1,198 @@
+name: Comprehensive Demo Workflow
+description: Showcases all advanced workflow features including parallel execution, conditionals, and error handling
+version: 1.0
+
+settings:
+  useTaskIds: false
+  poll_interval: 2
+  timeout: 90
+  instance_role: specialist
+  workspace_mode: isolated
+
+stages:
+  - id: initialization
+    name: System Initialization
+    instance_id: spec_1_1_346344
+    prompt: |
+      🚀 COMPREHENSIVE WORKFLOW DEMO STARTING 🚀
+      
+      This workflow will demonstrate:
+      1. Multi-stage execution
+      2. Conditional branching
+      3. Parallel operations
+      4. Error handling
+      5. Context management
+      
+      Please confirm you're ready by responding with: DEMO_READY
+    trigger_keyword: DEMO_READY
+    timeout: 30
+    on_success:
+      - action: log
+        message: "🎬 Demo initialization complete - starting comprehensive test"
+        level: info
+      - action: set_context
+        key: "vars.demo_start_time"
+        value: "${Date.now()}"
+      - action: next_stage
+        stage_id: environment_check
+
+  - id: environment_check
+    name: Environment Analysis
+    instance_id: spec_1_1_346344
+    prompt: |
+      Let's analyze the environment:
+      
+      1. Check current directory: pwd
+      2. Check available disk space: df -h . | tail -1
+      3. Check system load: uptime
+      4. List recent files: ls -lt | head -5
+      
+      When analysis is complete, respond with: ENV_ANALYSIS_DONE
+    trigger_keyword: ENV_ANALYSIS_DONE
+    timeout: 45
+    on_success:
+      - action: log
+        message: "✅ Environment analysis completed successfully"
+      - action: conditional
+        condition: "true" # Always proceed to parallel stage
+        if_true:
+          - action: next_stage
+            stage_id: parallel_processing
+    on_timeout:
+      - action: log
+        message: "⚠️ Environment analysis timed out - proceeding anyway"
+        level: warn
+      - action: next_stage
+        stage_id: parallel_processing
+
+  - id: parallel_processing
+    name: Parallel Processing Demo
+    instance_id: spec_1_1_346344
+    prompt: |
+      Now demonstrating parallel-style processing:
+      
+      TASK 1: Count JavaScript files
+      find . -name "*.js" -o -name "*.cjs" | wc -l
+      
+      TASK 2: Check package dependencies
+      grep -A 3 '"dependencies"' package.json 2>/dev/null || echo "No dependencies section"
+      
+      TASK 3: Find configuration files
+      find . -name "*.json" -o -name "*.yaml" -o -name "*.yml" | head -5
+      
+      When all tasks complete, respond with: PARALLEL_COMPLETE
+    trigger_keyword: PARALLEL_COMPLETE
+    timeout: 60
+    on_success:
+      - action: log
+        message: "🔄 Parallel processing simulation completed"
+      - action: foreach
+        items: '["Task1", "Task2", "Task3"]'
+        item_var: "task"
+        actions:
+          - action: log
+            message: "✓ Processed ${task}"
+            level: debug
+      - action: next_stage
+        stage_id: conditional_branch
+
+  - id: conditional_branch
+    name: Conditional Logic Demo
+    instance_id: spec_1_1_346344
+    prompt: |
+      Testing conditional logic:
+      
+      Check if we have a Git repository:
+      git status >/dev/null 2>&1 && echo "GIT_REPO_EXISTS" || echo "NO_GIT_REPO"
+      
+      Based on the result, respond with either:
+      - GIT_FOUND (if git repo exists)
+      - GIT_NOT_FOUND (if no git repo)
+    trigger_keyword: GIT_FOUND
+    timeout: 30
+    on_success:
+      - action: log
+        message: "🔀 Git repository detected - proceeding with Git analysis"
+      - action: next_stage
+        stage_id: git_analysis
+    on_timeout:
+      - action: log
+        message: "🔀 No Git repository - proceeding with general analysis"
+      - action: next_stage
+        stage_id: general_analysis
+
+  - id: git_analysis
+    name: Git Repository Analysis
+    instance_id: spec_1_1_346344
+    prompt: |
+      Analyzing Git repository:
+      
+      1. Current branch: git branch --show-current
+      2. Recent commits: git log --oneline -5
+      3. Repository status: git status --porcelain | wc -l
+      4. Remote origin: git remote get-url origin 2>/dev/null || echo "No remote"
+      
+      When Git analysis is complete, respond with: GIT_ANALYSIS_COMPLETE
+    trigger_keyword: GIT_ANALYSIS_COMPLETE
+    timeout: 45
+    on_success:
+      - action: log
+        message: "📊 Git analysis completed successfully"
+      - action: next_stage
+        stage_id: final_summary
+
+  - id: general_analysis
+    name: General Project Analysis
+    instance_id: spec_1_1_346344
+    prompt: |
+      Performing general project analysis:
+      
+      1. Total files: find . -type f | wc -l
+      2. Directory structure: find . -type d -maxdepth 2 | sort
+      3. File types: find . -name "*.*" | sed 's/.*\.//' | sort | uniq -c | sort -nr | head -5
+      4. Largest files: find . -type f -exec ls -lh {} + | sort -rh -k5 | head -3
+      
+      When general analysis is complete, respond with: GENERAL_ANALYSIS_COMPLETE
+    trigger_keyword: GENERAL_ANALYSIS_COMPLETE
+    timeout: 45
+    on_success:
+      - action: log
+        message: "📈 General analysis completed successfully"
+      - action: next_stage
+        stage_id: final_summary
+
+  - id: final_summary
+    name: Demo Summary and Completion
+    instance_id: spec_1_1_346344
+    prompt: |
+      🎯 COMPREHENSIVE DEMO COMPLETION 🎯
+      
+      This workflow has successfully demonstrated:
+      ✅ Multi-stage workflow execution
+      ✅ Conditional branching based on environment
+      ✅ Parallel processing simulation
+      ✅ Error handling and timeouts
+      ✅ Context variable management
+      ✅ Complex prompt chaining
+      
+      Demo Summary:
+      - Total stages executed: Multiple
+      - Conditional logic: Working
+      - Error handling: Robust
+      - Context management: Functional
+      
+      Please confirm demo completion by responding with: DEMO_COMPLETE
+    trigger_keyword: DEMO_COMPLETE
+    timeout: 30
+    on_success:
+      - action: log
+        message: "🏆 COMPREHENSIVE DEMO COMPLETED SUCCESSFULLY! 🏆"
+        level: info
+      - action: log
+        message: "Workflow system demonstrated: Multi-stage execution, conditionals, parallel processing, error handling, and context management"
+      - action: complete_workflow
+    on_timeout:
+      - action: log
+        message: "⏰ Demo completion timeout - but demo objectives achieved"
+        level: warn
+      - action: complete_workflow

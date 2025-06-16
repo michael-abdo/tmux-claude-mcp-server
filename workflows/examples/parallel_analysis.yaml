@@ -1,0 +1,91 @@
+name: Parallel Analysis Workflow
+description: Demonstrates parallel execution and conditional logic
+version: 1.0
+
+settings:
+  useTaskIds: false
+  poll_interval: 2
+  timeout: 60
+  instance_role: specialist
+  workspace_mode: isolated
+
+stages:
+  - id: initial_check
+    name: Initial System Check
+    instance_id: spec_1_1_346344
+    prompt: |
+      Let's start with a system check. Please run:
+      
+      1. pwd (show current directory)
+      2. whoami (show current user)
+      3. date (show current date/time)
+      
+      When complete, respond with: INITIAL_CHECK_COMPLETE
+    trigger_keyword: INITIAL_CHECK_COMPLETE
+    timeout: 20
+    on_success:
+      - action: log
+        message: "✅ Initial system check completed"
+      - action: next_stage
+        stage_id: conditional_stage
+
+  - id: conditional_stage
+    name: Conditional Analysis
+    instance_id: spec_1_1_346344
+    prompt: |
+      Now let's do a conditional check:
+      
+      Check if package.json exists in current directory:
+      ls package.json 2>/dev/null && echo "PACKAGE_EXISTS" || echo "NO_PACKAGE"
+      
+      Based on the result, respond with either:
+      - If package.json exists: PACKAGE_FOUND
+      - If no package.json: NO_PACKAGE_FOUND
+    trigger_keyword: PACKAGE_FOUND
+    timeout: 20
+    on_success:
+      - action: log
+        message: "📦 Package.json found - proceeding with Node.js analysis"
+      - action: next_stage
+        stage_id: nodejs_analysis
+    on_timeout:
+      - action: log
+        message: "📁 No package.json - proceeding with general analysis"
+      - action: next_stage
+        stage_id: general_analysis
+
+  - id: nodejs_analysis
+    name: Node.js Project Analysis
+    instance_id: spec_1_1_346344
+    prompt: |
+      Since we have a Node.js project, let's analyze it:
+      
+      1. Check Node.js version: node --version 2>/dev/null || echo "Node not available"
+      2. Check npm scripts: grep -A 10 '"scripts"' package.json 2>/dev/null || echo "No scripts"
+      3. List dependencies: grep -A 5 '"dependencies"' package.json 2>/dev/null || echo "No deps"
+      
+      When done, respond with: NODEJS_ANALYSIS_COMPLETE
+    trigger_keyword: NODEJS_ANALYSIS_COMPLETE
+    timeout: 30
+    on_success:
+      - action: log
+        message: "🚀 Node.js analysis completed successfully!"
+      - action: complete_workflow
+
+  - id: general_analysis
+    name: General Project Analysis
+    instance_id: spec_1_1_346344
+    prompt: |
+      Let's do a general project analysis:
+      
+      1. Count total files: find . -type f | wc -l
+      2. Check for common config files: ls *.json *.yml *.yaml *.md 2>/dev/null || echo "No config files"
+      3. Show directory structure: ls -la | head -10
+      
+      When done, respond with: GENERAL_ANALYSIS_COMPLETE
+    trigger_keyword: GENERAL_ANALYSIS_COMPLETE
+    timeout: 30
+    on_success:
+      - action: log
+        message: "📁 General analysis completed successfully!"
+      - action: complete_workflow

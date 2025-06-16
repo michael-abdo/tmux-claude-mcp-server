@@ -1,0 +1,43 @@
+{
+  "workflow": {
+    "id": "1198b98e-be5e-4fb9-b623-f3d7ff8d5e99",
+    "name": "Parallel Analysis Workflow",
+    "version": 1,
+    "run_id": "run_1750056960541_g7e9hdrv0"
+  },
+  "settings": {
+    "useTaskIds": false,
+    "poll_interval": 2,
+    "timeout": 60,
+    "instance_role": "specialist",
+    "workspace_mode": "isolated"
+  },
+  "stages": {
+    "initial_check": {
+      "name": "Initial System Check",
+      "status": "completed",
+      "start_time": 1750056960542,
+      "end_time": 1750056963526,
+      "output": "  NoREADMEfound\n\n  When done, respond with: QUICK_ANALYSIS_DONE\n\n⏺ Read(package.json)\n  ⎿  Read 64 lines (ctrl+r to expand)\n\n⏺ Bash(ls -d */ | wc -l)\n  ⎿  8\n\n⏺ Bash(ls README* 2>/dev/null || echo NoREADMEfound)\n  ⎿  README.md\n\n⏺ QUICK_ANALYSIS_DONE\n\n> Let's start with a system check. Please run:\n\n  1. pwd (show current directory)\n  2. whoami (show current user)\n  3. date (show current date/time)\n\n  When complete, respond with: INITIAL_CHECK_COMPLETE\n\n✳ Brewing… (2s · ↑ 0 tokens · esc to interrupt)\n\n╭──────────────────────────────────────────────────────────────────────────────╮\n│ >                                                                            │\n╰──────────────────────────────────────────────────────────────────────────────╯\n  ? for                                                  Bypassing Permissions\n  shortcuts    ✗ Auto-update failed · Try claude doctor or cd ~/.claude/local\n               && npm update @anthropic-ai/claude-code\n\n\n\n",
+      "keyword_detected": "INITIAL_CHECK_COMPLETE"
+    },
+    "conditional_stage": {
+      "name": "Conditional Analysis",
+      "status": "timeout",
+      "start_time": 1750056963526,
+      "end_time": 1750056986292
+    },
+    "general_analysis": {
+      "name": "General Project Analysis",
+      "status": "completed",
+      "start_time": 1750056986293,
+      "end_time": 1750056989237,
+      "output": "  ⎿  Sun Jun 15 23:56:05 PDT 2025\n\n> Now let's do a conditional check:\n\n  Check if package.json exists in current directory:\n  ls package.json 2>/dev/null && echo PACKAGE_EXISTS || echo NO_PACKAGE\n\n  Based on the result, respond with either:\n  - If package.json exists: PACKAGE_FOUND\n  - If no package.json: NO_PACKAGE_FOUND\n\n⏺ INITIAL_CHECK_COMPLETE\n\n> Let's do a general project analysis:\n\n  1. Count total files: find . -type f | wc -l\n  2. Check for common config files: ls *.json *.yml *.yaml *.md 2>/dev/null\n   || echo Noconfigfiles\n  3. Show directory structure: ls -la | head -10\n\n  When done, respond with: GENERAL_ANALYSIS_COMPLETE\n\n✳ Brewing… (2s · ↑ 0 tokens · esc to interrupt)\n\n╭──────────────────────────────────────────────────────────────────────────────╮\n│ >                                                                            │\n╰──────────────────────────────────────────────────────────────────────────────╯\n  ? for                                Approaching usage limit · resets at 2am\n  shortcuts                                              Bypassing Permissions\n               ✗ Auto-update failed · Try claude doctor or cd ~/.claude/local\n               && npm update @anthropic-ai/claude-code\n\n\n\n",
+      "keyword_detected": "GENERAL_ANALYSIS_COMPLETE"
+    }
+  },
+  "instances": {},
+  "vars": {},
+  "actions": {},
+  "saved_at": 1750056989237
+}

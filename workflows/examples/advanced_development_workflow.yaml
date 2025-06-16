@@ -1,0 +1,65 @@
+name: Advanced Development Workflow
+description: Comprehensive workflow demonstrating code analysis, testing, and documentation
+version: 1.0
+
+settings:
+  useTaskIds: false
+  poll_interval: 3
+  timeout: 90
+  instance_role: specialist
+  workspace_mode: isolated
+
+stages:
+  - id: analyze_codebase
+    name: Code Analysis
+    prompt: |
+      You are a specialist for code analysis. Please analyze the current directory structure:
+      
+      1. Run: find . -name "*.js" -o -name "*.cjs" | head -10
+      2. Count the total JavaScript files
+      3. Identify the main entry points
+      
+      When done with your analysis, respond with: ANALYSIS_COMPLETE
+    trigger_keyword: ANALYSIS_COMPLETE
+    timeout: 60
+    on_success:
+      - action: log
+        message: "✅ Code analysis completed"
+      - action: next_stage
+        stage_id: run_tests
+
+  - id: run_tests
+    name: Test Execution
+    prompt: |
+      Now let's check the testing setup:
+      
+      1. Look for package.json and check for test scripts
+      2. Run: ls -la test* tests* 2>/dev/null || echo "No test directories found"
+      3. Check if there are any .test.js or .spec.js files
+      
+      When finished, respond with: TESTS_CHECKED
+    trigger_keyword: TESTS_CHECKED
+    timeout: 60
+    on_success:
+      - action: log
+        message: "✅ Test analysis completed"
+      - action: next_stage
+        stage_id: generate_docs
+
+  - id: generate_docs
+    name: Documentation Generation
+    prompt: |
+      Finally, let's review documentation:
+      
+      1. List all markdown files: find . -name "*.md" | head -5
+      2. Check if README.md exists and summarize its contents briefly
+      3. Suggest one improvement for the documentation
+      
+      When complete, respond with: DOCS_REVIEWED
+    trigger_keyword: DOCS_REVIEWED
+    timeout: 60
+    on_success:
+      - action: log
+        message: "🎉 Advanced development workflow completed successfully!"
+        level: info
+      - action: complete_workflow
