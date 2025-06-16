@@ -1,0 +1,12 @@
+CORRECT INSTALLATION METHOD FOUND!
+
+The official Claude Code installation command is:
+npm install -g @anthropic-ai/claude-code
+
+Note: The correct package name is @anthropic-ai/claude-code (not @anthropic/claude-code)
+
+Try this command on the VM:
+gcloud compute ssh ubuntu@claude-dev-1750040389 --zone=us-central1-a --command="npm install -g @anthropic-ai/claude-code"
+
+After installation, test with:
+gcloud compute ssh ubuntu@claude-dev-1750040389 --zone=us-central1-a --command="claude --version"

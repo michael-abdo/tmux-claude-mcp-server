@@ -1,0 +1,13 @@
+NEW TASK: GitHub Workflow Test
+
+GitHub repo created: https://github.com/michael-abdo/claude-vm-test
+
+Your mission:
+1. Connect to VM claude-dev-1750040389 with Claude Code
+2. Create simple Hello World project
+3. Push to the GitHub repo above
+4. Confirm push worked
+
+VM connection: gcloud compute ssh ubuntu@claude-dev-1750040389 --zone=us-central1-a
+
+Start when ready!

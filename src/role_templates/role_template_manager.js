@@ -5,10 +5,11 @@
 
 import fs from 'fs';
 import path from 'path';
+import { pathResolver } from '../utils/path_resolver.js';
 
 export class RoleTemplateManager {
     constructor() {
-        this.templateDir = path.join(process.cwd(), 'src', 'role_templates');
+        this.templateDir = pathResolver.templates();
     }
 
     /**

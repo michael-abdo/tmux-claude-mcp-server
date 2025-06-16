@@ -14,6 +14,20 @@ import { MCPTools } from '../src/mcp_tools.js';
 import { InstanceManager } from '../src/instance_manager.js';
 import RoleTemplateManager from '../src/role_templates/role_template_manager.js';
 
+// CRITICAL FIX: Add timeout wrapper to prevent hanging bridge operations
+function withTimeout(promise, timeoutMs = 30000, operation = 'operation') {
+    return new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => {
+            reject(new Error(`Timeout after ${timeoutMs}ms for ${operation}`));
+        }, timeoutMs);
+        
+        promise
+            .then(resolve)
+            .catch(reject)
+            .finally(() => clearTimeout(timeout));
+    });
+}
+
 async function main() {
     const command = process.argv[2];
     const params = JSON.parse(process.argv[3] || '{}');
@@ -101,7 +115,12 @@ async function main() {
                 if (!params.instanceId) {
                     throw new Error('read requires: instanceId');
                 }
-                result = await tools.read(params, 'executive');
+                // CRITICAL: Wrap read operation with timeout to prevent hanging
+                result = await withTimeout(
+                    tools.read(params, 'executive'),
+                    10000, // 10 second timeout for read operations
+                    `reading from instance ${params.instanceId}`
+                );
                 console.log(JSON.stringify({
                     success: true,
                     output: result.output || result.content?.[0]?.text || result

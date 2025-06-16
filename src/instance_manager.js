@@ -23,11 +23,19 @@ import { todoMonitor } from './todo_monitor.js';
 import { mcpConfigGenerator } from './mcp_config_generator.js';
 import { gitBranchManager } from './git_branch_manager.js';
 import { sharedWorkspaceGitManager } from './shared_workspace_git_manager.js';
+import { pathResolver } from './utils/path_resolver.js';
 
 export class InstanceManager {
     constructor(stateDir = './state', options = {}) {
-        this.stateDir = stateDir;
-        this.instancesFile = path.join(stateDir, 'instances.json');
+        // Use PathResolver for portable state directory when default is used
+        if (stateDir === './state') {
+            this.stateDir = pathResolver.state();
+        } else {
+            // Allow explicit override for backward compatibility or testing
+            this.stateDir = stateDir;
+        }
+        
+        this.instancesFile = path.join(this.stateDir, 'instances.json');
         this.tmux = new TmuxInterface();
         this.silent = options.silent || false;
         
@@ -36,7 +44,7 @@ export class InstanceManager {
         this.stateStore = null;
         
         // Ensure state directory exists
-        fs.ensureDirSync(stateDir);
+        fs.ensureDirSync(this.stateDir);
         
         // Initialize instances state
         this.instances = {};
@@ -60,6 +68,37 @@ export class InstanceManager {
             if (!this.silent) {
                 console.error(`=== Instance Manager initialized with JSON (${Object.keys(this.instances).length} instances) ===`);
             }
+        }
+        
+        // CRITICAL FIX: Clean dead instances from registry on startup
+        await this.reconcileInstances();
+    }
+    
+    /**
+     * CRITICAL FIX: Reconcile registry with actual tmux sessions
+     * Removes dead instances to prevent accumulation of ghost entries
+     */
+    async reconcileInstances() {
+        const sessions = await this.tmux.listSessions();
+        const activeSessions = new Set(sessions.map(s => s.name));
+        
+        const deadInstances = [];
+        for (const [instanceId, instance] of Object.entries(this.instances)) {
+            if (!activeSessions.has(instance.sessionName)) {
+                deadInstances.push(instanceId);
+            }
+        }
+        
+        if (deadInstances.length > 0) {
+            console.error(`!!! RECONCILIATION !!! Found ${deadInstances.length} dead instances in registry`);
+            for (const instanceId of deadInstances) {
+                console.error(`Removing dead instance: ${instanceId}`);
+                delete this.instances[instanceId];
+            }
+            await this.saveInstances();
+            console.error(`Registry cleaned: ${deadInstances.length} dead instances removed`);
+        } else {
+            console.error(`Registry clean: All ${Object.keys(this.instances).length} instances are active`);
         }
     }
 

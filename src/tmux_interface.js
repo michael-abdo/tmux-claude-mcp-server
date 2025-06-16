@@ -127,15 +127,25 @@ export class TmuxInterface {
     /**
      * Capture the content of a tmux pane.
      * Harvested from: tmux_interface.py lines 374-393
+     * CRITICAL FIX: Add session validation to prevent hanging
      */
     async capturePane(target, lines = null) {
         try {
+            // CRITICAL: Validate session exists before capture to prevent hanging
+            const sessionName = target.split(':')[0];
+            const sessionExists = await this.sessionExists(sessionName);
+            
+            if (!sessionExists) {
+                console.error(`!!! VALIDATION FAILED !!! Session ${sessionName} does not exist - skipping capture`);
+                throw new Error(`Session ${sessionName} does not exist`);
+            }
+            
             const linesFlag = lines ? `-p -S -${lines}` : '-p';
             const { stdout } = await execAsync(`tmux capture-pane -t "${target}" ${linesFlag}`);
             return stdout;
         } catch (error) {
             console.error(`!!! ERROR !!! Failed to capture pane ${target}: ${error.message}`);
-            return "";
+            throw error; // Don't return empty string, let caller handle failure
         }
     }
 
