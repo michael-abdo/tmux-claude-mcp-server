@@ -1,0 +1,26 @@
+name: Simple Test Workflow
+description: Basic workflow test with immediate response
+version: 1.0
+
+settings:
+  useTaskIds: false
+  poll_interval: 2
+  timeout: 30
+  instance_role: specialist
+  workspace_mode: isolated
+
+stages:
+  - id: test_stage
+    name: Simple Test
+    prompt: |
+      Hello! Please respond with exactly: TEST_COMPLETE
+      
+      Do not add any other text or explanation, just respond with: TEST_COMPLETE
+    trigger_keyword: TEST_COMPLETE
+    timeout: 20
+    on_success:
+      - action: complete_workflow
+    on_timeout:
+      - action: log
+        message: "Workflow timed out waiting for TEST_COMPLETE"
+        level: error

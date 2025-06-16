@@ -1,0 +1,30 @@
+name: Test Existing Instance Workflow
+description: Test workflow using an existing instance
+version: 1.0
+
+settings:
+  useTaskIds: false
+  poll_interval: 2
+  timeout: 30
+  instance_role: specialist
+  workspace_mode: isolated
+
+stages:
+  - id: test_stage
+    name: Test with Existing Instance
+    instance_id: spec_1_1_346344
+    prompt: |
+      Hello! Please respond with exactly: WORKFLOW_TEST_COMPLETE
+      
+      Do not add any other text, just respond with: WORKFLOW_TEST_COMPLETE
+    trigger_keyword: WORKFLOW_TEST_COMPLETE
+    timeout: 20
+    on_success:
+      - action: log
+        message: "✅ Workflow test completed successfully!"
+        level: info
+      - action: complete_workflow
+    on_timeout:
+      - action: log
+        message: "⏰ Workflow timed out waiting for WORKFLOW_TEST_COMPLETE"
+        level: error
