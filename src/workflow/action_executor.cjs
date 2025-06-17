@@ -65,6 +65,9 @@ class ActionExecutor extends EventEmitter {
       case 'log':
         return await this.executeLog(action);
       
+      case 'return_to_blank_state':
+        return await this.executeReturnToBlankState(action);
+      
       default:
         throw new Error(`Unknown action: ${action.action}`);
     }
@@ -257,6 +260,54 @@ class ActionExecutor extends EventEmitter {
     return { success: true, message, level };
   }
   
+  async executeReturnToBlankState(action) {
+    let instanceId = action.instance_id;
+    
+    // Resolve instance ID
+    if (!instanceId && action.target === 'current') {
+      instanceId = this.context.get('vars.current_instance_id');
+    } else if (!instanceId && action._instance_id) {
+      instanceId = action._instance_id;
+    }
+    
+    if (!instanceId) {
+      throw new Error('No instance ID specified for return_to_blank_state action');
+    }
+    
+    instanceId = this.context.interpolate(instanceId);
+    
+    console.log(`🔄 Returning ${instanceId} to blank state - ready for new human input`);
+    
+    // Optional: Send a message to the instance to indicate it's ready
+    const blankStateMessage = action.message || 
+      "✅ Workflow complete. Ready for your next command.";
+    
+    if (action.send_message !== false) {
+      try {
+        await this.callMcpBridge('send', {
+          instanceId: instanceId,
+          text: blankStateMessage
+        });
+        console.log(`📝 Sent blank state message to ${instanceId}`);
+      } catch (error) {
+        console.warn(`⚠️ Failed to send blank state message: ${error.message}`);
+        // Don't fail the action if message sending fails
+      }
+    }
+    
+    // Reset workflow context variables for this instance
+    this.context.set(`instances.${instanceId}.state`, 'blank');
+    this.context.set(`instances.${instanceId}.ready_for_input`, true);
+    this.context.set(`instances.${instanceId}.last_blank_time`, Date.now());
+    
+    return {
+      success: true,
+      instanceId: instanceId,
+      state: 'blank',
+      message: 'Instance returned to blank state'
+    };
+  }
+  
   findMcpBridge() {
     // Try multiple locations for the MCP bridge script
     const possiblePaths = [
@@ -285,9 +336,9 @@ class ActionExecutor extends EventEmitter {
         JSON.stringify(params)
       ];
       
-      if (this.debug) {
-        console.log(`🔌 MCP Bridge: ${command}`, params);
-      }
+      console.log(`🔌 MCP Bridge: ${command}`, params);
+      console.log(`📍 MCP bridge path: ${this.mcpBridgePath}`);
+      console.log(`📍 Full command: ${nodeCommand} ${args.join(' ')}`);
       
       const process = spawn(nodeCommand, args, {
         stdio: ['pipe', 'pipe', 'pipe']
@@ -340,10 +391,12 @@ class ActionExecutor extends EventEmitter {
       });
       
       // Set timeout for MCP operations
+      // Longer timeout for spawn operations which may need authentication
+      const timeout = command === 'spawn' ? 180000 : 60000; // 3 minutes for spawn, 1 minute for others
       setTimeout(() => {
         process.kill('SIGTERM');
         reject(new Error(`MCP bridge timeout for command: ${command}`));
-      }, 30000);
+      }, timeout);
     });
   }
 }

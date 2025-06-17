@@ -1,0 +1,48 @@
+name: Persistent Execute Compare Commit Workflow
+description: Infinite loop workflow for executing commands, comparing results, and committing changes
+version: 1.0
+
+settings:
+  useTaskIds: false
+  poll_interval: 2
+  timeout: 120
+  instance_role: specialist
+  workspace_mode: isolated
+
+stages:
+  - id: compare_stage
+    name: Compare Results
+    prompt: |
+      You've just executed a command. Now please analyze and compare the results.
+      
+      Consider:
+      - What was the expected outcome?
+      - What actually happened?
+      - Were there any errors or unexpected results?
+      - What are the key findings from the execution?
+      
+      Please provide your analysis and comparison.
+      When done with your analysis, please type: COMPARE_FINISHED
+    trigger_keyword: COMPARE_FINISHED
+    timeout: 60
+    on_success:
+      - action: next_stage
+        stage_id: commit_stage
+
+  - id: commit_stage
+    name: Commit Changes
+    prompt: |
+      Based on your execution and analysis, let's check what needs to be committed.
+      
+      Please run: git status
+      
+      Then analyze:
+      - What files have been changed?
+      - Are these changes ready to be committed?
+      - What would be an appropriate commit message?
+      
+      When done with your git status analysis, please type: COMMIT_FINISHED
+    trigger_keyword: COMMIT_FINISHED
+    timeout: 60
+    on_success:
+      - action: return_to_blank_state

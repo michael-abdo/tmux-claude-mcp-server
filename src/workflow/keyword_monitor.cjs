@@ -206,10 +206,24 @@ class KeywordMonitor extends EventEmitter {
         }
         
         try {
-          // Parse the JSON response
+          // Parse the JSON response - handle debug output from MCP bridge
           const lines = stdout.trim().split('\n');
-          const lastLine = lines[lines.length - 1];
-          const response = JSON.parse(lastLine);
+          
+          // Find the JSON line (should be the last line that starts with {)
+          let jsonLine = null;
+          for (let i = lines.length - 1; i >= 0; i--) {
+            if (lines[i].trim().startsWith('{')) {
+              jsonLine = lines[i];
+              break;
+            }
+          }
+          
+          if (!jsonLine) {
+            resolve(''); // No JSON found
+            return;
+          }
+          
+          const response = JSON.parse(jsonLine);
           
           if (response.success && response.output) {
             resolve(response.output);

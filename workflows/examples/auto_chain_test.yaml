@@ -1,0 +1,67 @@
+name: Auto Chain Command Test
+description: Test auto-chaining where Stage 1 automatically triggers Stage 2
+version: 1.0
+
+settings:
+  useTaskIds: false
+  poll_interval: 2
+  timeout: 300
+  instance_role: specialist
+  workspace_mode: isolated
+
+stages:
+  - id: auto_stage1
+    name: "Auto Stage 1"
+    prompt: |
+      You are testing the Auto Chain Command workflow system.
+      
+      Please run: pwd
+      
+      After you complete this task, I will manually type MANUAL_STAGE1_DONE.
+      When I do, the workflow will automatically send MANUAL_STAGE2_DONE to trigger Stage 2.
+    trigger_keyword: MANUAL_STAGE1_DONE
+    timeout: 300
+    on_success:
+      - action: log
+        message: "✅ Stage 1 triggered! Now auto-sending Stage 2 keyword..."
+      - action: send_prompt
+        target: current
+        prompt: "MANUAL_STAGE2_DONE"
+      - action: next_stage
+        stage_id: auto_stage2
+
+  - id: auto_stage2
+    name: "Auto Stage 2"
+    prompt: |
+      Stage 2 has been triggered automatically!
+      
+      Please run: ls -la
+      
+      This stage will complete when it sees MANUAL_STAGE2_DONE (which was already sent).
+    trigger_keyword: MANUAL_STAGE2_DONE
+    timeout: 300
+    on_success:
+      - action: log
+        message: "✅ Stage 2 auto-triggered! Chain command auto-progression complete"
+      - action: send_prompt
+        target: current
+        prompt: "WORKFLOW_COMPLETE"
+      - action: next_stage
+        stage_id: final_stage
+
+  - id: final_stage
+    name: "Final Stage"
+    prompt: |
+      🎉 Auto-chain workflow complete!
+      
+      The workflow automatically progressed:
+      - You manually typed MANUAL_STAGE1_DONE
+      - Stage 1 auto-sent MANUAL_STAGE2_DONE
+      - Stage 2 auto-sent WORKFLOW_COMPLETE
+      - All stages chained automatically!
+    trigger_keyword: WORKFLOW_COMPLETE
+    timeout: 30
+    on_success:
+      - action: log
+        message: "🏆 Auto-chain workflow demonstration complete!"
+      - action: complete_workflow

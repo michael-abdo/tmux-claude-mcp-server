@@ -499,6 +499,13 @@ IMPORTANT: You're in an isolated worktree, so:
             await this.tmux.sendKeys(paneTarget, `claude --dangerously-skip-permissions`, true);
             await new Promise(resolve => setTimeout(resolve, 3000));
             
+            // Handle permission dialog automatically
+            console.log(`Handling permission dialog for ${paneTarget}`);
+            await this.tmux.sendKeys(paneTarget, 'Down', false); // Select "Yes, I accept"
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await this.tmux.sendKeys(paneTarget, '', true); // Press Enter
+            await new Promise(resolve => setTimeout(resolve, 2000)); // Wait for Claude to load
+            
             console.log(`Claude initialized with MCP in ${paneTarget}`);
             return true;
         } catch (error) {

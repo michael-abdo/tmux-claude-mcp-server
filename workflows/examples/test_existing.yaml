@@ -1,0 +1,21 @@
+name: Test Existing Instance
+description: Simple test using existing instance
+version: 1.0
+
+settings:
+  useTaskIds: false
+  poll_interval: 2
+  timeout: 30
+
+stages:
+  - id: test_stage
+    name: Test Stage
+    instance_id: spec_1_1_070604  # Use the existing instance
+    prompt: |
+      This is a simple test. Please respond with: TEST_COMPLETE
+    trigger_keyword: TEST_COMPLETE
+    timeout: 20
+    on_success:
+      - action: log
+        message: "✅ Test successful!"
+      - action: complete_workflow

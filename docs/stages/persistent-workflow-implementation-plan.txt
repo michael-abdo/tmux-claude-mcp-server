@@ -1,0 +1,59 @@
+- PHASE 1: Foundation Setup
+  - Step 1: Create Clean Branch & Baseline Test
+    - Create branch persistent-workflow-clean from d059e6d
+    - Test current workflow system works at basic level
+    - Spawn instance via MCP bridge and verify
+    - Send simple command and confirm keyword detection exists
+    - Document baseline functionality before modifications
+  - Step 2: Fix Authentication Issues
+    - Modify src/workflow/action_executor.cjs for auth automation
+    - Steal MCP bridge timeout fixes from later commits
+    - Auto-accept permissions without user intervention
+    - Test instance reaches "ready for input" blank state reliably
+    - Verify no permission dialogs blocking workflow progression
+- PHASE 2: Core Persistent Engine  
+  - Step 3: Build Persistent Workflow Monitor
+    - Create src/workflow/persistent_engine.cjs (copy + modify workflow_engine.cjs)
+    - Create workflows/core/persistent_execute_compare_commit.yaml (copy + modify existing)
+    - Remove task ID complexity for simple keyword matching
+    - Add "return to blank state" logic after COMMIT_FINISHED
+    - Implement infinite loop keyword monitoring
+    - Test single command triggers Execute → Compare → Commit → Blank cycle
+    - CRITICAL: Verify MONITOR sends stage prompts, not manual intervention
+  - Step 4: Test Full Automation Loop
+    - Complete one full workflow cycle from Step 3
+    - Send SECOND command: "Run pwd and SAY EXECUTE_FINISHED"
+    - Verify second cycle executes automatically without intervention
+    - Confirm infinite loop behavior works as designed
+    - Test workflow monitor handles all transitions autonomously
+- PHASE 3: Universal Access
+  - Step 5: Create Universal Launcher
+    - Create bin/workflow-start bash script for universal access
+    - Steal portable execution code from commit 2b5a890
+    - Implement directory-agnostic execution with proper path resolution
+    - Test simulated runs from different directories (change workDir in MCP calls)
+    - Verify instance spawns with correct directory context
+    - Verify workflow YAML found from central location regardless of launch directory
+  - Step 6: Add Auto-Attach Mechanism
+    - Create src/workflow/auto_attach.cjs for automatic tmux attachment
+    - Steal auto-attach code from commit 85c64d1
+    - Implement platform-specific terminal handling
+    - Test tmux session creation and attach command execution
+    - Verify user gets dropped directly into Claude interface when ready
+    - Test auto-attach works after instance reaches blank state
+- PHASE 4: Integration & Polish
+  - Step 7: End-to-End Integration Test
+    - Test complete user journey from universal launcher to infinite loop
+    - Verify auto-spawn + auto-attach simulation works together
+    - Send user command and verify full automatic cycle completion
+    - Test portability across multiple simulated directories
+    - Confirm all components work together seamlessly
+    - Validate persistent development assistant experience
+  - Step 8: Error Handling & Edge Cases
+    - Test scenario: Claude doesn't say expected keywords
+    - Test scenario: Multiple workflow instances running simultaneously
+    - Test scenario: Workflow gets stuck in intermediate state
+    - Test scenario: Directory permission issues
+    - Test scenario: MCP bridge connection failures
+    - Implement graceful error recovery and user feedback
+    - Document troubleshooting guide for common issues

@@ -1,0 +1,70 @@
+name: Persistent Chain Workflow
+description: Performs a chain of actions when triggered
+version: 1.0
+
+settings:
+  useTaskIds: false
+  poll_interval: 2
+  timeout: 120
+  bind_to_existing: true  # Don't spawn new instance
+  monitor_only: false     # Send prompts to the instance
+
+stages:
+  - id: init_chain
+    name: "Initialize Chain"
+    prompt: |
+      🔗 EXECUTE_CHAIN detected!
+      
+      Starting multi-step chain process:
+      1. First, I'll check the environment
+      2. Then create a test file
+      3. Finally, clean up
+      
+      Step 1: Checking environment...
+    trigger_keyword: STEP1_COMPLETE
+    timeout: 60
+    on_success:
+      - action: send_prompt
+        target: current
+        prompt: "STEP2_START"
+      - action: next_stage
+        stage_id: create_file
+
+  - id: create_file
+    name: "Create Test File"
+    prompt: |
+      Step 2: Creating test file...
+      
+      Please create: test_{{timestamp}}.txt with some content
+    trigger_keyword: STEP2_START
+    timeout: 60
+    on_success:
+      - action: send_prompt
+        target: current
+        prompt: "STEP3_START"
+      - action: next_stage
+        stage_id: cleanup
+
+  - id: cleanup
+    name: "Cleanup"
+    prompt: |
+      Step 3: Cleaning up...
+      
+      List any test files and optionally remove old ones.
+    trigger_keyword: STEP3_START
+    timeout: 60
+    on_success:
+      - action: log
+        message: "✅ Chain completed successfully"
+      - action: send_prompt
+        target: current
+        prompt: |
+          ✅ Chain execution complete!
+          
+          All steps executed:
+          - Environment checked ✓
+          - Test file created ✓
+          - Cleanup performed ✓
+          
+          Ready for next EXECUTE_CHAIN command.
+      - action: complete_workflow

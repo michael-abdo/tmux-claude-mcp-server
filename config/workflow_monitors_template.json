@@ -1,0 +1,22 @@
+{
+  "monitors": [
+    {
+      "instanceId": "spec_1_1_785691",
+      "triggers": {
+        "MANUAL_STAGE1_DONE": "workflows/examples/manual_chain_test.yaml",
+        "TRIGGER_COMMAND": "workflows/examples/persistent_response.yaml",
+        "EXECUTE_CHAIN": "workflows/examples/persistent_chain.yaml",
+        "START_WORKFLOW": "workflows/examples/auto_chain_test.yaml"
+      },
+      "options": {
+        "continuous": true,
+        "pollInterval": 2000,
+        "restartDelay": 5000,
+        "clearBufferOnDetection": false
+      },
+      "active": false,
+      "description": "Primary test instance with multiple workflow triggers"
+    }
+  ],
+  "savedAt": "2025-06-16T22:49:00.000Z"
+}
