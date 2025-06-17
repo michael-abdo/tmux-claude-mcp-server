@@ -124,12 +124,70 @@ class KeywordMonitor extends EventEmitter {
   
   detectSimpleKeyword(keyword) {
     try {
+      // Extract only Claude's most recent response to avoid false positives
+      const claudeResponse = this.extractMostRecentClaudeResponse(this.outputBuffer);
+      
+      if (!claudeResponse) {
+        return false; // No Claude response found
+      }
+      
       const lowerKeyword = keyword.toLowerCase();
-      const lowerBuffer = this.outputBuffer.toLowerCase();
-      return lowerBuffer.includes(lowerKeyword);
+      const lowerResponse = claudeResponse.toLowerCase();
+      return lowerResponse.includes(lowerKeyword);
     } catch (error) {
       console.error('Error in simple keyword detection:', error);
       return false;
+    }
+  }
+  
+  extractMostRecentClaudeResponse(output) {
+    try {
+      const lines = output.split('\n');
+      
+      // Find the last user message (starts with ">")
+      let lastUserMessageIndex = -1;
+      for (let i = lines.length - 1; i >= 0; i--) {
+        if (lines[i].trim().startsWith('>')) {
+          lastUserMessageIndex = i;
+          break;
+        }
+      }
+      
+      if (lastUserMessageIndex === -1) {
+        // No user message found, return empty to avoid false positives
+        return '';
+      }
+      
+      // Find the first Claude response marker (⏺) after the last user message
+      let firstClaudeResponseIndex = -1;
+      for (let i = lastUserMessageIndex + 1; i < lines.length; i++) {
+        if (lines[i].trim().startsWith('⏺')) {
+          firstClaudeResponseIndex = i;
+          break;
+        }
+      }
+      
+      if (firstClaudeResponseIndex === -1) {
+        // No Claude response found after user message
+        return '';
+      }
+      
+      // Find where the text input box starts (╭ or ╰ characters)
+      let textBoxStartIndex = lines.length;
+      for (let i = firstClaudeResponseIndex; i < lines.length; i++) {
+        if (lines[i].includes('╭') || lines[i].includes('╰')) {
+          textBoxStartIndex = i;
+          break;
+        }
+      }
+      
+      // Extract only Claude's responses (from first ⏺ to text box)
+      const claudeResponseLines = lines.slice(firstClaudeResponseIndex, textBoxStartIndex);
+      return claudeResponseLines.join('\n').trim();
+      
+    } catch (error) {
+      console.error('Error extracting Claude response:', error);
+      return '';
     }
   }
   
