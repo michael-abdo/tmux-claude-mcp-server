@@ -1,0 +1,68 @@
+name: "Keyword Mechanism Test"
+version: "1.0"
+description: "Test to validate keyword-driven orchestration works correctly"
+
+settings:
+  poll_interval: 2
+  timeout: 60
+  instance_role: "specialist"
+
+stages:
+  - id: "test_stage1"
+    name: "Stage 1 - Basic Keyword Test"
+    
+    on_success:
+      - action: "spawn"
+        role: "specialist"
+        context: "Keyword orchestration test specialist"
+        output_var: "test_instance"
+        
+      - action: "send_prompt"
+        target: "specific_id"
+        instance_id: "{{ actions.test_instance.instanceId }}"
+        prompt: |
+          This is a test of keyword-driven orchestration.
+          
+          Please do the following:
+          1. Say "Starting stage 1"
+          2. Count from 1 to 3
+          3. Say "Stage 1 work is complete"
+          4. WHEN YOU ARE COMPLETELY DONE, SAY "***STAGE1_COMPLETE***"
+          
+          The workflow will only advance when you say the exact keyword.
+        wait_for_keyword: "***STAGE1_COMPLETE***"
+        timeout: 30
+        
+      - action: "log"
+        message: "✅ Stage 1 keyword detected successfully!"
+        
+      - action: "send_prompt"
+        target: "same_instance"
+        prompt: |
+          Excellent! The keyword mechanism worked.
+          
+          Now for stage 2:
+          1. Say "Starting stage 2" 
+          2. List 3 colors
+          3. Say "Colors listed successfully"
+          4. WHEN FINISHED, SAY "***STAGE2_COMPLETE***"
+        wait_for_keyword: "***STAGE2_COMPLETE***"
+        timeout: 30
+        
+      - action: "log"
+        message: "✅ Stage 2 keyword detected successfully!"
+        
+      - action: "send_prompt"
+        target: "same_instance"
+        prompt: |
+          Perfect! Both stages worked.
+          
+          Final test - say the completion keyword:
+          "***WORKFLOW_TEST_SUCCESS***"
+        wait_for_keyword: "***WORKFLOW_TEST_SUCCESS***"
+        timeout: 15
+        
+      - action: "log"
+        message: "🎉 KEYWORD MECHANISM TEST PASSED! All stages advanced correctly."
+        
+      - action: "complete_workflow"
