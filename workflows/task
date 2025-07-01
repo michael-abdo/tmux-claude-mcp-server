@@ -1,0 +1,3 @@
+#!/usr/bin/env node
+// Simple wrapper to make the command even shorter
+import('./quick_task.js');
