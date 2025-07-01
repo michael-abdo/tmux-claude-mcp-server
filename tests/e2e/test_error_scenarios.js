@@ -8,7 +8,7 @@
 import { IntegrationTestBase, UnitTestBase, TestSuiteRunner } from '../helpers/base_test_class.js';
 import { InstanceManager } from '../../src/instance_manager.js';
 import { sharedWorkspaceGitManager } from '../../src/shared_workspace_git_manager.js';
-import { SharedWorkspaceMCPTools } from '../../src/shared_workspace_mcp_tools.js';
+import { EnhancedMCPTools } from '../../src/enhanced_mcp_tools.js';
 import { AtomicGitOperations } from '../../src/atomic_git_operations.js';
 import fs from 'fs/promises';
 import path from 'path';
@@ -321,7 +321,7 @@ suite.addTest('Git Remote - Network Failure', GitErrorScenarioTest, async functi
 
 // Test 11: Invalid MCP tool parameters
 suite.addTest('MCP Tools - Invalid Parameters', InstanceErrorScenarioTest, async function() {
-    const tools = new SharedWorkspaceMCPTools(this.instanceManager);
+    const tools = new EnhancedMCPTools(this.instanceManager);
     
     // Test with missing required parameters
     try {

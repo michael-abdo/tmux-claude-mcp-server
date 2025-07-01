@@ -4,14 +4,14 @@
  */
 
 import { InstanceManager } from '../src/instance_manager.js';
-import { MCPTools } from '../src/mcp_tools.js';
+import { EnhancedMCPTools } from '../src/enhanced_mcp_tools.js';
 import { monitorAllProgress, generateProgressReport } from '../src/orchestration/monitor_progress.js';
 
 async function main() {
     console.log('=== Monitoring Existing Executive ===\n');
     
     const instanceManager = new InstanceManager('./test-state-orchestration');
-    const mcpTools = new MCPTools(instanceManager);
+    const mcpTools = new EnhancedMCPTools(instanceManager);
     
     const tools = {
         spawn: (params) => mcpTools.spawn(params),

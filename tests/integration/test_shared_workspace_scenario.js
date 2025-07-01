@@ -16,7 +16,7 @@ const exec = promisify(execCallback);
 
 // Import our modules
 import { InstanceManager } from '../../src/instance_manager.js';
-import { MCPTools } from '../../src/mcp_tools.js';
+import { EnhancedMCPTools } from '../../src/enhanced_mcp_tools.js';
 
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
@@ -56,7 +56,7 @@ async function runTest() {
     
     const stateDir = path.join(TEST_DIR, 'state');
     const instanceManager = new InstanceManager(stateDir);
-    const mcpTools = new MCPTools(instanceManager);
+    const mcpTools = new EnhancedMCPTools(instanceManager);
     
     try {
         // 1. Executive spawns first manager in shared mode

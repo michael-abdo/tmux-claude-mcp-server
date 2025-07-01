@@ -6,7 +6,7 @@
  */
 
 import { InstanceManager } from '../../src/instance_manager.js';
-import { SharedWorkspaceMCPTools } from '../../src/shared_workspace_mcp_tools.js';
+import { EnhancedMCPTools } from '../../src/enhanced_mcp_tools.js';
 import { sharedWorkspaceGitManager } from '../../src/shared_workspace_git_manager.js';
 import { IsolatedTestEnvironment, IsolatedTestRunner } from './test_isolated_environments.js';
 import fs from 'fs/promises';
@@ -140,7 +140,7 @@ await runner.runTest('Conflict detection', async (env) => {
     const stateDir = await env.createSubdir('state');
     
     const instanceManager = new InstanceManager(stateDir);
-    const sharedWorkspaceMCPTools = new SharedWorkspaceMCPTools(instanceManager);
+    const sharedWorkspaceMCPTools = new EnhancedMCPTools(instanceManager);
     
     // Create two managers
     const manager1 = 'mgr_conflict_001';
@@ -203,7 +203,7 @@ await runner.runTest('Atomic merge operation', async (env) => {
     const stateDir = await env.createSubdir('state');
     
     const instanceManager = new InstanceManager(stateDir);
-    const sharedWorkspaceMCPTools = new SharedWorkspaceMCPTools(instanceManager);
+    const sharedWorkspaceMCPTools = new EnhancedMCPTools(instanceManager);
     
     // Create manager with some work
     const managerId = 'mgr_merge_001';

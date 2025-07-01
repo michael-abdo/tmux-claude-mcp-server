@@ -6,7 +6,7 @@
  */
 
 import { IntegrationTestBase, TestSuiteRunner } from '../helpers/base_test_class.js';
-import { SharedWorkspaceMCPTools } from '../../src/shared_workspace_mcp_tools.js';
+import { EnhancedMCPTools } from '../../src/enhanced_mcp_tools.js';
 import { sharedWorkspaceGitManager } from '../../src/shared_workspace_git_manager.js';
 import fs from 'fs/promises';
 import path from 'path';
@@ -164,7 +164,7 @@ suite.addTest('Auto-merge Capability', GitIntegrationTest, async function() {
 
 // Test 5: MCP Tools integration
 suite.addTest('MCP Tools Integration', GitIntegrationTest, async function() {
-    const tools = new SharedWorkspaceMCPTools(this.instanceManager);
+    const tools = new EnhancedMCPTools(this.instanceManager);
     
     // Test getWorkspaceStatus tool
     const statusResult = await tools.getWorkspaceStatus({

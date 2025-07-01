@@ -8,7 +8,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert';
 import { InstanceManager } from '../../src/instance_manager.js';
-import { MCPTools } from '../../src/mcp_tools.js';
+import { EnhancedMCPTools } from '../../src/enhanced_mcp_tools.js';
 
 // Mock TmuxInterface for testing
 class MockTmuxInterface {
@@ -71,7 +71,7 @@ test('InstanceManager can generate hierarchical instance IDs', () => {
 
 test('MCPTools validates spawn parameters', async () => {
     const manager = new InstanceManager('./test-state');
-    const tools = new MCPTools(manager);
+    const tools = new EnhancedMCPTools(manager);
     
     // Missing parameters should throw
     await assert.rejects(
@@ -97,7 +97,7 @@ test('MCPTools validates spawn parameters', async () => {
 
 test('MCPTools enforces role-based access control', async () => {
     const manager = new InstanceManager('./test-state');
-    const tools = new MCPTools(manager);
+    const tools = new EnhancedMCPTools(manager);
     
     // All tools should reject specialist callers
     const sendParams = { instanceId: 'test_123', text: 'test message' };
@@ -127,7 +127,7 @@ test('MCPTools enforces role-based access control', async () => {
 
 test('MCPTools returns proper tool definitions', () => {
     const manager = new InstanceManager('./test-state');
-    const tools = new MCPTools(manager);
+    const tools = new EnhancedMCPTools(manager);
     
     const definitions = tools.getToolDefinitions();
     
