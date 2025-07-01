@@ -95,7 +95,11 @@ async function testChainMonitor() {
     ];
     
     for (const test of testOutputs) {
+      // Reset watch mechanism for each test
       monitor.outputBuffer = test.output;
+      monitor.lastDetectedPosition.clear();
+      monitor.detectedKeywords.clear();
+      
       const detected = await monitor.detectKeywordInOutput('TEST_COMPLETE');
       assert(detected === test.shouldDetect, `Keyword detection: ${test.description} - Expected: ${test.shouldDetect}, Got: ${detected}`);
     }

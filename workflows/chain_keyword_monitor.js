@@ -72,6 +72,10 @@ class ChainKeywordMonitor extends EventEmitter {
     this.pollCount = 0;
     this.executedChains = [];
     
+    // Watch mechanism to prevent duplicate detections
+    this.detectedKeywords = new Set();
+    this.lastDetectedPosition = new Map();
+    
     // MCP Bridge
     this.bridge = new MCPBridge();
     
@@ -199,6 +203,15 @@ class ChainKeywordMonitor extends EventEmitter {
       return false;
     }
     
+    // Check if we've already detected this keyword at this position
+    const currentPosition = this.outputBuffer.lastIndexOf(keyword);
+    const lastPosition = this.lastDetectedPosition.get(keyword) || -1;
+    
+    if (currentPosition <= lastPosition) {
+      // Already processed this occurrence
+      return false;
+    }
+    
     console.log(`🔍 Checking keyword: "${keyword}"`);
     
     // Split buffer into lines for context analysis
@@ -258,6 +271,10 @@ class ChainKeywordMonitor extends EventEmitter {
         console.log(context);
         console.log('─'.repeat(60));
         
+        // Mark this position as detected
+        this.lastDetectedPosition.set(keyword, keywordIndex);
+        this.detectedKeywords.add(keyword);
+        
         return true;
       }
     }
@@ -298,6 +315,13 @@ class ChainKeywordMonitor extends EventEmitter {
 
   async executeChainAction(chainConfig) {
     const { keyword, instruction, nextKeyword, chainIndex } = chainConfig;
+    
+    // Prevent duplicate execution
+    const executionKey = `${keyword}-${chainIndex}`;
+    if (this.executedChains.some(chain => chain.keyword === keyword && chain.chainIndex === chainIndex)) {
+      console.log(`⚠️  Chain action for "${keyword}" already executed, skipping`);
+      return;
+    }
     
     console.log('\n🎬 EXECUTING CHAIN ACTION');
     console.log(`🔗 Chain ${chainIndex + 1}/${this.chains.length}`);
