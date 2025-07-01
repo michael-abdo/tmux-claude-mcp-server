@@ -103,51 +103,71 @@ class DebugKeywordMonitor extends EventEmitter {
         const lines = this.outputBuffer.split('\n');
         let foundValidKeyword = false;
         
+        // Track if we're inside a multi-line user command
+        let inUserCommand = false;
+        
         for (let i = 0; i < lines.length; i++) {
           const line = lines[i];
+          const trimmedLine = line.trim();
+          
+          // Detect start of user command
+          if (trimmedLine.startsWith('>')) {
+            inUserCommand = true;
+            console.log(`🟡 Starting user command block at line ${i}: "${trimmedLine.substring(0, 50)}..."`);
+          }
+          
+          // Detect end of user command (Claude output starts)
+          if (inUserCommand && (
+            trimmedLine.includes('⏺') ||  // Claude output marker
+            (trimmedLine.length > 0 && 
+             !trimmedLine.startsWith('>') && 
+             !trimmedLine.startsWith('│') &&
+             !trimmedLine.startsWith('╭') &&
+             !trimmedLine.startsWith('╰') &&
+             !trimmedLine.startsWith('┌') &&
+             !trimmedLine.startsWith('└') &&
+             !trimmedLine.startsWith('├') &&
+             !trimmedLine.startsWith('─') &&
+             !trimmedLine.startsWith(' ') &&  // Not indented continuation
+             !trimmedLine.match(/^[a-zA-Z]+:/) &&  // Not a field like "type:"
+             trimmedLine.length > 10)  // Substantial content
+          )) {
+            inUserCommand = false;
+            console.log(`🟢 Ending user command block at line ${i}: "${trimmedLine.substring(0, 50)}..."`);
+          }
+          
           if (line.includes(keyword)) {
-            // Check if this line starts with '>' (user input) or contains 'plz say'
-            const isUserInput = line.trim().startsWith('>') || 
+            // Check if this line is part of user input
+            const isUserInput = inUserCommand || 
+                               trimmedLine.startsWith('>') || 
                                line.includes('plz say') || 
                                line.includes('please say') ||
                                line.includes('type:');
             
             if (isUserInput) {
-              console.log(`🚫 Ignoring keyword in user input: "${line.trim()}"`);
+              console.log(`🚫 Ignoring keyword in user input (multi-line=${inUserCommand}): "${trimmedLine.substring(0, 100)}..."`);
               continue;
             }
             
-            // Check if line starts with Claude's output marker (⏺ or starts with text)
-            const isClaudeOutput = line.includes('⏺') || 
-                                  (line.trim().length > 0 &&
-                                   !line.trim().startsWith('>') && 
-                                   !line.trim().startsWith('│') &&
-                                   !line.trim().startsWith('╭') &&
-                                   !line.trim().startsWith('╰'));
+            // This is Claude output containing the keyword
+            foundValidKeyword = true;
+            console.log('🎉 KEYWORD DETECTED IN CLAUDE OUTPUT!');
+            console.log(`✅ Found: "${keyword}" in line: "${trimmedLine}"`);
             
-            if (isClaudeOutput) {
-              foundValidKeyword = true;
-              console.log('🎉 KEYWORD DETECTED IN CLAUDE OUTPUT!');
-              console.log(`✅ Found: "${keyword}" in line: "${line.trim()}"`);
-              
-              // Show context
-              const keywordIndex = this.outputBuffer.lastIndexOf(keyword);
-              const contextStart = Math.max(0, keywordIndex - 200);
-              const contextEnd = Math.min(this.outputBuffer.length, keywordIndex + keyword.length + 200);
-              const context = this.outputBuffer.slice(contextStart, contextEnd);
-              
-              console.log('📍 Context around keyword:');
-              console.log('═'.repeat(60));
-              console.log(context);
-              console.log('═'.repeat(60));
-              
-              this.stop();
-              this.emit('keyword_detected', context, keyword);
-              return;
-            } else {
-              // Debug: show why line was not considered Claude output
-              console.log(`🔸 Line with keyword not detected as Claude output: "${line.trim().substring(0, 50)}..."`);
-            }
+            // Show context
+            const keywordIndex = this.outputBuffer.lastIndexOf(keyword);
+            const contextStart = Math.max(0, keywordIndex - 200);
+            const contextEnd = Math.min(this.outputBuffer.length, keywordIndex + keyword.length + 200);
+            const context = this.outputBuffer.slice(contextStart, contextEnd);
+            
+            console.log('📍 Context around keyword:');
+            console.log('═'.repeat(60));
+            console.log(context);
+            console.log('═'.repeat(60));
+            
+            this.stop();
+            this.emit('keyword_detected', context, keyword);
+            return;
           }
         }
         
