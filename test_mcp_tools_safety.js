@@ -5,7 +5,7 @@
  */
 
 import assert from 'assert';
-import { MCPTools } from './src/mcp_tools.js';
+import { EnhancedMCPTools } from './src/enhanced_mcp_tools.js';
 
 async function testMCPToolsCore() {
     console.log('🧪 Testing MCP Tools core functionality...');
@@ -15,11 +15,13 @@ async function testMCPToolsCore() {
         spawnInstance: async () => ({ instanceId: 'test_123', paneId: '0', projectPath: '/test' }),
         sendToInstance: async () => ({ success: true }),
         readFromInstance: async () => ({ output: 'test output', success: true }),
-        listInstances: async () => [{ instanceId: 'test_123', role: 'specialist' }],
-        terminateInstance: async () => ({ success: true })
+        listInstances: async () => [{ instanceId: 'test_123', role: 'specialist', status: 'active' }],
+        isInstanceActive: async () => true,
+        terminateInstance: async () => true,
+        restartInstance: async () => ({ success: true })
     };
     
-    const tools = new MCPTools(mockInstanceManager);
+    const tools = new EnhancedMCPTools(mockInstanceManager);
     
     // Test spawn
     const spawnResult = await tools.spawn({

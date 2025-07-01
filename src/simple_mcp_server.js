@@ -8,7 +8,6 @@
  */
 
 import { InstanceManager } from './instance_manager.js';
-import { MCPTools } from './mcp_tools.js';
 import { EnhancedMCPTools } from './enhanced_mcp_tools.js';
 import { JobQueue } from './job_queue.js';
 
@@ -23,14 +22,13 @@ class SimpleMCPServer {
             useRedis: this.phase >= 3
         });
         
-        // Use enhanced tools for Phase 3
+        // Always use enhanced tools (backward compatible for all phases)
+        this.mcpTools = new EnhancedMCPTools(this.instanceManager);
         if (this.useEnhancedTools) {
-            this.mcpTools = new EnhancedMCPTools(this.instanceManager);
             this.jobQueue = new JobQueue(this.instanceManager.stateStore);
             console.error('=== Phase 3 tmux-claude MCP Server initialized (parallel execution enabled) ===');
         } else {
-            this.mcpTools = new MCPTools(this.instanceManager);
-            console.error('=== Phase 2 tmux-claude MCP Server initialized (sequential execution) ===');
+            console.error('=== Phase 2 tmux-claude MCP Server initialized (enhanced tools, sequential mode) ===');
         }
         
         this.requestId = 0;
