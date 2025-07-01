@@ -194,7 +194,7 @@ class DebugKeywordMonitor extends EventEmitter {
   isActualCompletionSignal(line, keyword) {
     const trimmedLine = line.trim();
     
-    // Ignore if keyword appears in todo lists or planning content
+    // Ignore if keyword appears in planning, thinking, or instructional content
     if (trimmedLine.includes('☐') ||  // Todo checkbox
         trimmedLine.includes('□') ||  // Alt todo checkbox
         trimmedLine.includes('⎿') ||  // Todo branch
@@ -204,19 +204,31 @@ class DebugKeywordMonitor extends EventEmitter {
         trimmedLine.includes('and ' + keyword) ||
         trimmedLine.includes('using ' + keyword) ||
         trimmedLine.includes('say ' + keyword) ||
-        trimmedLine.includes('type ' + keyword)) {
+        trimmedLine.includes('Say ' + keyword) ||
+        trimmedLine.includes('type ' + keyword) ||
+        trimmedLine.includes('Execute step') ||
+        trimmedLine.includes('Step ') ||
+        trimmedLine.includes('execute it') ||
+        trimmedLine.includes('plan:') ||
+        trimmedLine.includes('todo list') ||
+        trimmedLine.includes('Create') ||
+        trimmedLine.includes('Analyze') ||
+        trimmedLine.includes('then execute') ||
+        trimmedLine.includes(': Say') ||
+        trimmedLine.includes('. Say') ||
+        trimmedLine.match(/^\d+\./) ||  // Numbered list items
+        trimmedLine.includes('Let me') ||
+        trimmedLine.includes('I need to') ||
+        trimmedLine.includes('I will') ||
+        trimmedLine.includes('I should')) {
       return false;
     }
     
-    // Look for actual completion signals - keyword appears prominently
-    // Either standalone or with completion markers
+    // Only accept the keyword if it appears as a true standalone completion signal
     return (
-      trimmedLine === keyword ||  // Standalone keyword
-      trimmedLine.startsWith(keyword) ||  // Starts with keyword
-      trimmedLine.includes('⏺ ' + keyword) ||  // With Claude marker
-      trimmedLine.includes('✅ ' + keyword) ||  // With checkmark
-      trimmedLine.includes('🎉 ' + keyword) ||  // With celebration
-      (trimmedLine.includes(keyword) && trimmedLine.length < 50)  // Short line with keyword
+      trimmedLine === keyword ||  // Exactly the keyword alone
+      trimmedLine === `⏺ ${keyword}` ||  // With Claude marker only
+      (trimmedLine.startsWith('⏺') && trimmedLine.endsWith(keyword) && trimmedLine.length < keyword.length + 10)  // Very short Claude output ending with keyword
     );
   }
 
