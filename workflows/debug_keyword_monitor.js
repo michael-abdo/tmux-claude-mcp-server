@@ -116,22 +116,14 @@ class DebugKeywordMonitor extends EventEmitter {
             console.log(`🟡 Starting user command block at line ${i}: "${trimmedLine.substring(0, 50)}..."`);
           }
           
+          // Additional check: if we see another ">" line, we're definitely still in user input
+          if (trimmedLine.startsWith('>') && inUserCommand) {
+            console.log(`🟡 Continuing user command block at line ${i}: "${trimmedLine.substring(0, 50)}..."`);
+          }
+          
           // Detect end of user command (Claude output starts)
-          if (inUserCommand && (
-            trimmedLine.includes('⏺') ||  // Claude output marker
-            (trimmedLine.length > 0 && 
-             !trimmedLine.startsWith('>') && 
-             !trimmedLine.startsWith('│') &&
-             !trimmedLine.startsWith('╭') &&
-             !trimmedLine.startsWith('╰') &&
-             !trimmedLine.startsWith('┌') &&
-             !trimmedLine.startsWith('└') &&
-             !trimmedLine.startsWith('├') &&
-             !trimmedLine.startsWith('─') &&
-             !trimmedLine.startsWith(' ') &&  // Not indented continuation
-             !trimmedLine.match(/^[a-zA-Z]+:/) &&  // Not a field like "type:"
-             trimmedLine.length > 10)  // Substantial content
-          )) {
+          // Be very conservative - only end on definitive Claude markers
+          if (inUserCommand && trimmedLine.includes('⏺')) {
             inUserCommand = false;
             console.log(`🟢 Ending user command block at line ${i}: "${trimmedLine.substring(0, 50)}..."`);
           }
@@ -142,7 +134,11 @@ class DebugKeywordMonitor extends EventEmitter {
                                trimmedLine.startsWith('>') || 
                                line.includes('plz say') || 
                                line.includes('please say') ||
-                               line.includes('type:');
+                               line.includes('type:') ||
+                               // Additional safety checks for obvious user input patterns
+                               (line.includes('Todo:') && line.includes(keyword)) ||
+                               (line.includes('Task:') && line.includes(keyword)) ||
+                               (line.includes('Given the following') && line.includes(keyword));
             
             if (isUserInput) {
               console.log(`🚫 Ignoring keyword in user input (multi-line=${inUserCommand}): "${trimmedLine.substring(0, 100)}..."`);
