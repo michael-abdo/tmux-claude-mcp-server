@@ -1,0 +1,27 @@
+{
+  "instanceId": "YOUR_INSTANCE_ID",
+  "taskDescription": "Create a function that validates email addresses using regex",
+  "chains": [
+    {
+      "keyword": "IMPLEMENTED",
+      "instruction": "Now validate your implementation. For the task '{{TASK}}', please: 1) Test with valid emails like test@example.com, 2) Test with invalid emails like 'not-an-email', 3) Check edge cases. Show the test results. End by saying TESTED",
+      "nextKeyword": "TESTED"
+    },
+    {
+      "keyword": "TESTED", 
+      "instruction": "Great testing! Now finalize the task '{{TASK}}' by: 1) Adding JSDoc comments, 2) Making any improvements based on test results, 3) Providing a final summary. End by saying COMPLETE",
+      "nextKeyword": "COMPLETE"
+    },
+    {
+      "keyword": "COMPLETE",
+      "instruction": "🎉 Excellent work! You have successfully completed all stages for: '{{TASK}}'"
+    }
+  ],
+  "initialPrompt": "Please implement the following: '{{TASK}}'. Create a working solution and show the code. When done, say IMPLEMENTED",
+  "options": {
+    "pollInterval": 5,
+    "timeout": 600,
+    "retryAttempts": 3,
+    "retryDelay": 2
+  }
+}
