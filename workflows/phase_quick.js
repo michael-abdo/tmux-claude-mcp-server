@@ -9,6 +9,11 @@
 
 import { spawn } from 'child_process';
 import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 async function main() {
   const args = process.argv.slice(2);
@@ -64,8 +69,9 @@ The workflow will automatically progress through all stages!
   console.log('\n🔗 Starting phase implementation workflow...\n');
   
   // Build the command
-  const configPath = path.join(process.cwd(), 'phase_implementation_workflow.json');
-  const launcherArgs = ['task_chain_launcher.js', configPath];
+  const configPath = path.join(__dirname, 'phase_implementation_workflow.json');
+  const launcherPath = path.join(__dirname, 'task_chain_launcher.js');
+  const launcherArgs = [launcherPath, configPath];
   if (instanceId) {
     launcherArgs.push(instanceId);
   }

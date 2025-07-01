@@ -193,7 +193,8 @@ The task will automatically progress through each stage!
     
     // Run the task chain launcher
     console.log('🔗 Starting task chain...\n');
-    const launcher = spawn('node', ['task_chain_launcher.js', configFile], {
+    const launcherPath = path.join(__dirname, 'task_chain_launcher.js');
+    const launcher = spawn('node', [launcherPath, configFile], {
       stdio: 'inherit',
       cwd: process.cwd()
     });

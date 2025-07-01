@@ -6,8 +6,15 @@
 
 import { EventEmitter } from 'events';
 import { createRequire } from 'module';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 const require = createRequire(import.meta.url);
-const MCPBridge = require('../src/workflow/mcp_bridge.cjs');
+const mcpBridgePath = join(__dirname, '..', 'src', 'workflow', 'mcp_bridge.cjs');
+const MCPBridge = require(mcpBridgePath);
 
 class DebugKeywordMonitor extends EventEmitter {
   constructor(options) {
