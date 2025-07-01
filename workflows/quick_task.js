@@ -31,6 +31,11 @@ const STAGE_PRESETS = {
     { keyword: "ANALYZED", nextStage: "refactor", nextKeyword: "REFACTORED" },
     { keyword: "REFACTORED", nextStage: "test", nextKeyword: "TESTED" },
     { keyword: "TESTED", nextStage: "commit", nextKeyword: "COMMITTED" }
+  ],
+  phase: [
+    { keyword: "EXECUTE_FINISHED", nextStage: "compare", nextKeyword: "COMPARISON FINISHED" },
+    { keyword: "COMPARISON FINISHED", nextStage: "deduplicate", nextKeyword: "DUPLICATION_ELIMINATED" },
+    { keyword: "DUPLICATION_ELIMINATED", nextStage: "cleanup", nextKeyword: "***COMMIT FINISHED***" }
   ]
 };
 
@@ -43,7 +48,10 @@ const STAGE_INSTRUCTIONS = {
   verify: "Good fix! Now verify that '{{TASK}}' is fully resolved. Run tests to confirm.",
   refactor: "Good analysis! Now refactor the code for '{{TASK}}' following best practices.",
   commit: "Great work! Now create a git commit for '{{TASK}}' with a clear commit message.",
-  finalize: "Perfect! Now provide a final summary of '{{TASK}}' including what was done and any important notes."
+  finalize: "Perfect! Now provide a final summary of '{{TASK}}' including what was done and any important notes.",
+  compare: "Compare the implementation against requirements. List completed, missing, partial items and deviations.",
+  deduplicate: "Eliminate all duplicated functionality. Identify semantic twins and consolidate to canonical implementations.",
+  cleanup: "Clean up code, update documentation, run tests, and commit all changes."
 };
 
 function parseArgs(args) {
@@ -156,6 +164,7 @@ AVAILABLE PRESETS:
   default: implement → test → document → finalize
   debug:   reproduce → diagnose → fix → verify  
   review:  analyze → refactor → test → commit
+  phase:   execute → compare → deduplicate → cleanup
 
 The task will automatically progress through each stage!
     `);
