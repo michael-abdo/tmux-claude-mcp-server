@@ -4,7 +4,9 @@
  * Usage: node debug_keyword_monitor.js <instanceId> <keyword>
  */
 
-const EventEmitter = require('events');
+import { EventEmitter } from 'events';
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
 const MCPBridge = require('../src/workflow/mcp_bridge.cjs');
 
 class DebugKeywordMonitor extends EventEmitter {
@@ -97,26 +99,60 @@ class DebugKeywordMonitor extends EventEmitter {
       for (const keyword of keywords) {
         console.log(`🔎 Checking for: "${keyword}"`);
         
-        if (this.outputBuffer.includes(keyword)) {
-          console.log('🎉 KEYWORD DETECTED!');
-          console.log(`✅ Found: "${keyword}"`);
-          
-          // Show context
-          const keywordIndex = this.outputBuffer.lastIndexOf(keyword);
-          const contextStart = Math.max(0, keywordIndex - 100);
-          const contextEnd = Math.min(this.outputBuffer.length, keywordIndex + keyword.length + 100);
-          const context = this.outputBuffer.slice(contextStart, contextEnd);
-          
-          console.log('📍 Context around keyword:');
-          console.log('═'.repeat(60));
-          console.log(context);
-          console.log('═'.repeat(60));
-          
-          this.stop();
-          this.emit('keyword_detected', context, keyword);
-          return;
-        } else {
-          console.log(`❌ Not found: "${keyword}"`);
+        // Split buffer into lines to check each line's context
+        const lines = this.outputBuffer.split('\n');
+        let foundValidKeyword = false;
+        
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+          if (line.includes(keyword)) {
+            // Check if this line starts with '>' (user input) or contains 'plz say'
+            const isUserInput = line.trim().startsWith('>') || 
+                               line.includes('plz say') || 
+                               line.includes('please say') ||
+                               line.includes('type:');
+            
+            if (isUserInput) {
+              console.log(`🚫 Ignoring keyword in user input: "${line.trim()}"`);
+              continue;
+            }
+            
+            // Check if line starts with Claude's output marker (⏺ or starts with text)
+            const isClaudeOutput = line.includes('⏺') || 
+                                  (line.trim().length > 0 &&
+                                   !line.trim().startsWith('>') && 
+                                   !line.trim().startsWith('│') &&
+                                   !line.trim().startsWith('╭') &&
+                                   !line.trim().startsWith('╰'));
+            
+            if (isClaudeOutput) {
+              foundValidKeyword = true;
+              console.log('🎉 KEYWORD DETECTED IN CLAUDE OUTPUT!');
+              console.log(`✅ Found: "${keyword}" in line: "${line.trim()}"`);
+              
+              // Show context
+              const keywordIndex = this.outputBuffer.lastIndexOf(keyword);
+              const contextStart = Math.max(0, keywordIndex - 200);
+              const contextEnd = Math.min(this.outputBuffer.length, keywordIndex + keyword.length + 200);
+              const context = this.outputBuffer.slice(contextStart, contextEnd);
+              
+              console.log('📍 Context around keyword:');
+              console.log('═'.repeat(60));
+              console.log(context);
+              console.log('═'.repeat(60));
+              
+              this.stop();
+              this.emit('keyword_detected', context, keyword);
+              return;
+            } else {
+              // Debug: show why line was not considered Claude output
+              console.log(`🔸 Line with keyword not detected as Claude output: "${line.trim().substring(0, 50)}..."`);
+            }
+          }
+        }
+        
+        if (!foundValidKeyword) {
+          console.log(`❌ Not found in Claude output: "${keyword}"`);
         }
       }
       
@@ -138,7 +174,7 @@ class DebugKeywordMonitor extends EventEmitter {
 }
 
 // CLI usage
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   const instanceId = process.argv[2];
   const keyword = process.argv[3];
   
@@ -180,4 +216,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = DebugKeywordMonitor;
+export default DebugKeywordMonitor;
