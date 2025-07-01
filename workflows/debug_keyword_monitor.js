@@ -149,10 +149,18 @@ class DebugKeywordMonitor extends EventEmitter {
               continue;
             }
             
-            // This is Claude output containing the keyword
+            // Check if this is a completion signal vs just mentioning the keyword
+            const isCompletionSignal = this.isActualCompletionSignal(line, keyword);
+            
+            if (!isCompletionSignal) {
+              console.log(`🔸 Keyword found but not as completion signal: "${trimmedLine.substring(0, 100)}..."`);
+              continue;
+            }
+            
+            // This is Claude output with actual completion signal
             foundValidKeyword = true;
-            console.log('🎉 KEYWORD DETECTED IN CLAUDE OUTPUT!');
-            console.log(`✅ Found: "${keyword}" in line: "${trimmedLine}"`);
+            console.log('🎉 COMPLETION KEYWORD DETECTED IN CLAUDE OUTPUT!');
+            console.log(`✅ Found completion signal: "${keyword}" in line: "${trimmedLine}"`);
             
             // Show context
             const keywordIndex = this.outputBuffer.lastIndexOf(keyword);
@@ -182,6 +190,38 @@ class DebugKeywordMonitor extends EventEmitter {
       console.error('💥 Error in checkOutput:', error);
       throw error;
     }
+  }
+
+  /**
+   * Check if keyword appears as actual completion signal vs just mentioned in content
+   */
+  isActualCompletionSignal(line, keyword) {
+    const trimmedLine = line.trim();
+    
+    // Ignore if keyword appears in todo lists or planning content
+    if (trimmedLine.includes('☐') ||  // Todo checkbox
+        trimmedLine.includes('□') ||  // Alt todo checkbox
+        trimmedLine.includes('⎿') ||  // Todo branch
+        trimmedLine.includes('Document') ||
+        trimmedLine.includes('signal completion') ||
+        trimmedLine.includes('with ' + keyword) ||
+        trimmedLine.includes('and ' + keyword) ||
+        trimmedLine.includes('using ' + keyword) ||
+        trimmedLine.includes('say ' + keyword) ||
+        trimmedLine.includes('type ' + keyword)) {
+      return false;
+    }
+    
+    // Look for actual completion signals - keyword appears prominently
+    // Either standalone or with completion markers
+    return (
+      trimmedLine === keyword ||  // Standalone keyword
+      trimmedLine.startsWith(keyword) ||  // Starts with keyword
+      trimmedLine.includes('⏺ ' + keyword) ||  // With Claude marker
+      trimmedLine.includes('✅ ' + keyword) ||  // With checkmark
+      trimmedLine.includes('🎉 ' + keyword) ||  // With celebration
+      (trimmedLine.includes(keyword) && trimmedLine.length < 50)  // Short line with keyword
+    );
   }
 
   stop() {
