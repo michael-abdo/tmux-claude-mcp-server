@@ -14,18 +14,8 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import fs from 'fs';
 import { spawn } from 'child_process';
-import { createRequire } from 'module';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-// Import with absolute paths
-const chainMonitorPath = join(__dirname, 'chain_keyword_monitor.js');
-const { ChainKeywordMonitor } = await import(chainMonitorPath);
-
-const require = createRequire(import.meta.url);
-const mcpBridgePath = join(__dirname, '..', 'src', 'workflow', 'mcp_bridge.cjs');
-const MCPBridge = require(mcpBridgePath);
+import { ChainKeywordMonitor } from './chain_keyword_monitor.js';
+import { createMCPBridge, replaceTemplatePlaceholders, getLatestInstanceId as getLatestInstance } from './shared/workflow_utils.js';
 
 async function loadTaskConfig(configPath) {
   try {
@@ -48,17 +38,7 @@ async function loadTaskConfig(configPath) {
   }
 }
 
-function replaceTaskPlaceholder(text, taskDescription) {
-  return text.replace(/\{\{TASK\}\}/g, taskDescription);
-}
 
-async function getLatestInstanceId(bridge) {
-  const result = await bridge.list({});
-  if (!result.success || !result.instances || result.instances.length === 0) {
-    throw new Error('No active instances found');
-  }
-  return result.instances[result.instances.length - 1].instanceId;
-}
 
 async function main() {
   const configPath = process.argv[2];
@@ -80,11 +60,11 @@ async function main() {
     const config = await loadTaskConfig(configPath);
     
     // Get instance ID if not provided
-    const bridge = new MCPBridge();
+    const bridge = createMCPBridge();
     if (!instanceId) {
       console.log('🔍 Finding latest instance...');
       instanceId = config.instanceId === 'YOUR_INSTANCE_ID' 
-        ? await getLatestInstanceId(bridge)
+        ? await getLatestInstance(bridge)
         : config.instanceId;
     }
     
@@ -97,12 +77,12 @@ async function main() {
       instanceId,
       chains: config.chains.map(chain => ({
         ...chain,
-        instruction: replaceTaskPlaceholder(chain.instruction, config.taskDescription)
+        instruction: replaceTemplatePlaceholders(chain.instruction, { TASK: config.taskDescription })
       }))
     };
     
     // Prepare initial prompt
-    const initialPrompt = replaceTaskPlaceholder(config.initialPrompt, config.taskDescription);
+    const initialPrompt = replaceTemplatePlaceholders(config.initialPrompt, { TASK: config.taskDescription });
     
     console.log('\n📨 Sending initial prompt to start the chain...');
     console.log('━'.repeat(60));
