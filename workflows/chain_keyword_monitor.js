@@ -32,18 +32,7 @@
  */
 
 import { EventEmitter } from 'events';
-import { createRequire } from 'module';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const require = createRequire(import.meta.url);
-const mcpBridgePath = join(__dirname, '..', 'src', 'workflow', 'mcp_bridge.cjs');
-const MCPBridge = require(mcpBridgePath);
+import { createMCPBridge, isActualCompletionSignal, loadConfig } from './shared/workflow_utils.js';
 
 class ChainKeywordMonitor extends EventEmitter {
   constructor(config) {
@@ -83,7 +72,7 @@ class ChainKeywordMonitor extends EventEmitter {
     this.lastDetectedPosition = new Map();
     
     // MCP Bridge
-    this.bridge = new MCPBridge();
+    this.bridge = createMCPBridge();
     
     // Build keyword map for quick lookup
     this.keywordMap = new Map();
@@ -261,9 +250,9 @@ class ChainKeywordMonitor extends EventEmitter {
         }
         
         // Check if this is a completion signal vs just mentioning the keyword
-        const isCompletionSignal = this.isActualCompletionSignal(line, keyword);
+        const isCompletion = isActualCompletionSignal(line, keyword);
         
-        if (!isCompletionSignal) {
+        if (!isCompletion) {
           console.log(`🔸 Keyword found but not as completion signal: "${trimmedLine.substring(0, 100)}..."`);
           continue;
         }
@@ -293,45 +282,6 @@ class ChainKeywordMonitor extends EventEmitter {
     return false;
   }
 
-  isActualCompletionSignal(line, keyword) {
-    const trimmedLine = line.trim();
-    
-    // Ignore if keyword appears in planning, thinking, or instructional content
-    const ignoredPatterns = [
-      '☐', '□', '⎿', 'Document', 'signal completion', 'with ' + keyword,
-      'and ' + keyword, 'using ' + keyword, 'say ' + keyword, 'Say ' + keyword,
-      'type ' + keyword, 'Execute step', 'Step ', 'execute it', 'plan:',
-      'todo list', 'Create', 'Analyze', 'then execute', ': Say', '. Say',
-      'Let me', 'I need to', 'I will', 'I should'
-    ];
-    
-    for (const pattern of ignoredPatterns) {
-      if (trimmedLine.includes(pattern)) {
-        return false;
-      }
-    }
-    
-    // Ignore numbered list items
-    if (trimmedLine.match(/^\d+\./)) {
-      return false;
-    }
-    
-    // For keywords ending with ':', accept pattern with any suffix
-    if (keyword.endsWith(':')) {
-      const keywordPattern = new RegExp('^' + keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\S*$');
-      return (
-        keywordPattern.test(trimmedLine) ||  // Keyword with suffix
-        keywordPattern.test(trimmedLine.replace(/^⏺\s*/, ''))  // With Claude marker
-      );
-    }
-    
-    // Only accept if keyword appears as true standalone completion signal
-    return (
-      trimmedLine === keyword ||  // Exactly the keyword alone
-      trimmedLine === `⏺ ${keyword}` ||  // With Claude marker only
-      (trimmedLine.startsWith('⏺') && trimmedLine.endsWith(keyword) && trimmedLine.length < keyword.length + 10)
-    );
-  }
 
   async executeChainAction(chainConfig) {
     const { keyword, instruction, nextKeyword, chainIndex } = chainConfig;
@@ -428,20 +378,6 @@ class ChainKeywordMonitor extends EventEmitter {
   }
 }
 
-// CLI usage and configuration loading
-async function loadConfig(configPath) {
-  try {
-    const configData = await fs.promises.readFile(configPath, 'utf8');
-    return JSON.parse(configData);
-  } catch (error) {
-    if (error.code === 'ENOENT') {
-      throw new Error(`Config file not found: ${configPath}`);
-    } else if (error instanceof SyntaxError) {
-      throw new Error(`Invalid JSON in config file: ${error.message}`);
-    }
-    throw error;
-  }
-}
 
 async function main() {
   const configPath = process.argv[2];
