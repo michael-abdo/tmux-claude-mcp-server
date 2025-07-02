@@ -239,7 +239,12 @@ class ChainKeywordMonitor extends EventEmitter {
         console.log(`🟢 User command ended at line ${i}`);
       }
       
-      if (line.includes(keyword)) {
+      // Check for keyword with flexible matching for colon patterns
+      const hasKeyword = keyword.endsWith(':') ? 
+        new RegExp(keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\S*').test(line) :
+        line.includes(keyword);
+        
+      if (hasKeyword) {
         // Check if this is user input
         const isUserInput = inUserCommand || 
                            trimmedLine.startsWith('>') || 
@@ -309,6 +314,15 @@ class ChainKeywordMonitor extends EventEmitter {
     // Ignore numbered list items
     if (trimmedLine.match(/^\d+\./)) {
       return false;
+    }
+    
+    // For keywords ending with ':', accept pattern with any suffix
+    if (keyword.endsWith(':')) {
+      const keywordPattern = new RegExp('^' + keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\S*$');
+      return (
+        keywordPattern.test(trimmedLine) ||  // Keyword with suffix
+        keywordPattern.test(trimmedLine.replace(/^⏺\s*/, ''))  // With Claude marker
+      );
     }
     
     // Only accept if keyword appears as true standalone completion signal
