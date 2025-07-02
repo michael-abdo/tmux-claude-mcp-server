@@ -5,7 +5,7 @@
  */
 
 import { InstanceManager } from '../../src/instance_manager.js';
-import { MCPTools } from '../../src/mcp_tools.js';
+import { EnhancedMCPTools } from '../../src/enhanced_mcp_tools.js';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -47,7 +47,7 @@ async function runTest() {
     
     const stateDir = path.join(TEST_DIR, 'state');
     const instanceManager = new InstanceManager(stateDir);
-    const mcpTools = new MCPTools(instanceManager);
+    const mcpTools = new EnhancedMCPTools(instanceManager);
     
     try {
         // 1. Create test file in shared workspace

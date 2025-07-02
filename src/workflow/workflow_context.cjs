@@ -1,250 +1,197 @@
 /**
  * Workflow Context - Manages workflow state and variable interpolation
- * Supports task ID mode and simple mode with smart pattern handling
  */
 
 const fs = require('fs').promises;
 const path = require('path');
-const { v4: uuidv4 } = require('uuid');
 
 class WorkflowContext {
   constructor(initialData = {}) {
     this.data = {
       workflow: {
-        id: uuidv4(),
         start_time: Date.now(),
         ...initialData.workflow
       },
-      settings: {
-        useTaskIds: false,
-        poll_interval: 5,
-        timeout: 300,
-        instance_role: 'specialist',
-        workspace_mode: 'isolated',
-        ...initialData.settings
-      },
-      stages: {},
-      instances: {},
-      vars: {},
+      settings: initialData.settings || {},
+      stage: {},
+      instance: {},
       actions: {},
-      ...initialData
+      stages: {},
+      vars: {},
+      env: process.env
     };
-    
-    // Generate current task ID if using task IDs
-    if (this.data.settings.useTaskIds) {
-      this.data.vars.current_task_id = this.generateTaskId();
-    }
   }
-  
-  // Get value by dot notation path
+
+  // Get a value from the context using dot notation
   get(path) {
-    return this.getNestedValue(this.data, path);
+    const parts = path.split('.');
+    let current = this.data;
+    
+    for (const part of parts) {
+      if (current && typeof current === 'object' && part in current) {
+        current = current[part];
+      } else {
+        return undefined;
+      }
+    }
+    
+    return current;
   }
-  
-  // Set value by dot notation path
+
+  // Set a value in the context using dot notation
   set(path, value) {
-    this.setNestedValue(this.data, path, value);
+    const parts = path.split('.');
+    const lastPart = parts.pop();
+    let current = this.data;
+    
+    for (const part of parts) {
+      if (!(part in current) || typeof current[part] !== 'object') {
+        current[part] = {};
+      }
+      current = current[part];
+    }
+    
+    current[lastPart] = value;
   }
-  
-  // Update stage information
+
+  // Check if a path exists
+  has(path) {
+    return this.get(path) !== undefined;
+  }
+
+  // Set current stage information
   setStage(stageId, stageData) {
-    this.data.stages[stageId] = {
-      ...this.data.stages[stageId],
+    this.data.stage = {
+      id: stageId,
       ...stageData
     };
+    
+    // Initialize stage history
+    if (!this.data.stages[stageId]) {
+      this.data.stages[stageId] = {
+        id: stageId,
+        ...stageData
+      };
+    }
   }
-  
-  // Update existing stage
+
+  // Update stage information
   updateStage(stageId, updates) {
     if (this.data.stages[stageId]) {
       Object.assign(this.data.stages[stageId], updates);
     }
+    
+    // Update current stage if it matches
+    if (this.data.stage.id === stageId) {
+      Object.assign(this.data.stage, updates);
+    }
   }
-  
-  // Interpolate template string with context variables
+
+  // Interpolate a string with context variables
   interpolate(template) {
     if (typeof template !== 'string') {
       return template;
     }
     
-    let result = template;
-    
-    // ARCHITECTURAL FX: Handle task ID patterns intelligently when task IDs are disabled
-    if (!this.get('settings.useTaskIds')) {
-      // Smart pattern removal for common task ID patterns
-      result = result
-        .replace(/\$\{current_task_id\}_([A-Z_]+)/g, '$1')
-        .replace(/([A-Z_]+)_\$\{current_task_id\}_([A-Z_]+)/g, '$1_$2')
-        .replace(/\$\{current_task_id\}/g, '');
-    }
-    
-    // Standard variable interpolation
-    result = result.replace(/\$\{([^}]+)\}/g, (match, path) => {
-      const value = this.get(path);
-      return value !== undefined ? value : match;
+    // Handle ${variable} syntax
+    return template.replace(/\${([^}]+)}/g, (match, expression) => {
+      try {
+        // Check if it's a simple path
+        if (/^[\w.]+$/.test(expression)) {
+          const value = this.get(expression);
+          if (value === undefined) {
+            return match; // Keep original if not found
+          }
+          return typeof value === 'object' ? JSON.stringify(value) : String(value);
+        }
+        
+        // Evaluate more complex expressions
+        // Create a safe evaluation context
+        const context = this.createEvalContext();
+        const result = new Function(...Object.keys(context), `return ${expression}`)(...Object.values(context));
+        
+        return typeof result === 'object' ? JSON.stringify(result) : String(result);
+      } catch (error) {
+        console.warn(`Failed to interpolate expression: ${expression}`, error);
+        return match;
+      }
     });
-    
-    return result;
   }
-  
-  // Generate a unique task ID
-  generateTaskId() {
-    return `task_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
-  }
-  
-  // Get nested value using dot notation
-  getNestedValue(obj, path) {
-    const keys = path.split('.');
-    let current = obj;
-    
-    for (const key of keys) {
-      if (current === null || current === undefined) {
-        return undefined;
-      }
-      current = current[key];
-    }
-    
-    return current;
-  }
-  
-  // Set nested value using dot notation
-  setNestedValue(obj, path, value) {
-    const keys = path.split('.');
-    let current = obj;
-    
-    for (let i = 0; i < keys.length - 1; i++) {
-      const key = keys[i];
-      if (!(key in current) || typeof current[key] !== 'object' || current[key] === null) {
-        current[key] = {};
-      }
-      current = current[key];
-    }
-    
-    current[keys[keys.length - 1]] = value;
-  }
-  
-  // Get current stage information
-  getCurrentStage() {
-    const stages = this.data.stages;
-    const stageIds = Object.keys(stages);
-    
-    // Find the most recently started stage
-    let currentStage = null;
-    let latestStartTime = 0;
-    
-    for (const stageId of stageIds) {
-      const stage = stages[stageId];
-      if (stage.status === 'running' && stage.start_time > latestStartTime) {
-        latestStartTime = stage.start_time;
-        currentStage = { id: stageId, ...stage };
-      }
-    }
-    
-    return currentStage;
-  }
-  
-  // Get all active instances
-  getActiveInstances() {
-    return { ...this.data.instances };
-  }
-  
-  // Add instance to tracking
-  addInstance(instanceId, instanceData) {
-    this.data.instances[instanceId] = {
-      created_at: Date.now(),
-      status: 'active',
-      ...instanceData
-    };
-  }
-  
-  // Remove instance from tracking
-  removeInstance(instanceId) {
-    delete this.data.instances[instanceId];
-  }
-  
-  // Get workflow summary
-  getSummary() {
+
+  // Create a safe context for expression evaluation
+  createEvalContext() {
     return {
+      // Direct access to context data
       workflow: this.data.workflow,
       settings: this.data.settings,
-      stages: Object.keys(this.data.stages).length,
-      instances: Object.keys(this.data.instances).length,
-      variables: Object.keys(this.data.vars).length
+      stage: this.data.stage,
+      instance: this.data.instance,
+      actions: this.data.actions,
+      stages: this.data.stages,
+      vars: this.data.vars,
+      env: this.data.env,
+      
+      // Utility functions
+      JSON: JSON,
+      Math: Math,
+      Date: Date,
+      parseInt: parseInt,
+      parseFloat: parseFloat,
+      String: String,
+      Number: Number,
+      Boolean: Boolean,
+      Array: Array,
+      Object: Object,
+      
+      // Helper functions
+      timestamp: () => new Date().toISOString(),
+      now: () => Date.now(),
+      random: () => Math.random()
     };
   }
-  
-  // Export context for debugging
-  export() {
-    return JSON.parse(JSON.stringify(this.data));
+
+  // Get a summary of the current context state
+  getSummary() {
+    return {
+      workflow: {
+        id: this.data.workflow.id,
+        name: this.data.workflow.name,
+        run_id: this.data.workflow.run_id,
+        duration: Date.now() - this.data.workflow.start_time
+      },
+      current_stage: this.data.stage.id,
+      completed_stages: Object.keys(this.data.stages).filter(
+        id => this.data.stages[id].status === 'completed'
+      ),
+      variables: Object.keys(this.data.vars),
+      actions_count: Object.keys(this.data.actions).length
+    };
   }
-  
+
   // Save context to file
   async save(filePath) {
-    if (!filePath) {
-      filePath = path.join(process.cwd(), 'workflow_context.json');
-    }
+    const savePath = filePath || path.join(
+      'workflow_state',
+      `${this.data.workflow.run_id}.json`
+    );
     
-    const contextData = {
-      ...this.data,
-      saved_at: Date.now()
-    };
+    await fs.mkdir(path.dirname(savePath), { recursive: true });
+    await fs.writeFile(savePath, JSON.stringify(this.data, null, 2));
     
-    await fs.writeFile(filePath, JSON.stringify(contextData, null, 2));
-    console.log(`💾 Context saved to: ${filePath}`);
+    console.log(`Saved workflow context to: ${savePath}`);
+    return savePath;
   }
-  
+
   // Load context from file
   static async load(filePath) {
-    try {
-      const content = await fs.readFile(filePath, 'utf8');
-      const data = JSON.parse(content);
-      
-      // Remove saved_at timestamp
-      delete data.saved_at;
-      
-      return new WorkflowContext(data);
-    } catch (error) {
-      throw new Error(`Failed to load context from ${filePath}: ${error.message}`);
-    }
+    const content = await fs.readFile(filePath, 'utf8');
+    const data = JSON.parse(content);
+    return new WorkflowContext(data);
   }
-  
-  // Create context from workflow config
-  static fromConfig(config, options = {}) {
-    return new WorkflowContext({
-      workflow: {
-        id: config.id || uuidv4(),
-        name: config.name,
-        version: config.version,
-        description: config.description
-      },
-      settings: {
-        ...config.settings,
-        ...options
-      }
-    });
-  }
-  
-  // Enable/disable task ID mode
-  setTaskIdMode(enabled) {
-    this.data.settings.useTaskIds = enabled;
-    
-    if (enabled && !this.data.vars.current_task_id) {
-      this.data.vars.current_task_id = this.generateTaskId();
-    }
-    
-    console.log(`Task ID mode: ${enabled ? 'enabled' : 'disabled'}`);
-  }
-  
-  // Get debug information
-  getDebugInfo() {
-    return {
-      context_size: JSON.stringify(this.data).length,
-      variables: Object.keys(this.data.vars),
-      instances: Object.keys(this.data.instances),
-      stages: Object.keys(this.data.stages),
-      task_id_mode: this.data.settings.useTaskIds,
-      current_task_id: this.data.vars.current_task_id
-    };
+
+  // Clone the context
+  clone() {
+    return new WorkflowContext(JSON.parse(JSON.stringify(this.data)));
   }
 }
 

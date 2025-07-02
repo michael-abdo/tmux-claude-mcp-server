@@ -1,0 +1,44 @@
+name: "Simple Script Test"
+version: "1.0"
+description: "Test script execution and variable passing"
+
+settings:
+  poll_interval: 2
+  timeout: 60
+
+stages:
+  - id: "run_simple_script"
+    name: "Run Echo Script"
+    prompt: |
+      I'm going to run a simple script test. Say "***READY_FOR_SCRIPT***" when you're ready.
+    
+    trigger_keyword: "***READY_FOR_SCRIPT***"
+    
+    on_success:
+      # Run a simple echo command
+      - action: "run_script"
+        script: "echo"
+        args: ["Hello from workflow script!"]
+        capture_output: true
+        output_var: "echo_result"
+      
+      - action: "log"
+        message: "Script output: ${echo_result.stdout}"
+      
+      - action: "send_prompt"
+        target: "same_instance"
+        prompt: |
+          The script ran successfully and output: "${echo_result.stdout}"
+          
+          Now say "***SCRIPT_TEST_DONE***"
+        next_stage: "finish"
+
+  - id: "finish"
+    name: "Finish Test"
+    trigger_keyword: "***SCRIPT_TEST_DONE***"
+    
+    on_success:
+      - action: "log"
+        message: "SUCCESS: Script workflow test completed!"
+      
+      - action: "complete_workflow"

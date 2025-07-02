@@ -1,0 +1,27 @@
+{
+  "instanceId": "YOUR_INSTANCE_ID",
+  "taskDescription": "Implement a robust error handling system for the workflow orchestration module that catches all exceptions, logs them properly, and provides meaningful error messages to users",
+  "chains": [
+    {
+      "keyword": "EXECUTION_COMPLETE",
+      "instruction": "Great! Now let's validate the implementation. Take the original task: '{{TASK}}' and compare your execution results against the original requirements. Check: 1) Does it meet all stated requirements? 2) Are there any edge cases not covered? 3) Does it follow best practices? End by saying VALIDATION_COMPLETE",
+      "nextKeyword": "VALIDATION_COMPLETE"
+    },
+    {
+      "keyword": "VALIDATION_COMPLETE",
+      "instruction": "Excellent validation! Now let's finalize. For the task: '{{TASK}}' please: 1) Clean up any debug code or temporary files, 2) Add appropriate comments and documentation, 3) Create a git commit with a clear message describing what was implemented. End by saying TASK_FINALIZED",
+      "nextKeyword": "TASK_FINALIZED"
+    },
+    {
+      "keyword": "TASK_FINALIZED",
+      "instruction": "🎉 Outstanding work! You have successfully completed the entire workflow for: '{{TASK}}'. The implementation has been executed, validated, and committed. Great job!"
+    }
+  ],
+  "initialPrompt": "Please execute the following task: '{{TASK}}'. Focus on implementing a working solution that meets all the requirements. When you have completed the implementation, end by saying EXECUTION_COMPLETE",
+  "options": {
+    "pollInterval": 5,
+    "timeout": 2400,
+    "retryAttempts": 3,
+    "retryDelay": 2
+  }
+}

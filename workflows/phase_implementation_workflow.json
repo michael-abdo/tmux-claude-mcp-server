@@ -1,0 +1,32 @@
+{
+  "instanceId": "YOUR_INSTANCE_ID",
+  "taskDescription": "Implement the loaded phase requirements according to the implementation plan",
+  "chains": [
+    {
+      "keyword": "EXECUTE_FINISHED",
+      "instruction": "Excellent execution! Now let's compare the implementation against requirements.\n\nContext:\n- Phase file loaded: Original requirements and specifications\n- Git baseline: Compare against previous commit to assess actual implementation\n- Current state: What exists in the codebase now\n\nInstructions:\nMake a list of differences between original source and actual implementation:\n1. Scan Implementation Changes\n2. Compare Against Phase Requirements\n3. Gap Analysis\n4. Implementation Assessment\n\nExpected Output:\n- Completed Items: List of phase requirements that are fully implemented (think deeply)\n- Missing Items: Specific requirements not yet addressed (think deeply)\n- Partial Items: Tasks that are started but not finished (think deeply)\n- Deviations: Areas where implementation differs from specification (think deeply)\n\nTodo Integration:\nFor each missing or partial item:\n- Add specific todo item with clear action (think deeply)\n- Include file paths and function names where applicable (think deeply)\n- Reference the original phase requirement (think deeply)\n- Execute these gap-filling tasks immediately after identification (think deeply)\n\nWHEN YOU ARE DONE YOU MUST SAY \"COMPARISON_FINISHED\"",
+      "nextKeyword": "COMPARISON_FINISHED"
+    },
+    {
+      "keyword": "COMPARISON_FINISHED",
+      "instruction": "Great comparison! Now let's eliminate any duplicated functionality.\n\nYou are a senior code-base surgeon whose single mission is to eliminate all duplicated functionality—no matter its name, location, or cosmetic differences.\n\nConstraints & Deliverables:\n1. Scope every file. Build a quick inventory of modules, classes, and functions.\n2. Detect semantic twins. Compare logic, side-effects, inputs, and outputs—not just names or signatures—to flag true duplicates or near-duplicates.\n3. Choose the canonical implementation. Keep the most robust, well-tested version; deprecate or delete the rest.\n4. Refactor callers. Update import paths and invocations so every feature is provided by exactly one implementation.\n5. Regression safety. After each removal, run existing tests; where none exist, add minimal sanity tests before refactoring and ensure they still pass after.\n6. Commit hygiene. One logical duplicate per commit: message format REMOVE duplicate <function> from <file> → canonicalized in <file>.\n7. Documentation. Append a concise note in CHANGELOG.md describing what was consolidated and why.\n\nWhen complete, say DUPLICATION_ELIMINATED",
+      "nextKeyword": "DUPLICATION_ELIMINATED"
+    },
+    {
+      "keyword": "DUPLICATION_ELIMINATED", 
+      "instruction": "Excellent work on eliminating duplicates! Now let's finish with cleanup and documentation.\n\n# Finish Phase Cleanup and Documentation\n\n## Context\n- Phase completion: All requirements implemented and gaps addressed\n- Codebase state: Ready for cleanup and documentation\n- Git status: Prepare for phase commit\n\n## Instructions\nClean up, document, commit, and push the completed phase:\n\n1. **Code Cleanup**\n   - Remove any debug code, console logs, or temporary comments\n   - Ensure consistent code formatting and style\n   - Optimize any inefficient implementations\n   - Remove unused imports or variables\n   - Clean out any files from root folder\n\n2. **Documentation Updates**\n   - Review all existing documentation and apply only the minimal necessary edits—do **not** create new documents.\n   - Update **README.md** only if setup steps or feature descriptions have changed.\n   - Add or refine inline code comments where clarification is needed.\n   - Update documentation for any modified API endpoints or configuration settings.\n   - Apply minimal edits to relevant architecture or design documents to reflect recent changes.\n\n3. **Testing Verification**\n   - Run existing test suite to ensure no regressions\n   - Add any missing tests for new functionality\n   - Verify all critical paths work as expected\n   - Test edge cases and error conditions\n\n4. **Git Operations**\n   - Stage all relevant changes: `git add .`\n   - Create descriptive commit message referencing the phase\n   - Commit changes: `git commit -m \"Complete [Phase Name]: [brief summary]\"`\n   - Push to remote repository: `git push`\n\n## Expected Output\n- Clean, well-documented codebase\n- Comprehensive commit with descriptive message\n- Updated documentation reflecting new functionality\n- All changes pushed to repository\n\n## Todo Integration\n- Mark current phase as complete\n- Prepare for next phase iteration\n- Add any follow-up items or technical debt to future todos\n\nWHEN YOU ARE DONE YOU MUST SAY \"COMMIT_FINISHED\"",
+      "nextKeyword": "COMMIT_FINISHED"
+    },
+    {
+      "keyword": "COMMIT_FINISHED",
+      "instruction": "🎉 Congratulations! You have successfully completed the entire phase implementation workflow:\n\n✅ Phase Implementation Executed\n✅ Requirements vs Implementation Compared\n✅ Duplicated Functionality Eliminated\n✅ Code Cleaned, Documented, and Committed\n\nThe phase is now complete and pushed to the repository. Excellent work!"
+    }
+  ],
+  "initialPrompt": "Execute Phase Implementation\n\nTask: {{TASK}}\n\nContext:\n- Phase file loaded: Review the loaded phase requirements and implementation plan\n- Current codebase state: Assess existing code structure and identify entry points\n\nInstructions:\nPlease think deeply about implementing these steps next from the loaded phase:\n1. Analyze Phase Requirements\n2. Plan Implementation Strategy\n3. Execute Implementation\n4. Verify Implementation\n\nExpected Output:\n- Implemented code changes for the current phase (think deeply)\n- Clear progress updates on what was completed (think deeply)\n- Notes on any deviations from the original plan (think deeply)\n- Identification of any remaining tasks (think deeply)\n\nTodo Integration:\nAdd any unfinished or newly discovered tasks to the todo list with specific action items (think deeply)\n\nWHEN YOU ARE DONE YOU MUST SAY \"EXECUTE_FINISHED\"",
+  "options": {
+    "pollInterval": 5,
+    "timeout": 3600,
+    "retryAttempts": 3,
+    "retryDelay": 3
+  }
+}

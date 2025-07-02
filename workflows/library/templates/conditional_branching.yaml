@@ -1,0 +1,197 @@
+# Conditional Branching Workflow Template
+name: "{WORKFLOW_NAME}"
+version: "1.0"
+description: "Template for workflows with conditional logic and branching"
+
+settings:
+  poll_interval: 5
+  timeout: 300
+  instance_role: "specialist"
+
+stages:
+  - id: "analyze"
+    name: "Initial Analysis"
+    prompt: |
+      {ANALYSIS_PROMPT}
+      
+      Based on your analysis, respond with one of these keywords:
+      - "***CONDITION_A***" if {CONDITION_A_DESCRIPTION}
+      - "***CONDITION_B***" if {CONDITION_B_DESCRIPTION}
+      - "***CONDITION_C***" if {CONDITION_C_DESCRIPTION}
+    
+    trigger_keyword: "***CONDITION_A***|***CONDITION_B***|***CONDITION_C***"
+    
+    on_success:
+      # Branch based on detected condition
+      - action: "conditional"
+        condition: "${stage.keyword_detected} === '***CONDITION_A***'"
+        if_true:
+          - action: "log"
+            message: "Taking path A: {PATH_A_DESCRIPTION}"
+          - action: "send_prompt"
+            target: "same_instance"
+            next_stage: "path_a"
+        if_false:
+          - action: "conditional"
+            condition: "${stage.keyword_detected} === '***CONDITION_B***'"
+            if_true:
+              - action: "log"
+                message: "Taking path B: {PATH_B_DESCRIPTION}"
+              - action: "send_prompt"
+                target: "same_instance"
+                next_stage: "path_b"
+            if_false:
+              - action: "log"
+                message: "Taking path C: {PATH_C_DESCRIPTION}"
+              - action: "send_prompt"
+                target: "same_instance"
+                next_stage: "path_c"
+
+  - id: "path_a"
+    name: "Path A Processing"
+    prompt: |
+      {PATH_A_PROMPT}
+      
+      Say "***PATH_A_COMPLETE***" when finished.
+    
+    trigger_keyword: "***PATH_A_COMPLETE***"
+    
+    on_success:
+      # Path A specific actions
+      - action: "run_script"
+        script: "{PATH_A_SCRIPT}"
+        capture_output: true
+        output_var: "path_a_result"
+        on_failure: "continue"
+      
+      - action: "save_file"
+        path: "{PATH_A_OUTPUT}"
+        content: |
+          Path A Results:
+          ${stage.output}
+          
+          Script Output:
+          ${path_a_result.stdout}
+      
+      - action: "send_prompt"
+        target: "same_instance"
+        next_stage: "consolidate"
+
+  - id: "path_b"
+    name: "Path B Processing"
+    prompt: |
+      {PATH_B_PROMPT}
+      
+      Say "***PATH_B_COMPLETE***" when finished.
+    
+    trigger_keyword: "***PATH_B_COMPLETE***"
+    
+    on_success:
+      # Path B specific actions
+      - action: "http_request"
+        method: "POST"
+        url: "{PATH_B_WEBHOOK_URL}"
+        body:
+          workflow: "{WORKFLOW_NAME}"
+          path: "B"
+          data: "${stage.output}"
+        output_var: "path_b_result"
+        on_failure: "continue"
+      
+      - action: "save_file"
+        path: "{PATH_B_OUTPUT}"
+        content: |
+          Path B Results:
+          ${stage.output}
+          
+          API Response:
+          ${JSON.stringify(path_b_result.body)}
+      
+      - action: "send_prompt"
+        target: "same_instance"
+        next_stage: "consolidate"
+
+  - id: "path_c"
+    name: "Path C Processing"
+    prompt: |
+      {PATH_C_PROMPT}
+      
+      Say "***PATH_C_COMPLETE***" when finished.
+    
+    trigger_keyword: "***PATH_C_COMPLETE***"
+    
+    on_success:
+      # Path C specific actions
+      - action: "foreach"
+        items: "{PATH_C_ITEMS}"
+        item_var: "item"
+        actions:
+          - action: "transform"
+            input: "${item}"
+            operation: "{TRANSFORM_OPERATION}"
+            output_var: "transformed_item"
+          
+          - action: "log"
+            message: "Processed item: ${transformed_item}"
+      
+      - action: "save_file"
+        path: "{PATH_C_OUTPUT}"
+        content: |
+          Path C Results:
+          ${stage.output}
+          
+          Items processed: ${actions.items ? actions.items.length : 0}
+      
+      - action: "send_prompt"
+        target: "same_instance"
+        next_stage: "consolidate"
+
+  - id: "consolidate"
+    name: "Consolidate All Paths"
+    prompt: |
+      All processing paths have completed. 
+      
+      {CONSOLIDATION_PROMPT}
+      
+      Say "***CONSOLIDATION_COMPLETE***" when finished.
+    
+    trigger_keyword: "***CONSOLIDATION_COMPLETE***"
+    
+    on_success:
+      # Generate final report
+      - action: "template"
+        template: |
+          # {WORKFLOW_NAME} Final Report
+          
+          ## Execution Summary
+          - Path taken: ${stages.analyze.keyword_detected}
+          - Completion time: ${new Date().toISOString()}
+          
+          ## Results
+          ${stage.output}
+          
+          ## Path-Specific Outputs
+          {% if path_a_result %}
+          ### Path A
+          ${path_a_result.stdout}
+          {% endif %}
+          
+          {% if path_b_result %}
+          ### Path B  
+          ${JSON.stringify(path_b_result.body)}
+          {% endif %}
+          
+          {% if path_c_result %}
+          ### Path C
+          Items processed successfully
+          {% endif %}
+        output_var: "final_report"
+      
+      - action: "save_file"
+        path: "{FINAL_REPORT_PATH}"
+        content: "${final_report}"
+      
+      - action: "log"
+        message: "Conditional workflow completed successfully!"
+      
+      - action: "complete_workflow"

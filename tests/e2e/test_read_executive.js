@@ -4,13 +4,13 @@
  */
 
 import { InstanceManager } from '../src/instance_manager.js';
-import { MCPTools } from '../src/mcp_tools.js';
+import { EnhancedMCPTools } from '../src/enhanced_mcp_tools.js';
 
 async function main() {
     console.log('=== Testing Read from Executive ===\n');
     
     const instanceManager = new InstanceManager('./test-state-orchestration');
-    const mcpTools = new MCPTools(instanceManager);
+    const mcpTools = new EnhancedMCPTools(instanceManager);
     
     try {
         // Read from the existing Executive

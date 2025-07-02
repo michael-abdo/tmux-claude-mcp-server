@@ -4,7 +4,7 @@
  */
 
 import { InstanceManager } from '../src/instance_manager.js';
-import { MCPTools } from '../src/mcp_tools.js';
+import { EnhancedMCPTools } from '../src/enhanced_mcp_tools.js';
 import { execSync } from 'child_process';
 import path from 'path';
 import fs from 'fs/promises';
@@ -54,7 +54,7 @@ async function main() {
 
     // Initialize instance manager
     const instanceManager = new InstanceManager();
-    const mcpTools = new MCPTools(instanceManager);
+    const mcpTools = new EnhancedMCPTools(instanceManager);
     
     // Create test directory
     const timestamp = Date.now();

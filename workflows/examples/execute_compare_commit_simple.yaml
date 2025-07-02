@@ -1,0 +1,38 @@
+name: Execute-Compare-Commit Simple Workflow
+description: Simple three-phase sequential workflow for feature implementation
+version: 1.0.0
+
+inputs:
+  phase_file:
+    description: Path to the phase requirements file
+    required: true
+    type: string
+
+workflow:
+  # Phase 1: Execute
+  - action: prompt
+    name: Execute Implementation
+    prompt_file: docs/prompt_chain.md
+    prompt_section: "Execute Phase Implementation"
+    wait_for: "***EXECUTE FINISHED***"
+    timeout: 1800
+
+  # Phase 2: Compare
+  - action: prompt
+    name: Compare Requirements
+    prompt_file: docs/prompt_chain.md
+    prompt_section: "Compare Requirements vs Implementation"
+    wait_for: "***COMPARISON FINISHED***"
+    timeout: 900
+
+  # Phase 3: Commit
+  - action: prompt
+    name: Commit Changes
+    prompt_file: docs/prompt_chain.md
+    prompt_section: "Finish Phase Cleanup and Documentation"
+    wait_for: "***COMMIT FINISHED***"
+    timeout: 600
+
+  # Complete
+  - action: log
+    message: "✅ Execute-Compare-Commit workflow completed successfully!"

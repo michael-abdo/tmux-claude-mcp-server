@@ -11,7 +11,7 @@
  */
 
 import { InstanceManager } from '../../src/instance_manager.js';
-import { MCPTools } from '../../src/mcp_tools.js';
+import { EnhancedMCPTools } from '../../src/enhanced_mcp_tools.js';
 import { sharedWorkspaceGitManager } from '../../src/shared_workspace_git_manager.js';
 import fs from 'fs-extra';
 import path from 'path';
@@ -85,7 +85,7 @@ async function runTest() {
     
     const stateDir = path.join(TEST_DIR, 'state');
     const instanceManager = new InstanceManager(stateDir);
-    const mcpTools = new MCPTools(instanceManager);
+    const mcpTools = new EnhancedMCPTools(instanceManager);
     
     try {
         console.log('1️⃣ Testing git workspace initialization...');

@@ -111,8 +111,8 @@ IMPORTANT NOTES:
   ⚠️  Use Ctrl+C to cancel before execution
 
 MORE INFO:
-  Time formats: ./TIME_FORMAT_SPECIFICATION.md
-  Scheduling: ./SCHEDULING_MECHANISM_ANALYSIS.md`);
+  Time formats: ../docs/scheduled_continue/TIME_FORMAT_SPECIFICATION.md
+  Scheduling: ../docs/scheduled_continue/SCHEDULING_MECHANISM_ANALYSIS.md`);
 }
 
 /**

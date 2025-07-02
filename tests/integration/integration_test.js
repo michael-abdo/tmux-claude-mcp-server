@@ -7,7 +7,7 @@
 
 import { spawn } from 'child_process';
 import { InstanceManager } from '../../src/instance_manager.js';
-import { MCPTools } from '../../src/mcp_tools.js';
+import { EnhancedMCPTools } from '../../src/enhanced_mcp_tools.js';
 
 async function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -17,7 +17,7 @@ async function runIntegrationTests() {
     console.log('=== Running tmux-claude MCP Server Integration Tests ===\n');
     
     const instanceManager = new InstanceManager('./test-state');
-    const mcpTools = new MCPTools(instanceManager);
+    const mcpTools = new EnhancedMCPTools(instanceManager);
     
     let testsPassed = 0;
     let testsFailed = 0;

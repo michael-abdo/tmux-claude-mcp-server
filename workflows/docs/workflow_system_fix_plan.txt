@@ -1,0 +1,87 @@
+- Workflow System Testing & Fixing - Implementation Plan
+  - Phase 1: Fix Module System (Priority: Critical)
+    - Convert core workflow files to CommonJS
+      - Rename run_workflow.js to run_workflow.cjs
+      - Rename workflow_engine.js to workflow_engine.cjs  
+      - Rename keyword_monitor.js to keyword_monitor.cjs
+      - Rename workflow_context.js to workflow_context.cjs
+      - Rename mcp_bridge.js to mcp_bridge.cjs
+      - Replace ES imports with require() statements in all files
+      - Fix __dirname usage for ES module compatibility
+      - Update relative paths in all require statements
+    - Move action library to src/workflow/actions/
+      - Copy workflows/library/actions/*.js to src/workflow/actions/*.cjs
+      - Convert core.js to core.cjs with require() statements
+      - Convert script.js to script.cjs with require() statements
+      - Convert filesystem.js to filesystem.cjs with require() statements
+      - Convert control.js to control.cjs with require() statements
+      - Convert network.js to network.cjs with require() statements
+      - Convert data.js to data.cjs with require() statements
+      - Convert index.js to index.cjs with require() statements
+      - Update action_executor.cjs to require from ./actions/
+    - Fix npm scripts
+      - Update package.json workflow scripts to use .cjs files
+      - Update test runner script paths
+      - Fix workflow command paths in package.json
+  - Phase 2: Test Basic Functionality (Priority: High)
+    - Create minimal test workflow
+      - Create simple log-only workflow with no external dependencies
+      - Test keyword detection mechanism
+      - Test workflow completion
+      - Verify basic engine startup and shutdown
+    - Test action library
+      - Verify action registry loads correctly without errors
+      - Test core actions (log, complete_workflow, wait)
+      - Test script actions with simple echo commands
+      - Test filesystem actions with basic file operations
+      - Check for circular dependency issues
+    - Fix any remaining import issues
+      - Debug module loading errors in console
+      - Fix circular dependencies between action modules
+      - Resolve path issues in require statements
+      - Test dynamic module loading
+  - Phase 3: Validate Full System (Priority: Medium)
+    - Test complex workflows
+      - Run script integration workflows
+      - Test file operation workflows with create/read/delete
+      - Test parallel processing workflows if MCP bridge works
+      - Verify conditional branching workflows
+      - Test template rendering and variable interpolation
+    - Test scaffolding tools
+      - Verify workflow creation script works
+      - Test template system functionality
+      - Test interactive scaffolding prompts
+      - Verify generated workflows are valid
+    - Update documentation
+      - Fix command examples in README files
+      - Update file paths in all documentation
+      - Update npm script references
+      - Test all documented examples work
+  - Potential Issues to Watch For
+    - MCP Bridge Dependencies
+      - May not work without full MCP server setup running
+      - Need to test with mock or actual MCP server
+      - Verify bridge communication works
+    - Package Dependencies
+      - Axios import for network actions
+      - YAML parsing for workflow definitions  
+      - UUID generation for unique IDs
+      - File system operations compatibility
+    - Path and Import Issues
+      - Relative paths after action library move
+      - Dynamic requires in action modules
+      - Test runner path updates needed
+      - Cross-platform path compatibility
+    - Node.js Compatibility
+      - ES module vs CommonJS conflicts
+      - Node version differences in module behavior
+      - Import/export statement mixing
+  - Success Validation Checklist
+    - Basic workflow execution works (log-only test)
+    - Action library loads all 25+ actions without errors
+    - Script integration can execute shell commands
+    - File operations can create/read/delete files  
+    - Template system and scaffolding tool work
+    - All test workflows in tests/ directory pass
+    - npm run workflow:test completes successfully
+    - Documentation examples are accurate and functional

@@ -1,0 +1,148 @@
+- Execute-Compare-Commit Workflow Implementation
+  - Phase 1: Execute Implementation
+    - Analyze Phase Requirements
+      - Review all bullet points and sub-tasks in loaded phase
+      - Identify dependencies and implementation order
+      - Note any file paths, functions, or components mentioned
+      - Create initial todo list for all identified tasks
+    - Plan Implementation Strategy
+      - Break down complex tasks into smaller manageable steps
+      - Identify which files need to be created
+      - Identify which files need to be modified
+      - Identify which files need to be reviewed
+      - Consider potential integration points
+      - Consider potential side effects
+      - Document implementation approach
+    - Execute Implementation
+      - Create necessary directory structure
+      - Implement each task methodically
+      - Follow established code patterns
+      - Follow established conventions
+      - Add appropriate error handling
+      - Add appropriate logging
+      - Include inline comments for complex logic
+      - Update todo list as tasks complete
+    - Verify Implementation
+      - Test functionality as you implement
+      - Ensure integration with existing systems
+      - Check for any breaking changes
+      - Run linting if available
+      - Run type checking if available
+      - Document any deviations from plan
+    - Complete Execute Phase
+      - Review all implemented changes
+      - Identify any remaining tasks
+      - Update todo list with discoveries
+      - Say ***EXECUTE FINISHED***
+  - Phase 2: Compare Requirements vs Implementation
+    - Scan Implementation Changes
+      - Run git diff HEAD~1 to see all changes
+      - Run git status to check current state
+      - Analyze modified files
+      - Analyze added files
+      - Analyze deleted files
+      - Review commit messages for context
+      - Document all changes made
+    - Compare Against Phase Requirements
+      - Cross-reference git changes with loaded phase requirements
+      - Identify completed tasks from phase specification
+      - Flag any requirements that appear unimplemented
+      - Check for partial implementations
+      - Verify all subtasks were addressed
+    - Gap Analysis
+      - List specific requirements missing from implementation
+      - Identify partially completed features needing finishing
+      - Note any implementation deviating from specification
+      - Document reasons for deviations if any
+      - Prioritize gaps by importance
+    - Implementation Assessment
+      - Evaluate code quality
+      - Evaluate adherence to requirements
+      - Check for proper error handling
+      - Check for edge cases coverage
+      - Verify integration points working correctly
+      - Assess performance implications
+    - Create Remediation Tasks
+      - Add specific todo for each missing item
+      - Include file paths in todos
+      - Include function names in todos
+      - Reference original phase requirement
+      - Set appropriate priority levels
+    - Complete Compare Phase
+      - Summarize completed items
+      - Summarize missing items
+      - Summarize partial items
+      - Summarize deviations
+      - Say ***COMPARISON FINISHED***
+  - Phase 3: Commit Cleanup and Documentation
+    - Code Cleanup
+      - Remove any debug code
+      - Remove console logs
+      - Remove temporary comments
+      - Ensure consistent code formatting
+      - Ensure consistent code style
+      - Optimize inefficient implementations
+      - Remove unused imports
+      - Remove unused variables
+      - Clean files from root folder
+    - Documentation Updates
+      - Review existing documentation
+      - Apply minimal necessary edits only
+      - Update README.md if setup steps changed
+      - Update README.md if features changed
+      - Add inline code comments where needed
+      - Update API endpoint documentation
+      - Update configuration documentation
+      - Apply minimal edits to architecture docs
+    - Testing Verification
+      - Run existing test suite
+      - Ensure no regressions introduced
+      - Add missing tests for new functionality
+      - Verify all critical paths work
+      - Test edge cases
+      - Test error conditions
+      - Document test results
+    - Git Operations
+      - Stage all relevant changes with git add
+      - Review staged changes with git diff --cached
+      - Create descriptive commit message
+      - Reference the phase in commit message
+      - Include brief summary in commit
+      - Commit changes with git commit
+      - Push to remote repository with git push
+    - Complete Commit Phase
+      - Verify clean codebase state
+      - Confirm comprehensive commit created
+      - Verify documentation updated
+      - Confirm changes pushed to repository
+      - Mark current phase as complete
+      - Prepare for next phase iteration
+      - Add follow-up items to future todos
+      - Say ***COMMIT FINISHED***
+  - Workflow Automation Setup
+    - Create Workflow Scripts
+      - Create chain_prompts.js for automation
+      - Create workflow_config.json for configuration
+      - Create workflow_runner.js for execution
+      - Create run_workflow.sh for simple usage
+      - Make scripts executable
+      - Test script functionality
+    - Setup Prompt Files
+      - Create docs/execute.md with execute prompt
+      - Create docs/compare.md with compare prompt
+      - Create docs/commit.md with commit prompt
+      - Ensure completion markers in each
+      - Validate prompt formatting
+    - Configure Workflow Transitions
+      - Define execute to compare transition
+      - Define compare to execute loop condition
+      - Define compare to commit transition
+      - Set timeout values for each phase
+      - Configure error handling behavior
+    - Test Complete Workflow
+      - Run workflow with test feature
+      - Verify phase transitions work
+      - Test loop-back functionality
+      - Verify completion markers detected
+      - Document any issues found
+      - Refine workflow as needed

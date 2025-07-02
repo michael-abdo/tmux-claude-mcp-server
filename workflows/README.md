@@ -1,412 +1,350 @@
-# Workflow System Documentation
+# Scalable Workflow System
 
-## Overview
+A modular, extensible workflow system for orchestrating Claude instances with prompt-based automation.
 
-The tmux-claude-mcp-server workflow system enables you to create sophisticated, multi-stage automated workflows using YAML configuration files. These workflows can spawn Claude instances, send prompts, monitor outputs, and chain complex sequences of tasks together.
-
-## Quick Start
-
-### Running a Workflow
-
-```bash
-# Using workflow manager (recommended)
-node src/workflow/workflow_manager.cjs run quick_analysis
-
-# Direct execution
-node src/workflow/run_workflow.cjs workflows/examples/execute_compare_commit.yaml --debug
-
-# From any directory
-node ~/.claude/user/tmux-claude-mcp-server/src/workflow/workflow_manager.cjs list
-```
-
-### Available Commands
-
-```bash
-# List all workflows
-node src/workflow/workflow_manager.cjs list
-
-# Run a specific workflow
-node src/workflow/workflow_manager.cjs run <workflow-name> [--debug] [--no-cleanup]
-
-# Validate a workflow file
-node src/workflow/workflow_manager.cjs validate <file.yaml>
-
-# Create a new workflow template
-node src/workflow/workflow_manager.cjs create "My New Workflow"
-```
-
-## Workflow Configuration
-
-### Basic Structure
-
-```yaml
-name: My Workflow
-description: What this workflow does
-version: 1.0
-
-settings:
-  useTaskIds: false              # Enable/disable task ID mode
-  poll_interval: 5               # How often to check for keywords (seconds)
-  timeout: 120                   # Default timeout for stages (seconds)
-  instance_role: specialist      # Default role for spawned instances
-  workspace_mode: isolated       # isolated or shared
-
-stages:
-  - id: stage1
-    name: First Stage
-    prompt: |
-      Your prompt here
-      When done, respond with: STAGE1_COMPLETE
-    trigger_keyword: STAGE1_COMPLETE
-    timeout: 60
-    on_success:
-      - action: next_stage
-        stage_id: stage2
-```
-
-### Stage Configuration
-
-Each stage can have:
-
-- **id**: Unique identifier for the stage
-- **name**: Human-readable name
-- **prompt**: Text to send to Claude instance
-- **trigger_keyword**: Keyword to wait for before proceeding
-- **timeout**: Maximum wait time (seconds)
-- **instance_id**: Use specific existing instance (optional)
-- **instance_role**: Role for new instance (optional)
-- **workspace_mode**: Workspace mode for new instance (optional)
-
-### Actions
-
-Available actions in `on_success`, `on_timeout`, and `on_failure`:
-
-#### Basic Actions
-```yaml
-- action: next_stage
-  stage_id: next_stage_name
-
-- action: complete_workflow
-
-- action: log
-  message: "Custom message"
-  level: info  # info, warn, error, debug
-
-- action: wait
-  duration: 5  # seconds
-
-- action: set_context
-  key: "vars.my_variable"
-  value: "some value"
-```
-
-#### Instance Management
-```yaml
-- action: spawn
-  role: specialist
-  workspace_mode: isolated
-  context: "Context for new instance"
-
-- action: send_prompt
-  instance_id: spec_1_1_123456
-  prompt: "Prompt to send"
-
-- action: read_output
-  instance_id: spec_1_1_123456
-  lines: 20
-
-- action: terminate
-  instance_id: spec_1_1_123456
-```
-
-#### Advanced Actions
-```yaml
-- action: conditional
-  condition: "ctx.vars.my_var === 'expected'"
-  if_true:
-    - action: log
-      message: "Condition was true"
-  if_false:
-    - action: log
-      message: "Condition was false"
-
-- action: parallel
-  max_concurrent: 3
-  wait_all: true
-  continue_on_failure: false
-  actions:
-    - action: log
-      message: "First parallel task"
-    - action: log
-      message: "Second parallel task"
-
-- action: foreach
-  items: "ctx.vars.my_array"
-  item_var: "item"
-  actions:
-    - action: log
-      message: "Processing ${item}"
-```
-
-## Variable Interpolation
-
-Workflows support variable interpolation using `${variable_name}` syntax:
-
-```yaml
-prompt: |
-  Hello! Your task ID is: ${current_task_id}
-  Working in: ${workflow.name}
-  Current stage: ${stages.current_stage.name}
-```
-
-Available variables:
-- `${workflow.id}` - Workflow instance ID
-- `${workflow.name}` - Workflow name
-- `${workflow.run_id}` - Unique run ID
-- `${current_task_id}` - Current task ID (if enabled)
-- `${vars.custom_var}` - Custom variables
-- `${instances.specialist}` - Instance IDs
-- `${stages.stage_id.status}` - Stage status
-
-## Task ID Mode
-
-When `useTaskIds: true`, the workflow system:
-- Generates unique task IDs for each run
-- Appends task IDs to keywords for uniqueness
-- Enables advanced conflict resolution
-- Useful for parallel workflows
-
-When `useTaskIds: false` (default):
-- Uses simple keyword matching
-- Better for basic workflows
-- Easier to debug
-
-## Examples
-
-### Simple Test Workflow
-```yaml
-name: Simple Test
-description: Basic workflow test
-version: 1.0
-
-settings:
-  useTaskIds: false
-  poll_interval: 2
-  timeout: 30
-
-stages:
-  - id: test
-    name: Simple Test
-    prompt: |
-      Please respond with: TEST_COMPLETE
-    trigger_keyword: TEST_COMPLETE
-    timeout: 20
-    on_success:
-      - action: complete_workflow
-```
-
-### Multi-Stage Analysis
-```yaml
-name: Code Analysis Workflow
-version: 1.0
-
-stages:
-  - id: analyze
-    name: Analyze Codebase
-    prompt: |
-      Analyze this codebase and list the main files.
-      When done, respond with: ANALYSIS_COMPLETE
-    trigger_keyword: ANALYSIS_COMPLETE
-    on_success:
-      - action: next_stage
-        stage_id: document
-
-  - id: document
-    name: Generate Documentation
-    prompt: |
-      Based on the analysis, suggest improvements.
-      When done, respond with: DOCS_COMPLETE
-    trigger_keyword: DOCS_COMPLETE
-    on_success:
-      - action: complete_workflow
-```
-
-### Conditional Workflow
-```yaml
-name: Conditional Analysis
-version: 1.0
-
-stages:
-  - id: check
-    name: Check Project Type
-    prompt: |
-      Check if package.json exists: ls package.json
-      If it exists, respond with: NODEJS_PROJECT
-      If not, respond with: OTHER_PROJECT
-    trigger_keyword: NODEJS_PROJECT
-    timeout: 20
-    on_success:
-      - action: next_stage
-        stage_id: nodejs_analysis
-    on_timeout:
-      - action: next_stage
-        stage_id: general_analysis
-
-  - id: nodejs_analysis
-    name: Node.js Analysis
-    prompt: "Analyze package.json and dependencies..."
-    trigger_keyword: NODEJS_DONE
-    on_success:
-      - action: complete_workflow
-
-  - id: general_analysis
-    name: General Analysis  
-    prompt: "Perform general project analysis..."
-    trigger_keyword: GENERAL_DONE
-    on_success:
-      - action: complete_workflow
-```
-
-## Best Practices
-
-### Workflow Design
-1. **Keep stages focused** - Each stage should do one thing well
-2. **Use clear keywords** - Make trigger keywords unique and descriptive
-3. **Set appropriate timeouts** - Balance between too short and too long
-4. **Handle errors gracefully** - Always include `on_timeout` and `on_failure`
-5. **Use meaningful names** - Stage and workflow names should be descriptive
-
-### Instance Management
-1. **Reuse instances when possible** - Spawning is slower than reusing
-2. **Clean up resources** - Use `--cleanup` or explicit terminate actions
-3. **Monitor instance count** - Too many instances can cause timeouts
-4. **Use appropriate workspace modes** - isolated vs shared
-
-### Debugging
-1. **Use --debug flag** - Shows detailed execution information
-2. **Start with simple workflows** - Test basic functionality first
-3. **Check keyword detection** - Ensure keywords match exactly
-4. **Monitor instance output** - Use MCP bridge read commands
-5. **Validate YAML syntax** - Use the validate command
-
-### Performance
-1. **Optimize poll intervals** - Shorter intervals = faster detection, more CPU
-2. **Set realistic timeouts** - Account for Claude response time
-3. **Limit parallel execution** - Too many concurrent actions can overwhelm
-4. **Use existing instances** - Avoid unnecessary spawning
-
-## Troubleshooting
-
-### Common Issues
-
-**Workflow hangs on spawn**
-- Too many existing instances
-- Use existing instance with `instance_id`
-- Clean up old instances
-
-**Keywords not detected**
-- Check exact keyword spelling
-- Verify instance is responding
-- Use `--debug` to see detection attempts
-
-**Timeout errors**
-- Increase timeout values
-- Check if Claude instance is responsive
-- Verify prompt is clear and actionable
-
-**Stage transitions fail**
-- Check stage IDs match exactly
-- Verify `next_stage` references exist
-- Use `--debug` to trace execution
-
-### Debugging Commands
-
-```bash
-# Check active instances
-node scripts/mcp_bridge.js list '{}'
-
-# Read instance output
-node scripts/mcp_bridge.js read '{"instanceId": "spec_1_1_123456", "lines": 20}'
-
-# Send test message
-node scripts/mcp_bridge.js send '{"instanceId": "spec_1_1_123456", "text": "test"}'
-
-# Validate workflow
-node src/workflow/workflow_manager.cjs validate my_workflow.yaml
-```
-
-## Advanced Features
-
-### Context Management
-Workflows maintain a complete context object that includes:
-- Workflow metadata
-- Stage execution history
-- Instance tracking
-- Custom variables
-- Action results
-
-### Error Recovery
-The system includes robust error handling:
-- Automatic retries for transient failures
-- Graceful degradation on timeouts
-- Configurable failure behaviors
-- Context preservation across errors
-
-### Monitoring and Logging
-- Real-time execution monitoring
-- Structured logging with levels
-- Context persistence to JSON
-- Event-driven architecture
-
-### Extensibility
-- Custom action types can be added
-- Pluggable keyword detection
-- Configurable path resolution
-- Modular architecture
-
-## API Reference
-
-### WorkflowEngine Class
-Main orchestration engine for workflow execution.
-
-### ActionExecutor Class  
-Handles individual action execution via MCP bridge.
-
-### KeywordMonitor Class
-Monitors Claude instance output for trigger keywords.
-
-### WorkflowContext Class
-Manages workflow state and variable interpolation.
-
-### WorkflowManager Class
-High-level interface for workflow discovery and execution.
-
-## Contributing
-
-To add new features:
-1. Extend the appropriate class
-2. Add new action types to ActionExecutor
-3. Update YAML schema validation
-4. Add tests and documentation
-5. Update this README
-
-## File Structure
+## 📁 Directory Structure
 
 ```
 workflows/
-├── README.md                 # This file
-├── examples/                 # Example workflows
-│   ├── execute_compare_commit.yaml
-│   ├── quick_analysis.yaml
-│   ├── parallel_analysis.yaml
-│   └── advanced_development_workflow.yaml
-└── docs/                     # Additional documentation
-
-src/workflow/
-├── run_workflow.cjs          # CLI entry point
-├── workflow_manager.cjs      # High-level management
-├── workflow_engine.cjs       # Core orchestration
-├── action_executor.cjs       # Action execution
-├── keyword_monitor.cjs       # Output monitoring
-└── workflow_context.cjs      # State management
+├── README.md          # This file - system overview and usage guide
+├── config/            # Configuration files
+│   └── workflow_config.json          # Main workflow configuration
+├── docs/              # System documentation
+│   ├── CURRENT_STATUS.md             # Current system status
+│   ├── SCALABLE_STRUCTURE_SUMMARY.md # Architecture overview
+│   ├── TEST_README.md                # Testing documentation
+│   ├── demo_workflow_test.md         # Workflow demo and examples
+│   ├── prompt_chain.md               # Execute-Compare-Commit prompt chain
+│   ├── workflow_advanced_actions.md  # Advanced action documentation
+│   ├── workflow_system_design.md     # System design specification
+│   ├── workflow_system_fix_plan.txt  # Implementation plan
+│   └── workflow_system_summary.md    # System summary
+├── examples/          # Example workflows for learning
+│   ├── example_simple.yaml                  # Basic prompt chaining
+│   ├── example_code_analysis.yaml           # Complex analysis workflow
+│   ├── example_parallel_review.yaml         # Multi-instance parallel work
+│   ├── example_test_generation.yaml         # Iterative test generation
+│   ├── execute_compare_commit.yaml          # Execute-Compare-Commit workflow
+│   ├── execute_compare_commit_simple.yaml   # Simplified version
+│   └── execute_compare_commit_workflow.yaml # Full-featured version
+├── library/           # Reusable workflow components
+│   ├── actions/       # Action implementations
+│   │   ├── control.js      # Control flow actions
+│   │   ├── core.js         # Essential actions (send_prompt, spawn, etc.)
+│   │   ├── data.js         # Data processing actions
+│   │   ├── filesystem.js   # File operations
+│   │   ├── index.js        # Action library registry
+│   │   ├── network.js      # Network and HTTP actions
+│   │   └── script.js       # Script execution actions
+│   ├── common/        # Common workflow patterns
+│   │   └── code_analysis.yaml # Reusable code analysis pattern
+│   └── templates/     # Workflow templates for scaffolding
+│       ├── basic.yaml                 # Simple workflow template
+│       ├── conditional_branching.yaml # Conditional logic template
+│       ├── parallel_processing.yaml   # Parallel workflow template
+│       └── script_integration.yaml    # Script integration template
+├── scripts/           # Supporting scripts and utilities
+│   ├── chain_prompts.js     # Prompt chaining utility
+│   ├── create_workflow.cjs  # Workflow scaffolding tool
+│   ├── run_workflow.sh      # Shell script wrapper
+│   └── workflow_runner.js   # Workflow execution engine
+├── tests/             # Test workflows and test runner
+│   ├── run_tests.sh                   # Test runner script
+│   ├── test_basic.yaml                # Basic functionality test
+│   ├── test_complex_workflow.yaml     # Complex workflow test
+│   ├── test_engine_only.yaml          # Engine-only test
+│   ├── test_execute_compare_commit.yaml # Execute-Compare-Commit test
+│   ├── test_file_ops.yaml             # File operations test
+│   ├── test_log_only.yaml             # Logging test
+│   ├── test_minimal.yaml              # Minimal functionality test
+│   ├── test_script.yaml               # Script execution test
+│   └── test_script_actions.yaml       # Script actions test
+└── user/              # User-created workflows (initially empty)
 ```
+
+## 🚀 Quick Start
+
+### 1. Run Example Workflows
+```bash
+# Execute-Compare-Commit workflow (recommended starting point)
+node ../src/workflow/run_workflow.cjs examples/execute_compare_commit.yaml
+
+# Simple prompt chaining example
+node ../src/workflow/run_workflow.cjs examples/example_simple.yaml
+
+# Complex code analysis workflow
+node ../src/workflow/run_workflow.cjs examples/example_code_analysis.yaml
+
+# Parallel processing example
+node ../src/workflow/run_workflow.cjs examples/example_parallel_review.yaml
+```
+
+### 2. Create Your Own Workflow
+```bash
+# Interactive scaffolding
+node scripts/create_workflow.cjs
+
+# Manual creation from template
+cp library/templates/basic.yaml user/my_workflow.yaml
+# Edit the file with your prompts and actions
+
+# Run your workflow
+node ../src/workflow/run_workflow.cjs user/my_workflow.yaml
+```
+
+### 3. Test the System
+```bash
+# Run all tests
+./tests/run_tests.sh
+
+# Run individual tests
+node ../src/workflow/run_workflow.cjs tests/test_minimal.yaml
+node ../src/workflow/run_workflow.cjs tests/test_script.yaml
+node ../src/workflow/run_workflow.cjs tests/test_file_ops.yaml
+```
+
+## 🔄 Execute-Compare-Commit Workflow
+
+The Execute-Compare-Commit workflow provides a systematic approach to feature implementation with built-in quality assurance:
+
+### Available Versions
+- **`execute_compare_commit.yaml`** - Full-featured with loop-back capability
+- **`execute_compare_commit_simple.yaml`** - Sequential execution
+- **`execute_compare_commit_workflow.yaml`** - Advanced with conditional logic
+
+### Three-Phase Process
+1. **Execute Phase** - Implement features methodically with todo tracking
+2. **Compare Phase** - Analyze implementation vs requirements, identify gaps
+3. **Commit Phase** - Clean up code, update docs, create git commit
+
+### Usage
+```bash
+# Run with a phase requirements file
+node ../src/workflow/run_workflow.cjs examples/execute_compare_commit.yaml --phase_file path/to/requirements.md
+
+# Test the workflow
+node ../src/workflow/run_workflow.cjs tests/test_execute_compare_commit.yaml
+```
+
+## 🧩 Action Library
+
+The modular action system provides 25+ actions across 6 categories:
+
+### Core Actions
+- `send_prompt` - Send prompts to Claude instances
+- `spawn` - Create new Claude instances
+- `terminate` - Clean up instances
+- `log` - Logging and debugging
+- `wait` - Time delays
+- `complete_workflow` - End workflow
+
+### Script Actions
+- `run_script` - Execute any .py/.sh/.js files locally or in instances
+
+### File System Actions
+- `save_file`, `read_file`, `delete_file`
+- `create_directory`, `copy_file`
+- `list_files`, `file_exists`, `append_file`
+
+### Control Flow Actions
+- `conditional` - If/else logic
+- `parallel` - Concurrent execution
+- `foreach` - Loop over arrays
+- `while_loop` - Conditional loops
+- `try_catch` - Error handling
+
+### Network Actions
+- `http_request` - HTTP API calls
+- `webhook` - Send notifications
+- `slack_notify`, `discord_notify`
+- `download_file`, `upload_file`
+
+### Data Actions
+- `transform` - Data manipulation (JSON, regex, etc.)
+- `aggregate` - Combine multiple data sources  
+- `template` - Generate reports
+- `validate` - Data validation
+- `generate_data` - Synthetic test data
+
+## 📋 Workflow Templates
+
+Use templates to quickly create new workflows:
+
+### Basic Template
+Simple linear workflow with prompt → keyword → action flow.
+
+### Script Integration Template
+Integrate external scripts with error handling and result processing.
+
+### Parallel Processing Template
+Spawn multiple workers for concurrent processing tasks.
+
+### Conditional Branching Template
+Complex decision trees with multiple execution paths.
+
+## 🎯 Common Patterns
+
+### Code Analysis Pattern
+```yaml
+# Include reusable analysis pattern
+<<: !include library/common/code_analysis.yaml
+
+# Customize for your needs
+settings:
+  target_directory: "./src"
+  include_tests: true
+```
+
+### Notification Pattern
+```yaml
+on_success:
+  - action: "slack_notify"
+    webhook_url: "${env.SLACK_WEBHOOK}"
+    message: "Workflow ${workflow.name} completed successfully!"
+```
+
+### Error Handling Pattern
+```yaml
+on_success:
+  - action: "try_catch"
+    try_actions:
+      - action: "run_script"
+        script: "./risky_operation.py"
+    catch_actions:
+      - action: "log"
+        message: "Operation failed: ${vars._error.message}"
+      - action: "slack_notify"
+        message: "Alert: ${workflow.name} encountered an error"
+```
+
+## 🛠 Extending the System
+
+### Adding New Actions
+
+1. Create action module in `library/actions/`:
+```javascript
+// library/actions/my_custom.js
+class MyCustomActions {
+  async my_action(action) {
+    // Implementation
+    return { success: true };
+  }
+}
+module.exports = MyCustomActions;
+```
+
+2. Register in `library/actions/index.js`:
+```javascript
+const MyCustomActions = require('./my_custom');
+
+// In constructor:
+this.modules.my_custom = new MyCustomActions(context, options);
+
+// In registerActions():
+this.handlers['my_action'] = this.modules.my_custom.my_action.bind(this.modules.my_custom);
+```
+
+### Creating Workflow Libraries
+
+Organize related workflows into libraries:
+```
+workflows/user/
+├── data_processing/
+│   ├── etl_pipeline.yaml
+│   ├── data_validation.yaml
+│   └── reporting.yaml
+├── testing/
+│   ├── unit_test_generator.yaml
+│   └── integration_test_runner.yaml
+└── deployment/
+    ├── staging_deploy.yaml
+    └── production_deploy.yaml
+```
+
+## 📊 Monitoring and Debugging
+
+### Workflow State
+All execution state is saved in `workflows/state/` for debugging and recovery.
+
+### Reports
+Generated reports are saved in `workflows/reports/` with timestamps.
+
+### Debugging Tips
+```yaml
+# Add debug logging
+- action: "log"
+  message: "Current variables: ${JSON.stringify(vars)}"
+
+# Save intermediate state
+- action: "save_file"
+  path: "./debug/stage_${stage.id}_output.json"
+  content: "${JSON.stringify(stage)}"
+
+# Use shorter timeouts during development
+settings:
+  timeout: 60  # vs 300 for production
+```
+
+## 🔒 Best Practices
+
+### 1. Workflow Design
+- Use clear, unique keywords: `***TASK_COMPLETE***`
+- Set appropriate timeouts for each stage
+- Include error handling for critical operations
+- Clean up instances when done
+
+### 2. Variable Management
+```yaml
+# Good: descriptive names with actions prefix
+message: "Results: ${actions.security_scan_results.stdout}"
+
+# Bad: missing actions prefix (won't interpolate)
+message: "Results: ${security_scan_results.stdout}"
+
+# Variable storage
+- action: "run_script"
+  output_var: "security_scan_results"  # Stored as actions.security_scan_results
+```
+
+### 3. File Organization
+- Keep examples in `examples/`
+- Put reusable patterns in `library/common/`
+- Store user workflows in `user/` subdirectories
+- Use semantic versioning for templates
+
+### 4. Testing
+- Test each workflow stage incrementally
+- Use `tests/` directory for system tests
+- Include error scenarios in tests
+- Validate with shorter timeouts first
+
+## 🚀 Performance Tips
+
+1. **Use parallel actions** for independent tasks
+2. **Set realistic timeouts** to fail fast
+3. **Clean up instances** to free resources
+4. **Use shared workspace mode** for collaborative workflows
+5. **Cache results** in variables to avoid recomputation
+
+## 🆘 Troubleshooting
+
+### Common Issues
+
+**Keyword not detected**: Check Claude's actual output vs expected keyword
+**Script failures**: Verify paths, permissions, and environment variables  
+**Variable not found**: Check variable scope and interpolation syntax
+**Timeout errors**: Increase timeout or break into smaller stages
+
+### Debug Commands
+```bash
+# Check workflow syntax (from workflows directory)
+node -c user/my_workflow.yaml
+
+# Run with verbose logging
+DEBUG=workflow:* node ../src/workflow/run_workflow.cjs user/my_workflow.yaml
+
+# Test action library
+node -e "const lib = require('../src/workflow/actions/index.cjs'); const ActionLibrary = lib; const context = require('../src/workflow/workflow_context.cjs'); const actionLib = new ActionLibrary(new context()); console.log(actionLib.getAvailableActions())"
+```
+
+This scalable structure enables building complex automation workflows while maintaining organization, reusability, and extensibility for dozens of workflows.

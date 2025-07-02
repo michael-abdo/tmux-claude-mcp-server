@@ -1,0 +1,35 @@
+# Basic Workflow Template
+name: "{WORKFLOW_NAME}"
+version: "1.0"
+description: "{WORKFLOW_DESCRIPTION}"
+
+# Global settings
+settings:
+  poll_interval: 5      # How often to check for keywords (seconds)
+  timeout: 300          # Timeout per stage (seconds)
+  instance_role: "specialist"  # Default Claude instance role
+  workspace_mode: "isolated"   # isolated or shared
+
+# Workflow stages
+stages:
+  - id: "start"
+    name: "Initial Stage"
+    prompt: |
+      {INITIAL_PROMPT}
+      
+      WHEN YOU ARE DONE YOU MUST SAY "***TASK_COMPLETE***"
+    
+    trigger_keyword: "***TASK_COMPLETE***"
+    
+    on_success:
+      - action: "log"
+        message: "Workflow completed successfully!"
+      
+      - action: "complete_workflow"
+    
+    on_timeout:
+      - action: "log"
+        message: "Stage timed out"
+        level: "error"
+      
+      - action: "complete_workflow"

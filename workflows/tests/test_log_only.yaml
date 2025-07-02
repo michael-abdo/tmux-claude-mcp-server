@@ -1,0 +1,30 @@
+name: "Log Only Test"
+version: "1.0"
+description: "Minimal test workflow with only logging actions - no external dependencies"
+
+settings:
+  poll_interval: 1
+  timeout: 30
+
+stages:
+  - id: "log_test"
+    name: "Basic Log Test"
+    prompt: |
+      This is a minimal test. Please just say "Hello from workflow test!" and then say "***LOG_TEST_DONE***"
+    
+    trigger_keyword: "***LOG_TEST_DONE***"
+    
+    on_success:
+      - action: "log"
+        message: "SUCCESS: Basic log action works!"
+      
+      - action: "log"
+        message: "Workflow context: ${workflow.name} (${workflow.run_id})"
+        level: "info"
+      
+      - action: "complete_workflow"
+    
+    on_timeout:
+      - action: "log"
+        message: "TIMEOUT: Test timed out"
+        level: "error"

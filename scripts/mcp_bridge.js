@@ -10,7 +10,7 @@
  *   node mcp_bridge.js terminate '{"instanceId":"mgr_123"}'
  */
 
-import { MCPTools } from '../src/mcp_tools.js';
+import { EnhancedMCPTools } from '../src/enhanced_mcp_tools.js';
 import { InstanceManager } from '../src/instance_manager.js';
 import RoleTemplateManager from '../src/role_templates/role_template_manager.js';
 
@@ -41,7 +41,7 @@ async function main() {
     try {
         const manager = new InstanceManager('./state', { silent: true });
         await manager.loadInstances();
-        const tools = new MCPTools(manager);
+        const tools = new EnhancedMCPTools(manager);
         const roleTemplateManager = new RoleTemplateManager();
         
         let result;

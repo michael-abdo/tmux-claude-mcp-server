@@ -1,0 +1,187 @@
+name: "Execute-Compare-Commit Workflow"
+version: "1.0"
+description: "Three-phase workflow for systematic feature implementation with loop-back capability"
+
+settings:
+  poll_interval: 5
+  timeout: 3600
+  instance_role: "specialist"
+
+inputs:
+  phase_file:
+    description: "Path to the phase requirements file"
+    required: true
+    type: "string"
+
+stages:
+  - id: "execute"
+    name: "Execute Phase Implementation"
+    prompt: |
+      # Execute Phase Implementation
+
+      ## Context
+      - Phase file loaded: {{ phase_file }}
+      - Current codebase state: Assess existing code structure and identify entry points
+
+      ## Instructions
+      Please think very carefully about implementing these steps next from the loaded phase:
+
+      1. **Analyze Phase Requirements**
+         - Review all bullet points and sub-tasks in the loaded phase
+         - Identify dependencies and implementation order
+         - Note any file paths, functions, or components mentioned
+
+      2. **Plan Implementation Strategy**
+         - Break down complex tasks into smaller, manageable steps
+         - Identify which files need to be created, modified, or reviewed
+         - Consider potential integration points and side effects
+
+      3. **Execute Implementation**
+         - Implement each task methodically
+         - Follow established code patterns and conventions
+         - Add appropriate error handling and logging
+         - Include inline comments for complex logic
+
+      4. **Verify Implementation**
+         - Test functionality as you implement
+         - Ensure integration with existing systems
+         - Check for any breaking changes
+
+      ## Expected Output
+      - Implemented code changes for the current phase
+      - Clear progress updates on what was completed
+      - Notes on any deviations from the original plan
+      - Identification of any remaining tasks
+
+      ## Todo Integration
+      Add any unfinished or newly discovered tasks to the todo list with specific action items
+
+      WHEN YOU ARE DONE YOU MUST SAY "***EXECUTE FINISHED***"
+    
+    trigger_keyword: "***EXECUTE FINISHED***"
+    
+    on_success:
+      - action: "log"
+        message: "Execute phase completed successfully"
+      
+      - action: "send_prompt"
+        target: "same_instance"
+        prompt: |
+          # Compare Requirements vs Implementation
+
+          ## Context
+          - Phase file loaded: {{ phase_file }}
+          - Git baseline: Compare against previous commit to assess actual implementation
+          - Current state: What exists in the codebase now
+
+          ## Instructions
+          Make a list of differences between original source and actual implementation:
+
+          1. **Scan Implementation Changes**
+             - Run `git diff HEAD~1` to see all changes since phase started
+             - Analyze modified, added, and deleted files
+             - Review commit messages for implementation context
+
+          2. **Compare Against Phase Requirements**
+             - Cross-reference git changes with loaded phase requirements
+             - Identify completed tasks from the phase specification
+             - Flag any requirements that appear unimplemented
+
+          3. **Gap Analysis**
+             - List specific requirements that are missing from implementation
+             - Identify partially completed features that need finishing
+             - Note any implementation that deviates from original specification
+
+          4. **Implementation Assessment**
+             - Evaluate code quality and adherence to requirements
+             - Check for proper error handling and edge cases
+             - Verify integration points are working correctly
+
+          ## Expected Output
+          - **Completed Items**: List of phase requirements that are fully implemented
+          - **Missing Items**: Specific requirements not yet addressed
+          - **Partial Items**: Tasks that are started but not finished
+          - **Deviations**: Areas where implementation differs from specification
+
+          ## Todo Integration
+          For each missing or partial item:
+          - Add specific todo item with clear action
+          - Include file paths and function names where applicable
+          - Reference the original phase requirement
+          - Execute these gap-filling tasks immediately after identification
+
+          WHEN YOU ARE DONE YOU MUST SAY "***COMPARISON FINISHED***"
+        
+        next_stage: "compare"
+
+  - id: "compare"
+    name: "Compare Requirements vs Implementation"
+    trigger_keyword: "***COMPARISON FINISHED***"
+    
+    on_success:
+      - action: "log"
+        message: "Comparison phase completed"
+      
+      - action: "send_prompt"
+        target: "same_instance"
+        prompt: |
+          # Finish Phase Cleanup and Documentation
+
+          ## Context
+          - Phase completion: All requirements implemented and gaps addressed
+          - Codebase state: Ready for cleanup and documentation
+          - Git status: Prepare for phase commit
+
+          ## Instructions
+          Clean up, document, commit, and push the completed phase:
+
+          1. **Code Cleanup**
+             - Remove any debug code, console logs, or temporary comments
+             - Ensure consistent code formatting and style
+             - Optimize any inefficient implementations
+             - Remove unused imports or variables
+             - Clean out any files from root folder
+
+          2. **Documentation Updates**  
+             - Review all existing documentation and apply only the minimal necessary edits—do **not** create new documents.  
+             - Update **README.md** only if setup steps or feature descriptions have changed.  
+             - Add or refine inline code comments where clarification is needed.  
+             - Update documentation for any modified API endpoints or configuration settings.  
+             - Apply minimal edits to relevant architecture or design documents to reflect recent changes.
+
+          3. **Testing Verification**
+             - Run existing test suite to ensure no regressions
+             - Add any missing tests for new functionality
+             - Verify all critical paths work as expected
+             - Test edge cases and error conditions
+
+          4. **Git Operations**
+             - Stage all relevant changes: `git add .`
+             - Create descriptive commit message referencing the phase
+             - Commit changes: `git commit -m "Complete [Phase Name]: [brief summary]"`
+             - Push to remote repository: `git push`
+
+          ## Expected Output
+          - Clean, well-documented codebase
+          - Comprehensive commit with descriptive message
+          - Updated documentation reflecting new functionality
+          - All changes pushed to repository
+
+          ## Todo Integration
+          - Mark current phase as complete
+          - Prepare for next phase iteration
+          - Add any follow-up items or technical debt to future todos
+
+          WHEN YOU ARE DONE YOU MUST SAY "***COMMIT FINISHED***"
+        
+        next_stage: "commit"
+
+  - id: "commit"
+    name: "Finish Phase Cleanup and Documentation"
+    trigger_keyword: "***COMMIT FINISHED***"
+    
+    on_success:
+      - action: "log"
+        message: "✅ Execute-Compare-Commit Workflow Complete!"
+      
+      - action: "complete_workflow"

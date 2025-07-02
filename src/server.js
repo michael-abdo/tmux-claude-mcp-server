@@ -22,7 +22,7 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 
 import { InstanceManager } from './instance_manager.js';
-import { MCPTools } from './mcp_tools.js';
+import { EnhancedMCPTools } from './enhanced_mcp_tools.js';
 import { v4 as uuidv4 } from 'uuid';
 
 class TmuxClaudeMCPServer {
@@ -41,7 +41,7 @@ class TmuxClaudeMCPServer {
         
         // Initialize instance manager and MCP tools
         this.instanceManager = new InstanceManager('./state');
-        this.mcpTools = new MCPTools(this.instanceManager);
+        this.mcpTools = new EnhancedMCPTools(this.instanceManager);
         
         // Message queue for reliable communication
         this.messageQueue = new Map(); // instanceId -> messages[]

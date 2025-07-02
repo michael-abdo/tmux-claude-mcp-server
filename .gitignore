@@ -20,3 +20,4 @@ vm-integration/tests/vm-test-pull/
 src-worktrees/
 vm-integration-worktrees/
 workflows-worktrees/
+workflow_state/

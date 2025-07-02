@@ -2,6 +2,18 @@
 
 Comprehensive suite of tools for monitoring and analyzing system performance, resource usage, and network connectivity to identify bottlenecks affecting Claude Code instances.
 
+## ⚠️ IMPORTANT: NO-KILL POLICY ⚠️
+
+**CRITICAL**: These tools are for MONITORING and ANALYSIS ONLY. They must NEVER kill, terminate, or otherwise interfere with running processes. All tools provide diagnostic information and recommendations, but any action to resolve issues must be taken manually by the user.
+
+**Policy**: Claude instances are explicitly forbidden from:
+- Using `kill`, `pkill`, `killall` or any process termination commands
+- Sending signals to processes (SIGTERM, SIGKILL, etc.)
+- Forcibly stopping or restarting services
+- Taking any automated remediation actions
+
+**Purpose**: These tools help identify problems. Users decide how to resolve them.
+
 ## Files Overview
 
 ### Core Monitoring Scripts

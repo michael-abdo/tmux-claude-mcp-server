@@ -1,34 +1,172 @@
-# Claude Code VM Integration
+# VM Integration for tmux-claude MCP Server
 
-Simple, powerful cloud VM management for Claude Code development. Create and manage development VMs with one command.
+Seamless cloud VM management for Claude Code development environments. Extends the existing MCP orchestration system to support cloud-based development VMs with automated provisioning and management.
 
 ## 🌟 Features
 
-- **🚀 One-Command Setup**: Complete project and VM creation in minutes
-- **💰 Cost Optimized**: Smart instance types, auto-stop scheduling, spot instance support
-- **🔧 Zero Config**: Automated environment with Node.js, Git, SSH keys, and development tools
-- **📊 Easy Management**: Simple commands to create, start, stop, and connect to VMs
-- **🌍 Google Cloud**: Reliable, fast, and cost-effective cloud infrastructure
-- **🎯 Multiple VMs**: Create and manage multiple development environments
+- **🚀 One-Command VM Creation**: Spin up development VMs with Claude Code pre-installed
+- **💰 Cost Optimization**: Built-in spot instance support and auto-scheduling
+- **🔧 Automated Setup**: Complete development environment with Node.js, Git, tmux, and more
+- **🤖 MCP Integration**: Full integration with existing Claude orchestration system
+- **📊 Comprehensive Management**: Create, start, stop, terminate, and monitor VMs
+- **🔑 SSH Management**: Automated SSH key generation and connection commands
+- **📸 AMI Templates**: Create reusable VM templates for consistent environments
+- **🎯 Bulk Operations**: Create multiple VMs for parallel development
+
+## 🏗️ Architecture
+
+The VM integration extends the existing tmux-claude architecture patterns:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                   Claude MCP Server                        │
+├─────────────────────────────────────────────────────────────┤
+│  Executive → Manager → Specialist (Local Instances)        │
+│              ↓                                             │
+│           VM Manager                                        │
+│              ↓                                             │
+│  AWS EC2 ← VM Instance ← VM Instance ← VM Instance         │
+│           (Remote Claude Environments)                     │
+└─────────────────────────────────────────────────────────────┘
+```
 
 ## 🚀 Quick Start
 
-### Complete Setup (5 minutes)
+### Prerequisites
+
+1. **AWS CLI installed and configured**
+   ```bash
+   # Install AWS CLI v2
+   curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+   unzip awscliv2.zip
+   sudo ./aws/install
+   
+   # Configure credentials
+   aws configure
+   ```
+
+2. **AWS Key Pair for SSH access**
+   ```bash
+   aws ec2 create-key-pair --key-name claude-dev-key \
+     --query 'KeyMaterial' --output text > ~/.ssh/claude-dev-key.pem
+   chmod 400 ~/.ssh/claude-dev-key.pem
+   ```
+
+3. **Security Group for SSH access**
+   ```bash
+   aws ec2 create-security-group \
+     --group-name claude-dev-sg \
+     --description "Claude development VMs"
+   
+   aws ec2 authorize-security-group-ingress \
+     --group-name claude-dev-sg \
+     --protocol tcp --port 22 \
+     --cidr YOUR-IP/32
+   ```
+
+### Installation
+
 ```bash
-# Interactive setup - handles everything
-./start-here.sh
+# Install VM integration dependencies
+npm install @aws-sdk/client-ec2 aws-cli
+
+# Make CLI executable
+chmod +x vm-integration/vm-cli.js
 ```
 
-### Manual Setup
+### Basic Usage
+
+#### Create a Development VM
 ```bash
-# 1. Create dedicated project
-./setup-scripts/create-project.sh
+# Create a standard development VM
+node vm-integration/vm-cli.js create my-dev-vm
 
-# 2. Create your first VM
-./setup-scripts/simple-gcp-vm.sh
+# Create a cost-optimized spot instance
+node vm-integration/vm-cli.js create spot-vm --spot --max-price 0.05
 
-# 3. Connect and start coding
-./manage-vm.sh ssh vm-name
+# Create with custom instance type
+node vm-integration/vm-cli.js create powerful-vm --instance-type m5.2xlarge
+```
+
+#### List and Manage VMs
+```bash
+# List all VMs
+node vm-integration/vm-cli.js list
+
+# Get VM status
+node vm-integration/vm-cli.js status my-dev-vm
+
+# Get SSH connection command
+node vm-integration/vm-cli.js ssh my-dev-vm
+```
+
+#### VM Lifecycle Management
+```bash
+# Stop VM to save costs (preserves data)
+node vm-integration/vm-cli.js stop my-dev-vm
+
+# Start stopped VM
+node vm-integration/vm-cli.js start my-dev-vm
+
+# Terminate VM (permanent deletion)
+node vm-integration/vm-cli.js terminate my-dev-vm
+```
+
+#### Create Reusable Templates
+```bash
+# Create AMI from configured VM
+node vm-integration/vm-cli.js image my-dev-vm my-template
+
+# Use template for new VMs
+node vm-integration/vm-cli.js create new-vm --image-id ami-12345678
+```
+
+## 🤖 MCP Integration
+
+The VM integration provides MCP tools that can be used by Claude instances:
+
+### Available MCP Tools
+
+- `vm_create` - Create new VM instances
+- `vm_list` - List all VM instances
+- `vm_start` - Start stopped instances
+- `vm_stop` - Stop running instances
+- `vm_terminate` - Permanently delete instances
+- `vm_status` - Get detailed instance status
+- `vm_ssh` - Get SSH connection information
+- `vm_create_image` - Create AMI templates
+- `vm_bulk_create` - Create multiple instances
+
+### MCP Usage Examples
+
+```javascript
+// Create a development VM via MCP
+{
+  "name": "vm_create",
+  "arguments": {
+    "name": "claude-dev-1",
+    "instanceType": "m5.xlarge",
+    "spot": true,
+    "maxPrice": "0.10"
+  }
+}
+
+// List all VMs
+{
+  "name": "vm_list",
+  "arguments": {}
+}
+
+// Create multiple VMs for parallel work
+{
+  "name": "vm_bulk_create", 
+  "arguments": {
+    "namePrefix": "parallel-dev",
+    "count": 5,
+    "instanceType": "m5.large",
+    "spot": true
+  }
+}
 ```
 
 ## 📁 Project Structure
@@ -36,209 +174,236 @@ Simple, powerful cloud VM management for Claude Code development. Create and man
 ```
 vm-integration/
 ├── README.md                    # This file
-├── start-here.sh               # Interactive setup wizard  
-├── manage-vm.sh               # Daily VM management
-├── quick-start.sh             # Skip checks, direct actions
-│
-├── docs/                      # Documentation
-│   ├── GETTING-STARTED.md     # Complete setup guide
-│   ├── SCRIPTS-REFERENCE.md   # All scripts documented
-│   ├── SIMPLE-VM-GUIDE.md     # VM basics
-│   ├── claude_install_help.txt # Claude Code installation guide
-│   ├── minimal-vm-setup-guide.md
-│   └── gcp-claude-setup-guide.md
-│
-├── setup-scripts/             # Setup and initialization scripts
-│   ├── create-project.sh      # Create new GCP project
-│   ├── setup-billing.sh       # Enable billing on project
-│   ├── simple-gcp-vm.sh       # Create single VM
-│   ├── install-claude-code-vm.sh # One-step Claude Code installer
-│   ├── setup-claude-code-on-vm.sh # Research Claude Code setup
-│   └── claude-dev-setup.sh    # Automated VM setup script
-│
-├── lib/                       # Core modules and utilities
-│   ├── vm_manager.js          # VM lifecycle management
-│   ├── vm_mcp_tools.js        # MCP integration tools
-│   ├── integrate_vm_mcp.js    # MCP bridge integration
-│   └── vm-cli.js              # Advanced CLI tool
-│
-├── examples/                  # Demo code
-│   ├── demo_vm_integration.js
-│   └── demo_enhanced_logging.js
-│
-├── tests/                     # Testing utilities
-│   ├── test_vm_integration.js
-│   └── test-vm-creation.sh
-│
-├── utils/                     # Utility modules
-│   └── logger.js              # Structured logging
-│
-└── bottleneck_detection/      # Performance diagnostics
-    ├── README.md
-    ├── bottleneck_analyzer.py
-    └── [monitoring tools...]
+├── minimal-vm-setup-guide.md    # Original setup guide
+├── vm_manager.js                # Core VM management class
+├── vm_cli.js                    # Command-line interface
+├── vm_mcp_tools.js              # MCP tools integration
+├── setup-scripts/
+│   └── claude-dev-setup.sh      # VM initialization script
+└── tests/
+    └── test_vm_integration.js   # Comprehensive test suite
 ```
 
-## 🎯 Common Workflows
+## 🛠️ Automated VM Setup
 
-### First Time Setup
+Each VM is automatically configured with:
+
+### Development Environment
+- ✅ **Node.js 20.x LTS** - Latest stable Node.js
+- ✅ **Python 3 + pip** - Python development tools
+- ✅ **Git** - Version control with global configuration
+- ✅ **tmux/screen** - Terminal multiplexing
+- ✅ **Build tools** - gcc, make, build-essential
+
+### Cloud & DevOps Tools
+- ✅ **AWS CLI v2** - Cloud resource management
+- ✅ **Docker** - Container support
+- ✅ **SSH Keys** - Auto-generated for GitHub integration
+
+### Development Utilities
+- ✅ **VS Code friendly** - Ready for remote development
+- ✅ **Monitoring tools** - htop, logging, metrics
+- ✅ **Package managers** - npm, pip3 with useful packages
+
+### Claude Code Integration
+- ✅ **Optimized environment** - Tuned for Claude development
+- ✅ **Project workspace** - Organized directory structure
+- ✅ **Auto-start scripts** - Quick setup guidance on login
+
+## 💰 Cost Optimization
+
+### Spot Instances
 ```bash
-./start-here.sh              # Complete guided setup
+# Use spot instances for 70-90% cost savings
+node vm-integration/vm-cli.js create spot-vm --spot --max-price 0.05
 ```
 
-### Daily Development
+### Auto-Scheduling
 ```bash
-./manage-vm.sh list          # See all VMs
-./manage-vm.sh start my-vm   # Start development VM
-./manage-vm.sh ssh my-vm     # Connect and code
-./manage-vm.sh stop my-vm    # Stop to save costs
+# Stop VMs automatically at night (save costs)
+# Add to crontab:
+0 22 * * * node vm-integration/vm-cli.js stop my-dev-vm
+
+# Start VMs in the morning
+0 8 * * * node vm-integration/vm-cli.js start my-dev-vm
 ```
 
-### Multiple VMs
+### Resource Optimization
+- **Right-sizing**: Start with `t3.medium`, scale up as needed
+- **Regional selection**: Choose closest region for latency
+- **Storage optimization**: Use gp3 volumes for better price/performance
+
+## 🔧 Advanced Usage
+
+### Custom AMI Creation
 ```bash
-# Create several VMs
-for i in {1..3}; do 
-  VM_NAME=dev-vm-$i ./setup-scripts/simple-gcp-vm.sh
-done
+# Setup your perfect development environment
+node vm-integration/vm-cli.js create template-vm
+# ... customize the VM via SSH ...
 
-# Manage them
-./manage-vm.sh list
-./manage-vm.sh ssh dev-vm-1
+# Create reusable template
+node vm-integration/vm-cli.js image template-vm my-dev-template
+
+# Use template for instant deployments
+node vm-integration/vm-cli.js create quick-vm --image-id ami-your-template
 ```
 
-### Cost Management
+### Bulk Development Environments
+```javascript
+// Via MCP tools
+{
+  "name": "vm_bulk_create",
+  "arguments": {
+    "namePrefix": "team-dev",
+    "count": 10,
+    "instanceType": "m5.large",
+    "spot": true
+  }
+}
+```
+
+### Integration with Existing Workflows
+```javascript
+// Spawn Claude instance on VM
+{
+  "name": "spawn",
+  "arguments": {
+    "role": "specialist",
+    "workDir": "/remote/project",
+    "context": "Work on the remote VM environment...",
+    "vmInstance": "my-dev-vm"  // Custom extension
+  }
+}
+```
+
+## 🧪 Testing
+
 ```bash
-# List running VMs and costs
-./manage-vm.sh list
+# Run comprehensive test suite
+node vm-integration/tests/test_vm_integration.js
 
-# Stop all VMs to save money
-for vm in $(./manage-vm.sh list | grep RUNNING | awk '{print $1}'); do
-  ./manage-vm.sh stop $vm
-done
+# Run with verbose output
+VM_TEST_VERBOSE=true node vm-integration/tests/test_vm_integration.js
+
+# Run against real AWS (requires credentials)
+VM_TEST_MOCK=false node vm-integration/tests/test_vm_integration.js
 ```
 
-## 💰 Cost Information
+## 🔒 Security Best Practices
 
-| Machine Type | vCPU | RAM | Monthly Cost* |
-|--------------|------|-----|---------------|
-| e2-micro | 2 | 1GB | ~$7 |
-| e2-small | 2 | 2GB | ~$14 |
-| e2-medium | 2 | 4GB | ~$27 |
-| e2-standard-2 | 2 | 8GB | ~$49 |
-| e2-standard-4 | 4 | 16GB | ~$95 |
+### SSH Security
+- Use strong key pairs with proper permissions
+- Restrict security groups to your IP address
+- Regular key rotation for long-term usage
 
-*If left running 24/7. Stop VMs when not in use to save money!
-
-## 🔧 Configuration
-
-### Environment Variables
-```bash
-# Project settings
-export GCP_PROJECT_ID="my-project"
-export GCP_REGION="us-central1" 
-export GCP_ZONE="us-central1-a"
-
-# VM settings
-export VM_NAME="my-dev-vm"
-export GCP_MACHINE_TYPE="e2-standard-2"
+### IAM Permissions
+Required AWS permissions for VM management:
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ec2:RunInstances",
+        "ec2:DescribeInstances", 
+        "ec2:StartInstances",
+        "ec2:StopInstances",
+        "ec2:TerminateInstances",
+        "ec2:CreateImage",
+        "ec2:DescribeImages"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
 ```
 
-### Persistent Configuration
-Created automatically by `setup-scripts/create-project.sh`:
-```bash
-# .claude-gcp-project (auto-loaded by scripts)
-export GCP_PROJECT_ID="claude-code-dev-20250615-1851"
-export GCP_REGION="us-central1"
-export GCP_ZONE="us-central1-a"
-export PROJECT_NAME="Claude Code Development"
-```
+### Data Protection
+- Regular snapshots of important work
+- Use encrypted EBS volumes for sensitive data
+- Backup critical projects to version control
 
-## 🛠️ Script Reference
+## 🚀 Scaling Strategies
 
-### Core Scripts (Root Directory)
-| Script | Purpose | Example |
-|--------|---------|---------|
-| `start-here.sh` | Interactive setup wizard | `./start-here.sh` |
-| `manage-vm.sh` | Daily VM operations | `./manage-vm.sh list` |
-| `quick-start.sh` | Skip checks, direct actions | `./quick-start.sh` |
+### Development Team Scaling
+1. **Individual VMs**: One VM per developer
+2. **Shared Templates**: Common AMI for consistency
+3. **Auto-Scaling**: Dynamic VM creation based on demand
+4. **Cost Monitoring**: Track usage and optimize regularly
 
-### Setup Scripts (`setup-scripts/`)
-| Script | Purpose | Example |
-|--------|---------|---------|
-| `create-project.sh` | Create new GCP project | `./setup-scripts/create-project.sh` |
-| `setup-billing.sh` | Enable billing on project | `./setup-scripts/setup-billing.sh` |
-| `simple-gcp-vm.sh` | Create single VM | `./setup-scripts/simple-gcp-vm.sh` |
-| `install-claude-code-vm.sh` | One-step Claude Code installer | `./setup-scripts/install-claude-code-vm.sh` |
-| `setup-claude-code-on-vm.sh` | Research Claude Code setup | `./setup-scripts/setup-claude-code-on-vm.sh` |
-| `claude-dev-setup.sh` | Automated VM setup script | `./setup-scripts/claude-dev-setup.sh` |
+### CI/CD Integration
+- Use VMs for isolated testing environments
+- Parallel test execution across multiple VMs
+- Automated deployment and teardown
 
-### Library Scripts (`lib/`)
-| Script | Purpose | Example |
-|--------|---------|---------|
-| `vm-cli.js` | Advanced CLI tool | `node lib/vm-cli.js --help` |
-
-See `docs/SCRIPTS-REFERENCE.md` for complete documentation.
-
-## 🔍 Troubleshooting
+## 🔧 Troubleshooting
 
 ### Common Issues
 
-**"gcloud: command not found"**
+**AWS CLI not configured**
 ```bash
-curl https://sdk.cloud.google.com | bash
-exec -l $SHELL
+aws configure
+# Enter your access key, secret key, region, and output format
 ```
 
-**"Project not found"**
+**SSH key permissions error**
 ```bash
-./setup-scripts/create-project.sh    # Create new project
-# OR
-gcloud config set project existing-project-id
+chmod 400 ~/.ssh/claude-dev-key.pem
 ```
 
-**"Billing not enabled"**
+**Instance not responding**
 ```bash
-./setup-scripts/setup-billing.sh    # Enable billing
+# Check instance status
+node vm-integration/vm-cli.js status my-vm
+
+# Check security group allows SSH from your IP
+aws ec2 describe-security-groups --group-names claude-dev-sg
 ```
 
-**VM won't start**
+**Cost concerns**
 ```bash
-./manage-vm.sh status vm-name    # Check status
-gcloud compute instances get-serial-port-output vm-name --zone=us-central1-a
+# List all running instances
+node vm-integration/vm-cli.js list
+
+# Stop unused instances
+node vm-integration/vm-cli.js stop unused-vm
 ```
 
-**Install Claude Code on VM**
+### Debug Mode
 ```bash
-# One-step installation (recommended)
-./setup-scripts/install-claude-code-vm.sh vm-name zone
-
-# Manual installation
-./manage-vm.sh ssh vm-name
-sudo npm install -g @anthropic-ai/claude-code
+# Enable verbose logging
+VM_TEST_VERBOSE=true node vm-integration/vm-cli.js list
 ```
 
-## 📚 Documentation
+## 🔮 Future Enhancements
 
-- **`docs/GETTING-STARTED.md`** - Complete setup guide
-- **`docs/SCRIPTS-REFERENCE.md`** - All scripts documented
-- **`docs/SIMPLE-VM-GUIDE.md`** - VM basics and cost info
+- **Multi-cloud support**: Azure, GCP integration
+- **Container orchestration**: Kubernetes/ECS integration
+- **Advanced monitoring**: CloudWatch integration
+- **Auto-scaling groups**: Dynamic scaling based on load
+- **Cost analytics**: Detailed cost tracking and optimization
+- **Team management**: User access controls and sharing
 
-## 🤝 Getting Help
+## 📚 Related Documentation
 
-1. **Start with**: `./start-here.sh` for guided setup
-2. **Check docs**: `docs/GETTING-STARTED.md` for detailed guides
-3. **Test first**: `tests/test-vm-creation.sh` to validate setup
-4. **Use quick start**: `./quick-start.sh` when you know your setup works
+- [Minimal VM Setup Guide](minimal-vm-setup-guide.md) - Quick setup reference
+- [MCP Bridge Integration](../docs/MCP_BRIDGE_INTEGRATION_PLAN.md) - How VMs integrate with MCP
+- [Performance Optimization](../docs/PERFORMANCE_OPTIMIZATION_GUIDE.md) - Optimization strategies
+- [Architecture Overview](../docs/tmux-claude-implementation.md) - Overall system design
 
-## 🎯 Next Steps
+## 🤝 Contributing
 
-1. **First VM**: Run `./start-here.sh` for complete setup
-2. **Development**: Connect via SSH, add GitHub keys, clone repos
-3. **Scale up**: Create multiple VMs for different projects
-4. **Optimize**: Use smaller instances, stop VMs when not in use
+1. Test changes thoroughly with the test suite
+2. Update documentation for new features
+3. Follow existing code patterns and conventions
+4. Consider cost implications of new features
+5. Test both mock and real AWS environments
+
+## 📄 License
+
+This VM integration is part of the tmux-claude MCP Server project and uses the same MIT license.
 
 ---
 
 **Ready to scale your Claude development to the cloud!** 🚀
-
-Start with: `./start-here.sh`

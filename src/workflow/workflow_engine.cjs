@@ -209,8 +209,8 @@ class WorkflowEngine extends EventEmitter {
           await this.executeParallel(action, stage, instanceId);
         } else if (action.action === 'foreach') {
           await this.executeForeach(action, stage, instanceId);
-        } else if (action.action === 'next_stage') {
-          // Pure stage transition action
+        } else if (action.action === 'next_stage' || action.next_stage) {
+          // Find and execute next stage
           const nextStageId = action.next_stage || action.stage_id;
           const nextStage = this.config.stages.find(s => s.id === nextStageId);
           if (nextStage) {
@@ -233,17 +233,6 @@ class WorkflowEngine extends EventEmitter {
           // Store result in context if output_var is specified
           if (action.output_var && result) {
             this.context.set(`actions.${action.output_var}`, result);
-          }
-          
-          // Handle deferred stage transition after successful action execution
-          if (action.next_stage) {
-            console.log(`Action completed successfully, transitioning to stage: ${action.next_stage}`);
-            const nextStage = this.config.stages.find(s => s.id === action.next_stage);
-            if (nextStage) {
-              await this.executeStage(nextStage);
-            } else {
-              throw new Error(`Stage not found: ${action.next_stage}`);
-            }
           }
         }
       } catch (error) {

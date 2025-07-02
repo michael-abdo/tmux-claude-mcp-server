@@ -1,0 +1,30 @@
+{
+  "instanceId": "spec_1_1_397923",
+  "chains": [
+    {
+      "keyword": "STAGE1_COMPLETE",
+      "instruction": "Excellent! Now move to Stage 2: Please analyze the requirements and create a detailed implementation plan. End by saying STAGE2_COMPLETE",
+      "nextKeyword": "STAGE2_COMPLETE"
+    },
+    {
+      "keyword": "STAGE2_COMPLETE", 
+      "instruction": "Perfect! Now move to Stage 3: Begin the actual implementation based on your plan. End by saying STAGE3_COMPLETE",
+      "nextKeyword": "STAGE3_COMPLETE"
+    },
+    {
+      "keyword": "STAGE3_COMPLETE",
+      "instruction": "Fantastic! Final stage: Please review your implementation, test it, and provide a summary. End by saying ALL_COMPLETE",
+      "nextKeyword": "ALL_COMPLETE"
+    },
+    {
+      "keyword": "ALL_COMPLETE",
+      "instruction": "🎉 Congratulations! You have successfully completed the entire workflow chain!"
+    }
+  ],
+  "options": {
+    "pollInterval": 5,
+    "timeout": 1800,
+    "retryAttempts": 3,
+    "retryDelay": 2
+  }
+}

@@ -226,7 +226,7 @@ class ClaudeBottleneckAnalyzer:
                 'type': 'CPU',
                 'severity': 'HIGH',
                 'processes': high_cpu_procs,
-                'recommendation': 'Consider reducing concurrent Claude instances or killing stuck processes'
+                'recommendation': 'Consider reducing concurrent Claude instances (user action required)'
             })
         
         # Check for memory bottlenecks

@@ -4,7 +4,7 @@
  */
 
 import { InstanceManager } from '../../src/instance_manager.js';
-import { MCPTools } from '../../src/mcp_tools.js';
+import { EnhancedMCPTools } from '../../src/enhanced_mcp_tools.js';
 import fs from 'fs-extra';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -22,7 +22,7 @@ async function testWorkspaceModes() {
     await fs.ensureDir(stateDir);
     
     const instanceManager = new InstanceManager(stateDir);
-    const mcpTools = new MCPTools(instanceManager);
+    const mcpTools = new EnhancedMCPTools(instanceManager);
     
     console.log('1. Testing isolated mode (default)...');
     try {

@@ -1,0 +1,32 @@
+name: "Working Test"
+version: "1.0"
+description: "A validated working example"
+
+settings:
+  poll_interval: 2
+  timeout: 60
+  instance_role: "specialist"
+
+stages:
+  - id: "start"
+    name: "Start Test"
+    
+    on_success:
+      - action: "spawn"
+        role: "specialist"
+        context: "Test workflow specialist"
+        output_var: "test_instance"
+        
+      - action: "send_prompt"
+        target: "specific_id"
+        instance_id: "{{ actions.test_instance.instanceId }}"
+        prompt: |
+          Say hello and count from 1 to 3.
+          When done, say "***DONE***"
+        wait_for_keyword: "***DONE***"
+        timeout: 30
+        
+      - action: "log"
+        message: "Test completed successfully!"
+        
+      - action: "complete_workflow"

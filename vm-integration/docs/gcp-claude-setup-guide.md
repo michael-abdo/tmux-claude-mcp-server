@@ -187,10 +187,7 @@ gcloud compute instances create claude-worker-$INSTANCE_NUM \
     --service-account=claude-worker@$PROJECT_ID.iam.gserviceaccount.com \
     --scopes=https://www.googleapis.com/auth/cloud-platform \
     --tags=claude-worker \
-    --image-family=ubuntu-2204-lts \
-    --image-project=ubuntu-os-cloud \
-    --boot-disk-size=50GB \
-    --boot-disk-type=pd-standard \
+    --create-disk=auto-delete=yes,boot=yes,device-name=claude-worker-$INSTANCE_NUM,image=projects/ubuntu-os-cloud/global/images/ubuntu-2204-jammy-v20231213,mode=rw,size=50,type=pd-standard \
     --metadata=startup-script-url=gs://$PROJECT_ID-claude-scripts/claude-startup.sh,github-repo=$GITHUB_REPO \
     --labels=type=claude-worker,instance-num=$INSTANCE_NUM
 
