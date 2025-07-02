@@ -8,16 +8,15 @@
  *   node quick_task.js "Fix memory leak in image processor" --instance spec_1_1_123456
  */
 
-import { createRequire } from 'module';
 import fs from 'fs';
 import path from 'path';
 import { spawn } from 'child_process';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import { parseCommandLineArgs, replaceTemplatePlaceholders } from './shared/workflow_utils.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const require = createRequire(import.meta.url);
 
 // Default stage progressions
 const STAGE_PRESETS = {
@@ -59,25 +58,17 @@ const STAGE_INSTRUCTIONS = {
 };
 
 function parseArgs(args) {
-  const task = args[0];
-  let instanceId = null;
-  let preset = 'default';
-  let customStages = null;
+  const parsed = parseCommandLineArgs(args, {
+    stringFlags: ['instance', 'stages', 'preset'],
+    aliases: { i: 'instance', s: 'stages', p: 'preset' }
+  });
   
-  for (let i = 1; i < args.length; i++) {
-    if (args[i] === '--instance' && args[i + 1]) {
-      instanceId = args[i + 1];
-      i++;
-    } else if (args[i] === '--stages' && args[i + 1]) {
-      customStages = args[i + 1].split(',');
-      i++;
-    } else if (args[i] === '--preset' && args[i + 1]) {
-      preset = args[i + 1];
-      i++;
-    }
-  }
-  
-  return { task, instanceId, preset, customStages };
+  return {
+    task: parsed.positional[0],
+    instanceId: parsed.flags.instance || null,
+    preset: parsed.flags.preset || 'default',
+    customStages: parsed.flags.stages ? parsed.flags.stages.split(',') : null
+  };
 }
 
 function buildChains(stages) {
@@ -117,7 +108,7 @@ async function createTempConfig(task, instanceId, preset, customStages) {
     
     // Replace {{TASK}} placeholder in initialPrompt if it exists
     if (phaseConfig.initialPrompt && phaseConfig.initialPrompt.includes('{{TASK}}')) {
-      phaseConfig.initialPrompt = phaseConfig.initialPrompt.replace(/\{\{TASK\}\}/g, task);
+      phaseConfig.initialPrompt = replaceTemplatePlaceholders(phaseConfig.initialPrompt, { TASK: task });
     }
     
     const tempFile = path.join(process.cwd(), `.quick_task_${Date.now()}.json`);
