@@ -5,16 +5,7 @@
  */
 
 import { EventEmitter } from 'events';
-import { createRequire } from 'module';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const require = createRequire(import.meta.url);
-const mcpBridgePath = join(__dirname, '..', 'src', 'workflow', 'mcp_bridge.cjs');
-const MCPBridge = require(mcpBridgePath);
+import { createMCPBridge, isActualCompletionSignal } from './shared/workflow_utils.js';
 
 class DebugKeywordMonitor extends EventEmitter {
   constructor(options) {
@@ -24,7 +15,7 @@ class DebugKeywordMonitor extends EventEmitter {
     this.keyword = options.keyword;
     this.pollInterval = (options.pollInterval || 5) * 1000;
     this.timeout = (options.timeout || 300) * 1000;
-    this.bridge = options.bridge || new MCPBridge();
+    this.bridge = options.bridge || createMCPBridge();
     
     this.startTime = null;
     this.interval = null;
@@ -153,7 +144,7 @@ class DebugKeywordMonitor extends EventEmitter {
             }
             
             // Check if this is a completion signal vs just mentioning the keyword
-            const isCompletionSignal = this.isActualCompletionSignal(line, keyword);
+            const isCompletionSignal = isActualCompletionSignal(line, keyword);
             
             if (!isCompletionSignal) {
               console.log(`🔸 Keyword found but not as completion signal: "${trimmedLine.substring(0, 100)}..."`);
@@ -195,49 +186,6 @@ class DebugKeywordMonitor extends EventEmitter {
     }
   }
 
-  /**
-   * Check if keyword appears as actual completion signal vs just mentioned in content
-   */
-  isActualCompletionSignal(line, keyword) {
-    const trimmedLine = line.trim();
-    
-    // Ignore if keyword appears in planning, thinking, or instructional content
-    if (trimmedLine.includes('☐') ||  // Todo checkbox
-        trimmedLine.includes('□') ||  // Alt todo checkbox
-        trimmedLine.includes('⎿') ||  // Todo branch
-        trimmedLine.includes('Document') ||
-        trimmedLine.includes('signal completion') ||
-        trimmedLine.includes('with ' + keyword) ||
-        trimmedLine.includes('and ' + keyword) ||
-        trimmedLine.includes('using ' + keyword) ||
-        trimmedLine.includes('say ' + keyword) ||
-        trimmedLine.includes('Say ' + keyword) ||
-        trimmedLine.includes('type ' + keyword) ||
-        trimmedLine.includes('Execute step') ||
-        trimmedLine.includes('Step ') ||
-        trimmedLine.includes('execute it') ||
-        trimmedLine.includes('plan:') ||
-        trimmedLine.includes('todo list') ||
-        trimmedLine.includes('Create') ||
-        trimmedLine.includes('Analyze') ||
-        trimmedLine.includes('then execute') ||
-        trimmedLine.includes(': Say') ||
-        trimmedLine.includes('. Say') ||
-        trimmedLine.match(/^\d+\./) ||  // Numbered list items
-        trimmedLine.includes('Let me') ||
-        trimmedLine.includes('I need to') ||
-        trimmedLine.includes('I will') ||
-        trimmedLine.includes('I should')) {
-      return false;
-    }
-    
-    // Only accept the keyword if it appears as a true standalone completion signal
-    return (
-      trimmedLine === keyword ||  // Exactly the keyword alone
-      trimmedLine === `⏺ ${keyword}` ||  // With Claude marker only
-      (trimmedLine.startsWith('⏺') && trimmedLine.endsWith(keyword) && trimmedLine.length < keyword.length + 10)  // Very short Claude output ending with keyword
-    );
-  }
 
   stop() {
     console.log('\n🛑 STOPPING KEYWORD MONITOR');
