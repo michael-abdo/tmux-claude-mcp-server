@@ -102,6 +102,26 @@ function buildChains(stages) {
 }
 
 async function createTempConfig(task, instanceId, preset, customStages) {
+  // Special handling for phase preset - use the full workflow file
+  if (preset === 'phase') {
+    const phaseConfigPath = path.join(__dirname, 'phase_implementation_workflow.json');
+    const phaseConfig = JSON.parse(await fs.promises.readFile(phaseConfigPath, 'utf8'));
+    
+    // Update with current task and instance
+    phaseConfig.instanceId = instanceId || "YOUR_INSTANCE_ID";
+    phaseConfig.taskDescription = task;
+    
+    // Replace {{TASK}} placeholder in initialPrompt if it exists
+    if (phaseConfig.initialPrompt && phaseConfig.initialPrompt.includes('{{TASK}}')) {
+      phaseConfig.initialPrompt = phaseConfig.initialPrompt.replace(/\{\{TASK\}\}/g, task);
+    }
+    
+    const tempFile = path.join(process.cwd(), `.quick_task_${Date.now()}.json`);
+    await fs.promises.writeFile(tempFile, JSON.stringify(phaseConfig, null, 2));
+    return tempFile;
+  }
+  
+  // Regular handling for other presets
   const stages = customStages 
     ? customStages.map((stage, i) => ({
         keyword: i === 0 ? "STARTED" : customStages[i-1].toUpperCase() + "_DONE",
