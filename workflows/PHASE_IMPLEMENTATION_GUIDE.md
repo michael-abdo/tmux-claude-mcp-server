@@ -64,7 +64,7 @@ node task_chain_launcher.js phase_implementation_workflow.json
 - Documents consolidations in CHANGELOG.md
 
 ### Stage 4: Cleanup and Documentation
-**Keyword**: `***COMMIT FINISHED***`
+**Keyword**: `COMMIT_FINISHED`
 
 - Removes debug code and console logs
 - Ensures consistent formatting

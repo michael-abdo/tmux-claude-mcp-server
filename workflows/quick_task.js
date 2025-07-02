@@ -39,7 +39,7 @@ const STAGE_PRESETS = {
   phase: [
     { keyword: "EXECUTE_FINISHED", nextStage: "compare", nextKeyword: "COMPARISON FINISHED" },
     { keyword: "COMPARISON FINISHED", nextStage: "deduplicate", nextKeyword: "DUPLICATION_ELIMINATED" },
-    { keyword: "DUPLICATION_ELIMINATED", nextStage: "cleanup", nextKeyword: "***COMMIT FINISHED***" }
+    { keyword: "DUPLICATION_ELIMINATED", nextStage: "cleanup", nextKeyword: "COMMIT_FINISHED" }
   ]
 };
 

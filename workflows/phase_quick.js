@@ -58,7 +58,7 @@ The workflow will automatically progress through all stages!
   console.log('  1. Execute Phase Implementation → EXECUTE_FINISHED');
   console.log('  2. Compare Requirements vs Implementation → COMPARISON FINISHED');
   console.log('  3. Eliminate Duplicated Functionality → DUPLICATION_ELIMINATED');
-  console.log('  4. Cleanup, Document, and Commit → ***COMMIT FINISHED***');
+  console.log('  4. Cleanup, Document, and Commit → COMMIT_FINISHED');
   
   if (instanceId) {
     console.log(`\n🎯 Instance: ${instanceId}`);
