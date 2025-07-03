@@ -7,6 +7,7 @@
  */
 
 import { sharedWorkspaceGitManager } from './shared_workspace_git_manager.js';
+import { Validator } from './utils/validation.js';
 
 class SharedWorkspaceMCPTools {
     constructor(instanceManager) {
@@ -28,10 +29,8 @@ class SharedWorkspaceMCPTools {
             deleteBranch = false 
         } = params;
         
-        // Validate parameters
-        if (!managerId) {
-            throw new Error('Missing required parameter: managerId');
-        }
+        // Validate parameters using shared validation
+        Validator.validateManagerId(managerId);
         
         // Role-based access control - only executives can coordinate merges
         if (callerRole !== 'executive') {
@@ -87,9 +86,8 @@ class SharedWorkspaceMCPTools {
     async checkWorkspaceConflicts(params, callerRole = null) {
         const { workspaceDir, managerIds = [] } = params;
         
-        if (!workspaceDir) {
-            throw new Error('Missing required parameter: workspaceDir');
-        }
+        // Validate parameters using shared validation
+        Validator.validateWorkspaceParams({ workspace_dir: workspaceDir }, ['workspace_dir']);
         
         // Available to executives and managers
         if (!['executive', 'manager'].includes(callerRole)) {
@@ -161,9 +159,8 @@ class SharedWorkspaceMCPTools {
     async syncManagerBranch(params, callerRole = null) {
         const { instanceId, baseBranch = null } = params;
         
-        if (!instanceId) {
-            throw new Error('Missing required parameter: instanceId');
-        }
+        // Validate parameters using shared validation
+        Validator.validateInstanceId(instanceId);
         
         // Only managers can sync their own branches
         if (callerRole !== 'manager') {
@@ -222,9 +219,8 @@ class SharedWorkspaceMCPTools {
     async commitManagerWork(params, callerRole = null) {
         const { instanceId, message, files = [] } = params;
         
-        if (!instanceId || !message) {
-            throw new Error('Missing required parameters: instanceId, message');
-        }
+        // Validate parameters using shared validation
+        Validator.validateRequired({ instanceId, message }, ['instanceId', 'message']);
         
         // Only managers can commit their work
         if (callerRole !== 'manager') {
@@ -294,9 +290,8 @@ Workspace: Shared collaboration
     async getWorkspaceStatus(params, callerRole = null) {
         const { workspaceDir } = params;
         
-        if (!workspaceDir) {
-            throw new Error('Missing required parameter: workspaceDir');
-        }
+        // Validate parameters using shared validation
+        Validator.validateWorkspaceParams({ workspace_dir: workspaceDir }, ['workspace_dir']);
         
         // Available to executives and managers
         if (!['executive', 'manager'].includes(callerRole)) {

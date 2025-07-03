@@ -10,6 +10,7 @@ import { MCPTools } from './mcp_tools.js';
 import { ParallelExecutor } from './parallel_executor.js';
 import { CircuitBreaker } from './circuit_breaker.js';
 import { tracer } from './distributed_tracer.js';
+import { Validator } from './utils/validation.js';
 
 export class EnhancedMCPTools extends MCPTools {
     constructor(instanceManager) {
@@ -90,6 +91,9 @@ export class EnhancedMCPTools extends MCPTools {
     async executeParallel(params, callerRole = null) {
         const { managerId, tasks, workDir } = params;
         
+        // Validate parameters using shared validation
+        Validator.validateRequired({ managerId, tasks, workDir }, ['managerId', 'tasks', 'workDir']);
+        
         // Only Managers can execute parallel tasks
         if (callerRole !== 'manager') {
             throw new Error('Only Manager instances can execute parallel tasks');
@@ -159,9 +163,9 @@ export class EnhancedMCPTools extends MCPTools {
     async getParallelStatus(params, callerRole = null) {
         const { managerId } = params;
         
-        if (callerRole === 'specialist') {
-            throw new Error('Specialists have NO access to MCP orchestration tools');
-        }
+        // Validate parameters using shared validation
+        Validator.checkSpecialistAccess(callerRole);
+        Validator.validateManagerId(managerId);
         
         const executor = this.parallelExecutors.get(managerId);
         if (!executor) {
@@ -412,9 +416,8 @@ export class EnhancedMCPTools extends MCPTools {
     async getProgress(params, callerRole) {
         const { instanceId } = params;
         
-        if (!instanceId) {
-            throw new Error('Missing required parameter: instanceId');
-        }
+        // Validate parameters using shared validation
+        Validator.validateInstanceId(instanceId);
         
         // Allow all roles to check progress
         const progress = this.instanceManager.getInstanceProgress(instanceId);
@@ -437,9 +440,8 @@ export class EnhancedMCPTools extends MCPTools {
     async getGitBranch(params, callerRole) {
         const { instanceId } = params;
         
-        if (!instanceId) {
-            throw new Error('Missing required parameter: instanceId');
-        }
+        // Validate parameters using shared validation
+        Validator.validateInstanceId(instanceId);
         
         const instances = await this.instanceManager.listInstances();
         const instance = instances.find(i => i.instanceId === instanceId);
