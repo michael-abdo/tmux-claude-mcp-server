@@ -9,7 +9,7 @@
  * From architecture docs: "All communication between instances via MCP tools"
  */
 
-import fs from 'fs/promises';
+import fs from 'fs-extra';
 import path from 'path';
 import os from 'os';
 
@@ -33,7 +33,7 @@ export class MCPConfigGenerator {
         
         // Create .claude directory in work dir for project settings
         const configDir = path.join(workDir, '.claude');
-        await fs.mkdir(configDir, { recursive: true });
+        await fs.ensureDir(configDir);
         
         // Generate configuration based on role
         const config = this.createConfigForRole(instanceId, role, parentId);

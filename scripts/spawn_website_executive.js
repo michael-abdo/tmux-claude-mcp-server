@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { execSync } from 'child_process';
-import fs from 'fs';
+import fs from 'fs-extra';
 import path from 'path';
 
 // Create executive working directory
@@ -10,7 +10,7 @@ const execId = `exec_${timestamp}`;
 const workDir = path.join(process.cwd(), execId);
 
 console.log(`Creating executive workspace at ${workDir}...`);
-fs.mkdirSync(workDir, { recursive: true });
+fs.ensureDirSync(workDir);
 
 // Copy the requirements file
 const requirementsPath = path.join(process.cwd(), 'tests/e2e/website_e2e.md');
