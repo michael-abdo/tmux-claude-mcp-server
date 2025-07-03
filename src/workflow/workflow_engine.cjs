@@ -327,6 +327,7 @@ class WorkflowEngine extends EventEmitter {
     const role = stage.instance_role || this.context.get('settings.instance_role');
     const workspaceMode = stage.workspace_mode || this.context.get('settings.workspace_mode');
     
+    console.log(`🚀 Spawning ${role} instance...`);
     const spawnResult = await this.actionExecutor.execute({
       action: 'spawn',
       role: role,

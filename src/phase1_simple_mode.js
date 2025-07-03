@@ -18,6 +18,7 @@ import { exec } from 'child_process';
 import fs from 'fs/promises';
 import path from 'path';
 import { TmuxInterface } from './tmux_interface.js';
+import { buildClaudeMd } from './claude_md_builder.js';
 import { gitBranchManager } from './git_branch_manager.js';
 import { todoMonitor } from './todo_monitor.js';
 
@@ -57,8 +58,8 @@ export class Phase1SimpleMode {
             // Create project directory
             await fs.mkdir(projectDir, { recursive: true });
             
-            // Write CLAUDE.md
-            const claudeContent = this.buildClaudeContext(role, context, instanceId, parentId);
+            // Write CLAUDE.md using canonical builder
+            const claudeContent = buildClaudeMd(role, instanceId, projectDir, parentId, context);
             await fs.writeFile(path.join(projectDir, 'CLAUDE.md'), claudeContent);
             
             // Create Git branch for specialists
@@ -184,42 +185,6 @@ export class Phase1SimpleMode {
         }
     }
 
-    /**
-     * Build CLAUDE.md content
-     * @param {string} role - Instance role
-     * @param {string} context - Context
-     * @param {string} instanceId - Instance ID
-     * @param {string} parentId - Parent ID
-     * @returns {string} CLAUDE.md content
-     */
-    buildClaudeContext(role, context, instanceId, parentId) {
-        let content = `# ${role.charAt(0).toUpperCase() + role.slice(1)}: ${instanceId}\n\n`;
-        content += `Phase: 1 (Simple Mode - No MCP)\n\n`;
-        content += context + '\n\n';
-        
-        if (role === 'specialist') {
-            content += `## Important Notes
-- You are in Phase 1 simple mode (no MCP tools)
-- Your work is on branch: specialist-${instanceId}
-- Commit frequently to your branch
-- No direct access to orchestration tools
-`;
-        } else if (role === 'manager') {
-            content += `## Important Notes
-- You are in Phase 1 simple mode (no MCP tools)
-- Coordinate specialists via manual communication
-- Maximum 1 specialist can be active
-`;
-        } else if (role === 'executive') {
-            content += `## Important Notes
-- You are in Phase 1 simple mode (no MCP tools)
-- Maximum 3 total instances (including yourself)
-- Sequential execution only
-`;
-        }
-        
-        return content;
-    }
 
     /**
      * List all instances

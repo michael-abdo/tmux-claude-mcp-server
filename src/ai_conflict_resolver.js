@@ -5,10 +5,7 @@
 
 import fs from 'fs/promises';
 import path from 'path';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-
-const execAsync = promisify(exec);
+import { GitBranchManager } from './git_branch_manager.js';
 
 export class AIConflictResolver {
     constructor() {
@@ -17,6 +14,7 @@ export class AIConflictResolver {
             middle: '=======',
             end: '>>>>>>>'
         };
+        this.gitManager = new GitBranchManager();
     }
 
     /**
@@ -112,9 +110,9 @@ Important: Return ONLY the resolved code in a code block, no explanations or mar
      */
     async getFileHistory(filePath, workDir) {
         try {
-            const { stdout } = await execAsync(
-                `git log --oneline -10 -- "${path.basename(filePath)}"`,
-                { cwd: workDir }
+            const stdout = await this.gitManager.gitCommand(
+                `log --oneline -10 -- "${path.basename(filePath)}"`,
+                workDir
             );
             return stdout.trim();
         } catch {

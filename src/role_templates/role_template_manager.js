@@ -3,7 +3,7 @@
  * Provides standardized role templates that get copied to instance directories
  */
 
-import fs from 'fs';
+import fs from 'fs-extra';
 import path from 'path';
 import { pathResolver } from '../utils/path_resolver.js';
 
@@ -61,10 +61,8 @@ ${projectContext}`;
      * @param {object} options - Additional options like bridgePath
      */
     saveContextToInstance(instanceDir, role, projectContext, instanceId, options = {}) {
-        // Ensure instance directory exists
-        if (!fs.existsSync(instanceDir)) {
-            fs.mkdirSync(instanceDir, { recursive: true });
-        }
+        // Ensure instance directory exists using fs-extra for consistency
+        fs.ensureDirSync(instanceDir);
 
         const completeContext = this.buildContext(role, projectContext, instanceId, options);
         const claudeFilePath = path.join(instanceDir, 'CLAUDE.md');

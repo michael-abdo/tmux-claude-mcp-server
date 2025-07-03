@@ -1,0 +1,47 @@
+name: Fixed Workflow Test
+description: Test the fixed keyword monitoring
+version: 1.0
+
+settings:
+  useTaskIds: false
+  poll_interval: 3
+  timeout: 120
+  instance_role: specialist
+  workspace_mode: isolated
+
+stages:
+  - id: test_stage
+    name: Test Fixed Monitoring
+    prompt: |
+      🎯 TESTING FIXED WORKFLOW ENGINE
+      
+      This is the REAL workflow engine with the bug fix!
+      
+      Please type exactly: FIXED_WORKFLOW_WORKS
+    trigger_keyword: FIXED_WORKFLOW_WORKS
+    timeout: 60
+    on_success:
+      - action: send_prompt
+        target: current
+        prompt: |
+          ✅ IT WORKS! The keyword monitor detected your response!
+          
+          The workflow engine is now working correctly.
+          
+          Type: WORKFLOW_COMPLETE
+      - action: next_stage
+        stage_id: complete_stage
+
+  - id: complete_stage
+    name: Complete Test
+    prompt: Waiting for WORKFLOW_COMPLETE...
+    trigger_keyword: WORKFLOW_COMPLETE
+    timeout: 60
+    on_success:
+      - action: send_prompt
+        target: current
+        prompt: |
+          🎉 WORKFLOW ENGINE FIXED AND WORKING!
+          
+          100% Real automatic orchestration achieved!
+      - action: complete_workflow

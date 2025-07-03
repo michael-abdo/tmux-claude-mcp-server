@@ -1,0 +1,170 @@
+#!/usr/bin/env bash
+
+#
+# Universal Workflow Launcher - Persistent Execute-Compare-Commit Workflow
+# Can be run from any directory to start the persistent development assistant
+#
+
+set -euo pipefail
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Project root discovery - find the tmux-claude-mcp-server directory
+find_project_root() {
+    local current_dir="$(pwd)"
+    local search_dir="$current_dir"
+    
+    # Search upward for tmux-claude-mcp-server directory
+    while [ "$search_dir" != "/" ]; do
+        if [ -f "$search_dir/src/workflow/run_persistent_workflow.cjs" ]; then
+            echo "$search_dir"
+            return 0
+        fi
+        search_dir="$(dirname "$search_dir")"
+    done
+    
+    # If not found searching upward, try searching in common locations
+    local common_locations=(
+        "/Users/Mike/.claude/user/tmux-claude-mcp-server"
+        "$HOME/.claude/user/tmux-claude-mcp-server"
+        "$(dirname "$(dirname "$(realpath "$0")")")"
+    )
+    
+    for location in "${common_locations[@]}"; do
+        if [ -f "$location/src/workflow/run_persistent_workflow.cjs" ]; then
+            echo "$location"
+            return 0
+        fi
+    done
+    
+    return 1
+}
+
+# Banner
+echo -e "${BLUE}🔄 Persistent Workflow Launcher${NC}"
+echo -e "${BLUE}================================${NC}"
+echo ""
+
+# Find project root
+echo -e "${YELLOW}📂 Discovering project root...${NC}"
+if ! PROJECT_ROOT=$(find_project_root); then
+    echo -e "${RED}❌ Error: Could not find tmux-claude-mcp-server project directory${NC}"
+    echo -e "${RED}   Searched from: $(pwd)${NC}"
+    echo -e "${RED}   Make sure you have the tmux-claude-mcp-server project installed${NC}"
+    exit 1
+fi
+
+echo -e "${GREEN}✅ Found project root: $PROJECT_ROOT${NC}"
+
+# Change to project directory for execution
+cd "$PROJECT_ROOT"
+
+# Verify workflow files exist
+WORKFLOW_FILE="$PROJECT_ROOT/workflows/core/persistent_execute_compare_commit.yaml"
+RUNNER_SCRIPT="$PROJECT_ROOT/src/workflow/run_persistent_workflow.cjs"
+
+if [ ! -f "$WORKFLOW_FILE" ]; then
+    echo -e "${RED}❌ Error: Workflow file not found: $WORKFLOW_FILE${NC}"
+    exit 1
+fi
+
+if [ ! -f "$RUNNER_SCRIPT" ]; then
+    echo -e "${RED}❌ Error: Runner script not found: $RUNNER_SCRIPT${NC}"
+    exit 1
+fi
+
+echo -e "${GREEN}✅ Workflow file: $WORKFLOW_FILE${NC}"
+echo -e "${GREEN}✅ Runner script: $RUNNER_SCRIPT${NC}"
+echo ""
+
+# Parse command line options
+DEBUG=""
+AUTO_ATTACH=""
+NO_CLEANUP=""
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --debug)
+            DEBUG="--debug"
+            shift
+            ;;
+        --auto-attach)
+            AUTO_ATTACH="true"
+            shift
+            ;;
+        --no-cleanup)
+            NO_CLEANUP="--no-cleanup"
+            shift
+            ;;
+        --help|-h)
+            echo -e "${BLUE}Persistent Workflow Launcher${NC}"
+            echo ""
+            echo "Usage: $0 [options]"
+            echo ""
+            echo "Options:"
+            echo "  --debug         Enable debug output"
+            echo "  --auto-attach   Auto-attach to tmux session when ready"
+            echo "  --no-cleanup    Don't clean up instances after completion"
+            echo "  --help, -h      Show this help message"
+            echo ""
+            echo "Description:"
+            echo "  Starts a persistent execute-compare-commit workflow that:"
+            echo "  1. Spawns a Claude instance in blank state"
+            echo "  2. Waits for commands ending with 'SAY EXECUTE_FINISHED'"
+            echo "  3. Automatically runs compare → commit → blank cycle"
+            echo "  4. Returns to blank state ready for next command"
+            echo "  5. Repeats infinitely"
+            echo ""
+            echo "User Flow:"
+            echo "  1. Run this script from any directory"
+            echo "  2. Wait for 'ready for commands' message"
+            echo "  3. Attach to tmux session: tmux attach -t claude_<instance_id>"
+            echo "  4. Type your command ending with 'SAY EXECUTE_FINISHED'"
+            echo "  5. Watch automatic workflow progression"
+            echo "  6. Type next command when returned to blank state"
+            echo ""
+            exit 0
+            ;;
+        *)
+            echo -e "${RED}❌ Unknown option: $1${NC}"
+            echo "Use --help for usage information"
+            exit 1
+            ;;
+    esac
+done
+
+# Display launch info
+echo -e "${YELLOW}🚀 Starting Persistent Workflow...${NC}"
+echo -e "${YELLOW}   Working directory: $(pwd)${NC}"
+echo -e "${YELLOW}   User working directory: $PWD${NC}"
+echo -e "${YELLOW}   Debug mode: ${DEBUG:-off}${NC}"
+echo -e "${YELLOW}   Auto-attach: ${AUTO_ATTACH:-off}${NC}"
+echo ""
+
+# Build command arguments
+CMD_ARGS=()
+if [ -n "$DEBUG" ]; then
+    CMD_ARGS+=("$DEBUG")
+fi
+if [ -n "$AUTO_ATTACH" ]; then
+    CMD_ARGS+=("--auto-attach")
+fi
+if [ -n "$NO_CLEANUP" ]; then
+    CMD_ARGS+=("$NO_CLEANUP")
+fi
+
+# Launch the persistent workflow
+echo -e "${GREEN}🔄 Launching persistent workflow runner...${NC}"
+echo ""
+
+# Execute with proper signal handling
+if [ ${#CMD_ARGS[@]} -eq 0 ]; then
+    exec node "$RUNNER_SCRIPT"
+else
+    exec node "$RUNNER_SCRIPT" "${CMD_ARGS[@]}"
+fi

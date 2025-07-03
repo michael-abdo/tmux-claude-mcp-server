@@ -1,0 +1,18 @@
+{
+  "monitors": [
+    {
+      "instanceId": "spec_1_1_785691",
+      "triggers": {
+        "TRIGGER_COMMAND": "workflows/examples/persistent_response.yaml",
+        "EXECUTE_CHAIN": "workflows/examples/persistent_chain.yaml"
+      },
+      "options": {
+        "continuous": true,
+        "pollInterval": 2000,
+        "restartDelay": 5000
+      },
+      "active": true
+    }
+  ],
+  "savedAt": "2025-06-16T22:55:36.419Z"
+}

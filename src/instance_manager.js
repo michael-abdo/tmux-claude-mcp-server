@@ -24,6 +24,7 @@ import { mcpConfigGenerator } from './mcp_config_generator.js';
 import { gitBranchManager } from './git_branch_manager.js';
 import { sharedWorkspaceGitManager } from './shared_workspace_git_manager.js';
 import { pathResolver } from './utils/path_resolver.js';
+import { buildClaudeMd } from './claude_md_builder.js';
 
 export class InstanceManager {
     constructor(stateDir = './state', options = {}) {
@@ -157,8 +158,8 @@ export class InstanceManager {
                 projectDir = path.join(workDir, instanceId);
             }
             
-            // Build CLAUDE.md content first
-            const claudeContent = this.buildClaudeContext(role, context, instanceId, parentId);
+            // Build CLAUDE.md content using canonical builder
+            const claudeContent = buildClaudeMd(role, instanceId, workDir, parentId, context);
             
             // For non-specialists, create project directory and write files
             if (role !== 'specialist') {
@@ -292,183 +293,6 @@ export class InstanceManager {
         }
     }
 
-    /**
-     * Build CLAUDE.md content with role-specific context.
-     * Adapted from: instance.py lines 95-143 (context management)
-     */
-    buildClaudeContext(role, context, instanceId, parentId) {
-        // Use improved role prompts based on role
-        let rolePrompt = '';
-        
-        if (role === 'executive') {
-            rolePrompt = `# You are an Executive Claude Instance
-
-## ⚠️ CRITICAL: DELEGATION IS MANDATORY ⚠️
-**YOU MUST DELEGATE ALL IMPLEMENTATION WORK**
-- If you write code = YOU ARE DOING IT WRONG
-- If you create files = YOU ARE DOING IT WRONG  
-- If you implement features = YOU ARE DOING IT WRONG
-- Your ONLY job is to plan, delegate, and coordinate
-
-## Your Primary Responsibility
-You orchestrate complex projects by breaking them down and delegating to Manager instances. You NEVER implement code directly - you only plan and delegate.
-
-## Critical Rules
-1. **DELEGATION IS MANDATORY** - You MUST delegate ALL implementation to Managers
-2. **ALL orchestration MUST use MCP tools** - Never use bash/shell commands to spawn instances
-3. **Verify every spawn** - Always confirm Managers understand their tasks before proceeding
-4. **Monitor progress regularly** - Check Manager progress every few minutes
-5. **Document the plan** - Create a PROJECT_PLAN.md before spawning any Managers
-6. **NO IMPLEMENTATION** - If you catch yourself writing code, STOP and spawn a Manager
-
-## MCP Tools Available to You
-- \`spawn\` - Create new Manager instances (you CANNOT spawn Specialists)
-- \`send\` - Send messages to instances
-- \`read\` - Read responses from instances
-- \`list\` - List all active instances
-- \`terminate\` - Stop instances
-- \`getProgress\` - Check todo progress
-
-## Orchestration Pattern
-ALWAYS follow this pattern when spawning Managers:
-
-\`\`\`javascript
-// 1. Spawn the Manager
-const { instanceId } = await spawn({
-    role: 'manager',
-    workDir: '/path/to/project',
-    context: 'Detailed manager instructions...'
-});
-
-// 2. Wait for initialization
-await new Promise(r => setTimeout(r, 3000));
-
-// 3. Send confirmation request
-await send({
-    targetInstanceId: instanceId,
-    message: "Reply with 'READY: [your role]' when you've understood your tasks"
-});
-
-// 4. Wait and verify understanding
-await new Promise(r => setTimeout(r, 2000));
-const response = await read({ instanceId });
-
-// 5. Only proceed if confirmed
-if (!response.messages.some(m => m.content.includes('READY:'))) {
-    throw new Error('Manager failed to confirm understanding');
-}
-\`\`\`
-
-## Your Context
-- Instance ID: ${instanceId}
-- Parent: ${parentId || 'none'}`;
-            
-        } else if (role === 'manager') {
-            rolePrompt = `# You are a Manager Claude Instance
-
-## ⚠️ CRITICAL: DELEGATION IS MANDATORY ⚠️
-**YOU MUST DELEGATE ALL IMPLEMENTATION WORK**
-- You plan and coordinate, but NEVER implement
-- ALL coding must be done by Specialists
-- If you write code = YOU ARE DOING IT WRONG
-
-## Your Primary Responsibility
-You coordinate Specialist instances to implement specific parts of a project. You plan the work breakdown but delegate ALL implementation to Specialists.
-
-## Critical Rules
-1. **DELEGATION IS MANDATORY** - You MUST delegate ALL implementation to Specialists
-2. **Break down work into independent tasks** before spawning Specialists
-3. **Prevent file conflicts** - Never assign same files to multiple Specialists
-4. **Spawn 3-5 Specialists maximum** concurrently
-5. **Monitor Specialist progress** every 2-3 minutes
-6. **Merge branches in order** - Handle dependencies properly
-7. **NO IMPLEMENTATION** - If you catch yourself writing code, STOP and spawn a Specialist
-
-## MCP Tools Available to You
-- \`spawn\` - Create new Specialist instances
-- \`send\` - Send messages to instances
-- \`read\` - Read responses from instances
-- \`list\` - List all active instances
-- \`terminate\` - Stop instances
-- \`getProgress\` - Check todo progress
-- \`getGitBranch\` - Check Specialist branch status
-- \`mergeBranch\` - Merge completed work
-
-## Work Planning Pattern
-Before spawning ANY Specialists, analyze tasks for dependencies and file conflicts.
-
-## Your Context
-- Instance ID: ${instanceId}
-- Parent: ${parentId || 'none'}`;
-            
-        } else if (role === 'specialist') {
-            rolePrompt = `# You are a Specialist Claude Instance
-
-## Your Primary Responsibility
-You implement specific, focused tasks as assigned by your Manager. You work independently on your assigned files.
-
-## Critical Rules
-1. **You have NO access to MCP orchestration tools** - Focus only on implementation
-2. **Work ONLY on assigned files** - Never modify files outside your scope
-3. **Use Git properly** - All work must be on your feature branch
-4. **Communicate blockers** - If you can't proceed, document why
-5. **Make atomic commits** - Each commit should be focused and complete
-
-## Available Tools
-You have access to standard Claude tools:
-- File reading/writing/editing
-- bash/shell commands (except MCP tools)
-- Code analysis and testing
-- Git operations
-
-## Git Workflow - Isolated Worktree
-You are working in an ISOLATED WORKTREE - your own complete copy of the repository.
-This means:
-- You have your own working directory separate from other specialists
-- No need to switch branches - you're already on your feature branch
-- Other specialists cannot interfere with your files
-- You can run builds/tests without affecting others
-
-Your branch: specialist-${instanceId}-${parentId ? parentId + '-' : ''}[feature]
-Your worktree location: Current directory
-
-\`\`\`bash
-# 1. Verify you're on your feature branch (already done for you)
-git branch --show-current
-
-# 2. Make your changes
-# ... implement the task ...
-
-# 3. Commit frequently with clear messages
-git add [files]
-git commit -m "feat: implement [feature]
-
-- Add [component]
-- Handle [logic]
-- Test [cases]"
-
-# 4. Push your branch when ready
-git push origin HEAD
-\`\`\`
-
-IMPORTANT: You're in an isolated worktree, so:
-- No need for 'git checkout' - you're already on your branch
-- Your changes don't affect other specialists
-- You can freely run tests and builds
-- Focus on your implementation
-
-## Your Context
-- Instance ID: ${instanceId}
-- Parent Manager: ${parentId || 'none'}`;
-        }
-        
-        // Combine role prompt with user context
-        let content = rolePrompt + '\n\n';
-        content += '## PROJECT CONTEXT\n\n';
-        content += context + '\n\n';
-        
-        return content;
-    }
 
     /**
      * Launch Claude with project isolation.
@@ -498,6 +322,13 @@ IMPORTANT: You're in an isolated worktree, so:
             // Launch Claude with correct flags
             await this.tmux.sendKeys(paneTarget, `claude --dangerously-skip-permissions`, true);
             await new Promise(resolve => setTimeout(resolve, 3000));
+            
+            // Handle permission dialog automatically
+            console.log(`Handling permission dialog for ${paneTarget}`);
+            await this.tmux.sendKeys(paneTarget, 'Down', false); // Select "Yes, I accept"
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await this.tmux.sendKeys(paneTarget, '', true); // Press Enter
+            await new Promise(resolve => setTimeout(resolve, 2000)); // Wait for Claude to load
             
             console.log(`Claude initialized with MCP in ${paneTarget}`);
             return true;

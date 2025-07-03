@@ -1,0 +1,23 @@
+{
+  "name": "workflow-orchestration-testing",
+  "version": "1.0.0",
+  "description": "Senior Engineer Protocol for testing automatic workflow orchestration",
+  "main": "testing/run_validation.js",
+  "scripts": {
+    "test": "node testing/run_validation.js validate",
+    "validate": "node testing/run_validation.js validate",
+    "help": "node testing/run_validation.js help"
+  },
+  "dependencies": {
+    "yaml": "^2.3.4"
+  },
+  "keywords": [
+    "workflow",
+    "orchestration", 
+    "testing",
+    "senior-engineer",
+    "validation"
+  ],
+  "author": "Senior Engineer Protocol",
+  "license": "MIT"
+}
