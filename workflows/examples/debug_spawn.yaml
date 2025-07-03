@@ -1,0 +1,27 @@
+name: "Debug Spawn Test"
+version: "1.0"
+description: "Simple test to debug instance spawning"
+
+settings:
+  poll_interval: 2
+  timeout: 60
+
+stages:
+  - id: "spawn_test"
+    name: "Test Spawn"
+    
+    on_success:
+      - action: "log"
+        message: "Starting spawn test..."
+        
+      - action: "spawn"
+        role: "specialist"
+        context: "Debug test specialist"
+        work_dir: "/Users/Mike/.claude/user/tmux-claude-mcp-server"
+        output_var: "test_instance"
+        on_failure: "stop"  # Make sure we stop on failure
+        
+      - action: "log"
+        message: "✅ Spawn successful! Instance ID: {{ actions.test_instance.instanceId }}"
+        
+      - action: "complete_workflow"

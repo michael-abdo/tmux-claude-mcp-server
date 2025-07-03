@@ -1,0 +1,27 @@
+name: "Phase Implementation Workflow"
+version: "1.0"
+description: "Spawns instance and runs phase implementation"
+
+settings:
+  poll_interval: 5
+  timeout: 3600
+  instance_role: "specialist"
+
+stages:
+  - id: "phase_execution"
+    name: "Phase Implementation"
+    
+    on_success:
+      - action: "spawn"
+        role: "specialist"
+        context: "Phase implementation specialist"
+        output_var: "phase_instance"
+        
+      - action: "log"
+        message: "✅ Instance spawned: {{ actions.phase_instance.instanceId }}"
+        
+      # The task will be sent by the task command separately
+      - action: "wait"
+        seconds: 2
+        
+      - action: "complete_workflow"

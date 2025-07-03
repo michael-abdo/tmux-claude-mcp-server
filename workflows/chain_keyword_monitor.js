@@ -162,7 +162,20 @@ class ChainKeywordMonitor extends EventEmitter {
         throw new Error(result.error || 'Failed to read instance output');
       }
 
-      const newOutput = result.output || '';
+      let newOutput = result.output || '';
+      
+      // Handle case where output is wrapped in JSON from MCP bridge
+      if (newOutput.includes('{"success":true,"output":"')) {
+        try {
+          const match = newOutput.match(/{"success":true,"output":"(.*)"}$/);
+          if (match) {
+            // Extract actual output and convert escaped newlines to real newlines
+            newOutput = match[1].replace(/\\n/g, '\n').replace(/\\"/g, '"');
+          }
+        } catch (e) {
+          // If parsing fails, use raw output
+        }
+      }
       
       if (newOutput.length > 0) {
         console.log(`📝 New output: ${newOutput.length} characters`);
@@ -170,8 +183,8 @@ class ChainKeywordMonitor extends EventEmitter {
         console.log('📝 No new output detected');
       }
       
-      // Update buffer
-      this.outputBuffer = this.outputBuffer.slice(-2000) + newOutput;
+      // Update buffer - increased size to handle larger outputs
+      this.outputBuffer = this.outputBuffer.slice(-10000) + newOutput;
       
       // Check for current keyword
       await this.checkForKeywords();

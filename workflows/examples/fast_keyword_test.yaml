@@ -1,0 +1,36 @@
+name: "Fast Keyword Test"
+version: "1.0"
+description: "Quick test without git worktree creation"
+
+settings:
+  poll_interval: 2
+  timeout: 60
+  instance_role: "specialist"
+
+stages:
+  - id: "test_stage1"
+    name: "Quick Test Stage"
+    
+    on_success:
+      - action: "spawn"
+        role: "specialist"
+        context: "Quick test specialist"
+        work_dir: "/tmp/test-claude-quick"
+        workspace_mode: "isolated"
+        output_var: "test_instance"
+        
+      - action: "send_prompt"
+        target: "specific_id"
+        instance_id: "{{ actions.test_instance.instanceId }}"
+        prompt: |
+          This is a quick test.
+          
+          1. Say "Hello from quick test"
+          2. Say the keyword: ***QUICK_TEST_DONE***
+        wait_for_keyword: "***QUICK_TEST_DONE***"
+        timeout: 30
+        
+      - action: "log"
+        message: "✅ Quick test completed!"
+        
+      - action: "complete_workflow"

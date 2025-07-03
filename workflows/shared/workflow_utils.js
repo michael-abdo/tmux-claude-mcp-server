@@ -93,10 +93,25 @@ export function replaceTemplatePlaceholders(text, replacements) {
  */
 export async function getLatestInstanceId(bridge) {
   const result = await bridge.list({});
-  if (!result.success || !result.instances || result.instances.length === 0) {
-    throw new Error('No active instances found');
+  
+  // Handle case where result is wrapped in output field as string
+  if (result.success && result.output && typeof result.output === 'string') {
+    // Extract JSON from output that may have extra text
+    const jsonMatch = result.output.match(/\{.*"instances".*\}/);
+    if (jsonMatch) {
+      const parsed = JSON.parse(jsonMatch[0]);
+      if (parsed.success && parsed.instances && parsed.instances.length > 0) {
+        return parsed.instances[parsed.instances.length - 1].instanceId;
+      }
+    }
   }
-  return result.instances[result.instances.length - 1].instanceId;
+  
+  // Handle direct result
+  if (result.success && result.instances && result.instances.length > 0) {
+    return result.instances[result.instances.length - 1].instanceId;
+  }
+  
+  throw new Error('No active instances found');
 }
 
 /**
