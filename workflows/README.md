@@ -64,9 +64,22 @@ workflows/
 
 ## 🚀 Quick Start
 
-### 1. Run Example Workflows
+### 1. Unified Workflow Launcher (Recommended)
 ```bash
-# Execute-Compare-Commit workflow (recommended starting point)
+# Run complete 4-phase workflow with automatic progression
+./unified_workflow_launcher.sh "create a Python hello world script" --preset phase
+
+# Use existing instance (if available)
+./unified_workflow_launcher.sh "implement user authentication" --preset phase
+
+# Force new instance (kill existing first)
+tmux kill-session -t claude_<instance_id>
+./unified_workflow_launcher.sh "add logging functionality" --preset phase
+```
+
+### 2. Manual Workflow Execution
+```bash
+# Execute-Compare-Commit workflow (manual)
 node ../src/workflow/run_workflow.cjs examples/execute_compare_commit.yaml
 
 # Simple prompt chaining example
@@ -79,7 +92,16 @@ node ../src/workflow/run_workflow.cjs examples/example_code_analysis.yaml
 node ../src/workflow/run_workflow.cjs examples/example_parallel_review.yaml
 ```
 
-### 2. Create Your Own Workflow
+### 3. Task Execution
+```bash
+# Quick task with phases
+./task "implement feature X" --preset phase
+
+# Quick task with custom workflow
+./task "analyze codebase" --workflow examples/example_code_analysis.yaml
+```
+
+### 4. Create Your Own Workflow
 ```bash
 # Interactive scaffolding
 node scripts/create_workflow.cjs
@@ -92,7 +114,7 @@ cp library/templates/basic.yaml user/my_workflow.yaml
 node ../src/workflow/run_workflow.cjs user/my_workflow.yaml
 ```
 
-### 3. Test the System
+### 5. Test the System
 ```bash
 # Run all tests
 ./tests/run_tests.sh
@@ -101,6 +123,32 @@ node ../src/workflow/run_workflow.cjs user/my_workflow.yaml
 node ../src/workflow/run_workflow.cjs tests/test_minimal.yaml
 node ../src/workflow/run_workflow.cjs tests/test_script.yaml
 node ../src/workflow/run_workflow.cjs tests/test_file_ops.yaml
+```
+
+## 🔄 Unified Workflow Launcher
+
+The unified workflow launcher (`./unified_workflow_launcher.sh`) provides a streamlined experience by combining:
+- Workflow engine startup
+- Instance spawning
+- Task monitoring with automatic phase progression
+- Direct tmux attachment for real-time observation
+
+### Key Features
+- **Automatic Phase Progression**: Monitors for keywords (`EXECUTE_FINISHED` → `COMPARISON_FINISHED` → `DUPLICATION_ELIMINATED` → `COMMIT_FINISHED`)
+- **Smart Instance Detection**: Reuses existing instances or spawns new ones as needed
+- **Background Monitoring**: Task progression continues even after detaching from tmux
+- **Robust Error Handling**: Graceful handling of spawn timeouts and instance detection
+
+### Usage Patterns
+```bash
+# Standard usage
+./unified_workflow_launcher.sh "your task description" --preset phase
+
+# Monitor progress after detaching
+tail -f /tmp/unified_workflow_task_<instance_id>.log
+
+# Reattach to Claude session
+tmux attach -t claude_<instance_id>
 ```
 
 ## 🔄 Execute-Compare-Commit Workflow
