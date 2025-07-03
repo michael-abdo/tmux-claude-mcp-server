@@ -19,6 +19,7 @@
  */
 
 import { SharedWorkspaceMCPTools } from './shared_workspace_mcp_tools.js';
+import { Validator } from './utils/validation.js';
 
 export class MCPTools {
     constructor(instanceManager) {
@@ -36,28 +37,13 @@ export class MCPTools {
     async spawn(params, callerRole = null) {
         const { role, workDir, context, parentId, workspaceMode = 'isolated' } = params;
         
-        // Validate parameters
-        if (!role || !workDir || !context) {
-            throw new Error('Missing required parameters: role, workDir, context');
-        }
-        
-        if (!['executive', 'manager', 'specialist'].includes(role)) {
-            throw new Error('Invalid role. Must be: executive, manager, or specialist');
-        }
-        
-        // Validate workspace mode
-        if (!['isolated', 'shared'].includes(workspaceMode)) {
-            throw new Error('Invalid workspaceMode. Must be: isolated or shared');
-        }
+        // Validate parameters using shared validation
+        Validator.checkSpecialistAccess(callerRole);
+        Validator.validateSpawnParams({ role, workDir, context, workspaceMode });
         
         // Only managers can use shared mode
         if (workspaceMode === 'shared' && role !== 'manager') {
             throw new Error('Shared workspace mode is only available for managers');
-        }
-        
-        // Role-based access control
-        if (callerRole === 'specialist') {
-            throw new Error('Specialists have NO access to MCP orchestration tools');
         }
         
         try {
@@ -82,15 +68,9 @@ export class MCPTools {
     async send(params, callerRole = null) {
         const { instanceId, text } = params;
         
-        // Validate parameters
-        if (!instanceId || !text) {
-            throw new Error('Missing required parameters: instanceId, text');
-        }
-        
-        // Role-based access control
-        if (callerRole === 'specialist') {
-            throw new Error('Specialists have NO access to MCP orchestration tools');
-        }
+        // Validate parameters using shared validation
+        Validator.checkSpecialistAccess(callerRole);
+        Validator.validateSendParams({ instanceId, text });
         
         try {
             await this.instanceManager.sendToInstance(instanceId, text);
@@ -109,15 +89,9 @@ export class MCPTools {
     async read(params, callerRole = null) {
         const { instanceId, lines = 50, follow = false } = params;
         
-        // Validate parameters
-        if (!instanceId) {
-            throw new Error('Missing required parameter: instanceId');
-        }
-        
-        // Role-based access control
-        if (callerRole === 'specialist') {
-            throw new Error('Specialists have NO access to MCP orchestration tools');
-        }
+        // Validate parameters using shared validation
+        Validator.checkSpecialistAccess(callerRole);
+        Validator.validateReadParams({ instanceId });
         
         try {
             const result = await this.instanceManager.readFromInstance(instanceId, lines);
@@ -142,10 +116,8 @@ export class MCPTools {
     async list(params = {}, callerRole = null) {
         const { role, parentId } = params;
         
-        // Role-based access control
-        if (callerRole === 'specialist') {
-            throw new Error('Specialists have NO access to MCP orchestration tools');
-        }
+        // Validate parameters using shared validation
+        Validator.checkSpecialistAccess(callerRole);
         
         try {
             const instances = await this.instanceManager.listInstances(role, parentId);
@@ -176,15 +148,9 @@ export class MCPTools {
     async terminate(params, callerRole = null) {
         const { instanceId, cascade = false } = params;
         
-        // Validate parameters
-        if (!instanceId) {
-            throw new Error('Missing required parameter: instanceId');
-        }
-        
-        // Role-based access control
-        if (callerRole === 'specialist') {
-            throw new Error('Specialists have NO access to MCP orchestration tools');
-        }
+        // Validate parameters using shared validation
+        Validator.checkSpecialistAccess(callerRole);
+        Validator.validateTerminateParams({ instanceId });
         
         try {
             const success = await this.instanceManager.terminateInstance(instanceId, cascade);
@@ -202,15 +168,9 @@ export class MCPTools {
     async restart(params, callerRole = null) {
         const { instanceId } = params;
         
-        // Validate parameters
-        if (!instanceId) {
-            throw new Error('Missing required parameter: instanceId');
-        }
-        
-        // Role-based access control
-        if (callerRole === 'specialist') {
-            throw new Error('Specialists have NO access to MCP orchestration tools');
-        }
+        // Validate parameters using shared validation
+        Validator.checkSpecialistAccess(callerRole);
+        Validator.validateInstanceId(instanceId);
         
         try {
             const result = await this.instanceManager.restartInstance(instanceId);
