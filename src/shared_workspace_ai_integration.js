@@ -5,12 +5,8 @@
 
 import { aiConflictResolver } from './ai_conflict_resolver.js';
 import { sharedWorkspaceGitManager } from './shared_workspace_git_manager.js';
-import { exec } from 'child_process';
-import { promisify } from 'util';
 import fs from 'fs/promises';
 import path from 'path';
-
-const execAsync = promisify(exec);
 
 export class SharedWorkspaceAIIntegration {
     constructor() {
@@ -127,7 +123,7 @@ export class SharedWorkspaceAIIntegration {
      * @returns {Promise<Array>} List of conflicted file paths
      */
     async getConflictedFiles(workspaceDir) {
-        const { stdout } = await execAsync('git diff --name-only --diff-filter=U', { cwd: workspaceDir });
+        const stdout = await this.gitManager.gitCommand('diff --name-only --diff-filter=U', workspaceDir);
         return stdout.trim().split('\n').filter(f => f);
     }
 
