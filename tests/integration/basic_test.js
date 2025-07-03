@@ -9,6 +9,7 @@ import { test } from 'node:test';
 import assert from 'node:assert';
 import { InstanceManager } from '../../src/instance_manager.js';
 import { MCPTools } from '../../src/mcp_tools.js';
+import { buildClaudeMd } from '../../src/claude_md_builder.js';
 
 // Mock TmuxInterface for testing
 class MockTmuxInterface {
@@ -144,34 +145,33 @@ test('MCPTools returns proper tool definitions', () => {
 });
 
 test('InstanceManager builds appropriate CLAUDE.md content', () => {
-    const manager = new InstanceManager('./test-state');
-    
-    // Test specialist context (should have git workflow, no MCP tools)
-    const specialistContext = manager.buildClaudeContext(
+    // Test specialist context using canonical buildClaudeMd function
+    const specialistContext = buildClaudeMd(
         'specialist', 
-        'Base context', 
-        'spec_1_1_1', 
-        'mgr_1_1'
-    );
-    
-    assert.match(specialistContext, /# You are a Specialist Claude Instance/);
-    assert.match(specialistContext, /Git Workflow/);
-    assert.match(specialistContext, /You have NO access to MCP orchestration tools/);
-    assert.match(specialistContext, /specialist-spec_1_1_1/);
-    
-    // Test manager context (should have MCP tools, no git workflow)
-    const managerContext = manager.buildClaudeContext(
-        'manager',
-        'Base context',
+        'spec_1_1_1',
+        '/test/workdir',
         'mgr_1_1',
-        'exec_1'
+        'Base context'
     );
     
-    assert.match(managerContext, /# You are a Manager Claude Instance/);
-    assert.match(managerContext, /MCP Tools Available/);
-    assert.match(managerContext, /spawn/);
-    assert.match(managerContext, /Parent: exec_1/);
-    assert.ok(!managerContext.includes('Git Workflow'));
+    assert.match(specialistContext, /Instance Context - spec_1_1_1/);
+    assert.match(specialistContext, /Role.*specialist/);
+    assert.match(specialistContext, /YOUR SPECIALIST RESPONSIBILITIES/);
+    assert.match(specialistContext, /Base context/);
+    
+    // Test manager context using canonical buildClaudeMd function
+    const managerContext = buildClaudeMd(
+        'manager',
+        'mgr_1_1',
+        '/test/workdir',
+        'exec_1',
+        'Base context'
+    );
+    
+    assert.match(managerContext, /Instance Context - mgr_1_1/);
+    assert.match(managerContext, /Role.*manager/);
+    assert.match(managerContext, /YOUR MANAGER RESPONSIBILITIES/);
+    assert.match(managerContext, /Parent Instance.*exec_1/);
 });
 
 console.log('Running basic tests for tmux-claude MCP Server...');
