@@ -99,6 +99,12 @@ class KeywordMonitor extends EventEmitter {
           this.outputBuffer = this.outputBuffer.slice(-10000);
         }
         
+        // Debug: Show what we're checking
+        if (process.env.DEBUG || this.debug) {
+          console.log(`📖 Read ${output.length} chars from ${this.instanceId}`);
+          console.log(`🔍 Checking for keyword: "${this.keyword}"`);
+        }
+        
         // Check for keyword
         let detected = false;
         if (this.simpleMode) {
@@ -158,10 +164,12 @@ class KeywordMonitor extends EventEmitter {
         return '';
       }
       
-      // Find the first Claude response marker (⏺) after the last user message
+      // Find Claude response markers after the last user message
+      // Look for ● (Claude Code format) or ⏺ (standard format)
       let firstClaudeResponseIndex = -1;
       for (let i = lastUserMessageIndex + 1; i < lines.length; i++) {
-        if (lines[i].trim().startsWith('⏺')) {
+        const trimmed = lines[i].trim();
+        if (trimmed.startsWith('●') || trimmed.startsWith('⏺')) {
           firstClaudeResponseIndex = i;
           break;
         }
@@ -214,20 +222,23 @@ class KeywordMonitor extends EventEmitter {
   findMcpBridge() {
     // Try multiple locations for the MCP bridge script
     const possiblePaths = [
+      path.resolve(__dirname, '../../scripts/mcp_bridge.js'),  // Fixed: Go up 2 levels from workflow/
       path.resolve(__dirname, '../scripts/mcp_bridge.js'),
       path.resolve(process.cwd(), 'scripts/mcp_bridge.js'),
       path.resolve(process.cwd(), 'src/scripts/mcp_bridge.js'),
-      '/Users/Mike/.claude/user/tmux-claude-mcp-server/scripts/mcp_bridge.js'
+      '/home/ubuntu/dev_ops/tools/tmux-claude-mcp-server/scripts/mcp_bridge.js'  // Fixed: Correct path
     ];
     
     for (const bridgePath of possiblePaths) {
       if (require('fs').existsSync(bridgePath)) {
+        console.log(`Found MCP bridge at: ${bridgePath}`);
         return bridgePath;
       }
     }
     
     // Fallback to relative path from workflow directory
-    return path.resolve(__dirname, '../scripts/mcp_bridge.js');
+    console.warn('Using fallback MCP bridge path');
+    return path.resolve(__dirname, '../../scripts/mcp_bridge.js');
   }
 
   async readInstanceOutput() {
@@ -238,12 +249,16 @@ class KeywordMonitor extends EventEmitter {
         'read',
         JSON.stringify({
           instanceId: this.instanceId,
-          lines: 10
+          lines: 50  // Increased to capture more output
         })
       ];
       
+      // Set working directory to where MCP bridge expects to be
+      const workingDir = path.dirname(this.mcpBridgePath);
+      
       const process = spawn(command, args, {
-        stdio: ['pipe', 'pipe', 'pipe']
+        stdio: ['pipe', 'pipe', 'pipe'],
+        cwd: workingDir  // Fix: Set correct working directory
       });
       
       let stdout = '';

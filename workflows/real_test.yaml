@@ -1,0 +1,69 @@
+name: Real E2E Test
+description: Real workflow test with existing Claude instance
+version: 1.0
+
+settings:
+  useTaskIds: false
+  poll_interval: 3
+  timeout: 300
+  instance_role: manager
+  workspace_mode: shared
+  existing_instance: mgr_1_341538
+
+stages:
+  - id: execute_stage
+    name: Execute Stage
+    prompt: |
+      🎯 REAL WORKFLOW ENGINE TEST
+      
+      This is the ACTUAL workflow engine running!
+      No bash scripts, no simulations.
+      
+      Type: EXECUTE_FINISHED
+    trigger_keyword: EXECUTE_FINISHED
+    timeout: 60
+    on_success:
+      - action: send
+        instanceId: mgr_1_341538
+        text: |
+          ✅ REAL AUTOMATIC TRANSITION!
+          
+          The workflow engine detected EXECUTE_FINISHED!
+          
+          Type: COMPARE_FINISHED
+      - action: next_stage
+        stage_id: compare_stage
+
+  - id: compare_stage
+    name: Compare Stage
+    prompt: Monitoring for COMPARE_FINISHED...
+    trigger_keyword: COMPARE_FINISHED
+    timeout: 60
+    on_success:
+      - action: send
+        instanceId: mgr_1_341538
+        text: |
+          ✅ SECOND REAL TRANSITION!
+          
+          Execute → Compare worked!
+          
+          Type: COMMIT_FINISHED
+      - action: next_stage
+        stage_id: commit_stage
+
+  - id: commit_stage
+    name: Commit Stage
+    prompt: Monitoring for COMMIT_FINISHED...
+    trigger_keyword: COMMIT_FINISHED
+    timeout: 60
+    on_success:
+      - action: send
+        instanceId: mgr_1_341538
+        text: |
+          🎉 REAL WORKFLOW COMPLETE!
+          
+          100% E2E Automatic Orchestration PROVEN!
+          No scripts, just the workflow engine!
+          
+          Returning to blank state...
+      - action: return_to_blank_state

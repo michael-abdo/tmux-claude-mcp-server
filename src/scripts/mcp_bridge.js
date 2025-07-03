@@ -1,0 +1,1 @@
+/home/ubuntu/dev_ops/tools/tmux-claude-mcp-server/scripts/mcp_bridge.js

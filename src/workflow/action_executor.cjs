@@ -74,9 +74,11 @@ class ActionExecutor extends EventEmitter {
   }
   
   async executeSpawn(action) {
+    // Fix: Use project directory instead of process.cwd()
+    const projectDir = '/home/ubuntu/dev_ops/tools/tmux-claude-mcp-server';
     const spawnConfig = {
       role: action.role || 'specialist',
-      workDir: action.work_dir || process.cwd(),
+      workDir: action.work_dir || projectDir,
       context: this.context.interpolate(action.context || ''),
       workspaceMode: action.workspace_mode || 'isolated'
     };
@@ -89,20 +91,22 @@ class ActionExecutor extends EventEmitter {
     
     const response = await this.callMcpBridge('spawn', spawnConfig);
     
-    if (response.success && response.instanceId) {
-      console.log(`✅ Spawned instance: ${response.instanceId}`);
+    if (response.success && response.result && response.result.instanceId) {
+      const instanceId = response.result.instanceId;
+      console.log(`✅ Spawned instance: ${instanceId}`);
       
       // Store in context for later use
-      this.context.set(`instances.${spawnConfig.role}`, response.instanceId);
-      this.context.set('vars.current_instance_id', response.instanceId);
+      this.context.set(`instances.${spawnConfig.role}`, instanceId);
+      this.context.set('vars.current_instance_id', instanceId);
       
       return {
-        instanceId: response.instanceId,
+        instanceId: instanceId,
         role: spawnConfig.role,
         success: true
       };
     } else {
-      throw new Error(`Failed to spawn instance: ${response.error || 'Unknown error'}`);
+      const debugInfo = `Response: ${JSON.stringify(response, null, 2)}`;
+      throw new Error(`Failed to spawn instance: ${response.error || response.message || 'Unknown error'}. ${debugInfo}`);
     }
   }
   
@@ -311,10 +315,10 @@ class ActionExecutor extends EventEmitter {
   findMcpBridge() {
     // Try multiple locations for the MCP bridge script
     const possiblePaths = [
-      path.resolve(__dirname, '../scripts/mcp_bridge.js'),
+      path.resolve(__dirname, '../../scripts/mcp_bridge.js'),  // Fixed: Go up 2 levels from workflow/
       path.resolve(process.cwd(), 'scripts/mcp_bridge.js'),
       path.resolve(process.cwd(), 'src/scripts/mcp_bridge.js'),
-      '/Users/Mike/.claude/user/tmux-claude-mcp-server/scripts/mcp_bridge.js'
+      '/home/ubuntu/dev_ops/tools/tmux-claude-mcp-server/scripts/mcp_bridge.js'  // Fixed: Correct path
     ];
     
     for (const bridgePath of possiblePaths) {
@@ -324,7 +328,7 @@ class ActionExecutor extends EventEmitter {
     }
     
     // Fallback to relative path from workflow directory
-    return path.resolve(__dirname, '../scripts/mcp_bridge.js');
+    return path.resolve(__dirname, '../../scripts/mcp_bridge.js');  // Fixed: Go up 2 levels
   }
 
   async callMcpBridge(command, params) {
@@ -340,19 +344,27 @@ class ActionExecutor extends EventEmitter {
       console.log(`📍 MCP bridge path: ${this.mcpBridgePath}`);
       console.log(`📍 Full command: ${nodeCommand} ${args.join(' ')}`);
       
+      // Set working directory to the project root
+      const workingDir = path.dirname(this.mcpBridgePath);
+      
       const process = spawn(nodeCommand, args, {
-        stdio: ['pipe', 'pipe', 'pipe']
+        stdio: ['pipe', 'pipe', 'pipe'],
+        cwd: workingDir  // Fix: Set correct working directory
       });
       
       let stdout = '';
       let stderr = '';
       
       process.stdout.on('data', (data) => {
-        stdout += data.toString();
+        const output = data.toString();
+        stdout += output;
+        console.log(`📤 MCP Bridge stdout: ${output.trim()}`);
       });
       
       process.stderr.on('data', (data) => {
-        stderr += data.toString();
+        const error = data.toString();
+        stderr += error;
+        console.log(`📤 MCP Bridge stderr: ${error.trim()}`);
       });
       
       process.on('close', (code) => {

@@ -1,0 +1,25 @@
+name: Use Existing Instance
+description: Monitor existing Claude without spawning
+version: 1.0
+
+settings:
+  useTaskIds: false
+  poll_interval: 2
+  timeout: 120
+  skip_spawn: true
+  target_instance: mgr_1_341538
+
+stages:
+  - id: monitor
+    name: Monitor
+    instanceId: mgr_1_341538
+    prompt: |
+      REAL WORKFLOW TEST
+      Type: WORKFLOW_WORKS
+    trigger_keyword: WORKFLOW_WORKS
+    timeout: 60
+    on_success:
+      - action: send
+        instanceId: mgr_1_341538
+        text: "SUCCESS! The real workflow detected your keyword!"
+      - action: complete_workflow
