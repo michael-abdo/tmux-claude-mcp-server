@@ -1,64 +1,69 @@
-const { execSync } = require('child_process');
+import { TmuxInterface } from '../../src/tmux_interface.js';
 
 const SESSION_NAME = 'claude_exec_1749369856326';
 
-function runCommand(cmd) {
+async function main() {
+    const tmux = new TmuxInterface();
+    
+    console.log(`Checking for session: ${SESSION_NAME}`);
+
     try {
-        const output = execSync(cmd, { encoding: 'utf8' });
-        return { success: true, output };
-    } catch (error) {
-        return { success: false, error: error.message };
-    }
-}
+        // Check if session exists using canonical TmuxInterface
+        const sessionExists = await tmux.sessionExists(SESSION_NAME);
 
-console.log(`Checking for session: ${SESSION_NAME}`);
-
-// Check if session exists
-const hasSession = runCommand(`tmux has-session -t ${SESSION_NAME} 2>/dev/null`);
-
-if (hasSession.success) {
-    console.log(`✓ Session ${SESSION_NAME} exists`);
-    
-    // Send Enter key
-    console.log('Sending Enter key...');
-    const sendResult = runCommand(`tmux send-keys -t ${SESSION_NAME} Enter`);
-    
-    if (sendResult.success) {
-        console.log(`✓ Successfully sent Enter key to session ${SESSION_NAME}`);
-    } else {
-        console.log(`✗ Failed to send Enter key: ${sendResult.error}`);
-    }
-} else {
-    console.log(`✗ Session ${SESSION_NAME} does not exist`);
-}
-
-// List all tmux sessions
-console.log('\nAll tmux sessions:');
-const listResult = runCommand('tmux list-sessions 2>/dev/null');
-
-if (listResult.success && listResult.output) {
-    console.log(listResult.output);
-    
-    // Look for claude_exec sessions with long timestamps
-    console.log('\nClaude exec sessions with long timestamps:');
-    const lines = listResult.output.split('\n');
-    lines.forEach(line => {
-        if (line.includes('claude_exec_')) {
-            const match = line.match(/claude_exec_(\d+)/);
-            if (match && match[1].length > 10) {
-                console.log(`  - ${line}`);
+        if (sessionExists) {
+            console.log(`✓ Session ${SESSION_NAME} exists`);
+            
+            // Send Enter key using canonical method
+            console.log('Sending Enter key...');
+            try {
+                const target = tmux.getPaneTarget(SESSION_NAME);
+                await tmux.sendKeys(target, '', true); // Send Enter
+                console.log(`✓ Successfully sent Enter key to session ${SESSION_NAME}`);
+            } catch (error) {
+                console.log(`✗ Failed to send Enter key: ${error.message}`);
             }
+        } else {
+            console.log(`✗ Session ${SESSION_NAME} does not exist`);
         }
-    });
-} else {
-    console.log('No tmux sessions found');
+
+        // List all tmux sessions using canonical method
+        console.log('\nAll tmux sessions:');
+        const sessions = await tmux.listSessions();
+        
+        if (sessions.length > 0) {
+            sessions.forEach(session => {
+                console.log(`${session.name}: ${session.windows} windows (${session.attached ? 'attached' : 'detached'})`);
+            });
+            
+            // Look for claude_exec sessions with long timestamps
+            console.log('\nClaude exec sessions with long timestamps:');
+            sessions.forEach(session => {
+                if (session.name.includes('claude_exec_')) {
+                    const match = session.name.match(/claude_exec_(\d+)/);
+                    if (match && match[1].length > 10) {
+                        console.log(`  - ${session.name}: ${session.windows} windows (${session.attached ? 'attached' : 'detached'})`);
+                    }
+                }
+            });
+        } else {
+            console.log('No tmux sessions found');
+        }
+
+        // Also check for any sessions starting with 'claude_'
+        console.log('\nAll Claude-related sessions:');
+        const claudeSessions = sessions.filter(session => session.name.startsWith('claude_'));
+        if (claudeSessions.length > 0) {
+            claudeSessions.forEach(session => {
+                console.log(`${session.name}: ${session.windows} windows (${session.attached ? 'attached' : 'detached'})`);
+            });
+        } else {
+            console.log('No Claude sessions found');
+        }
+    } catch (error) {
+        console.error('❌ Error:', error.message);
+    }
 }
 
-// Also check for any sessions starting with 'claude_'
-console.log('\nAll Claude-related sessions:');
-const claudeSessions = runCommand('tmux list-sessions 2>/dev/null | grep claude_ || true');
-if (claudeSessions.success && claudeSessions.output) {
-    console.log(claudeSessions.output);
-} else {
-    console.log('No Claude sessions found');
-}
+// Run the script
+main();
