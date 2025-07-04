@@ -32,7 +32,7 @@
  */
 
 import { EventEmitter } from 'events';
-import { createMCPBridge, isActualCompletionSignal, loadConfig } from './shared/workflow_utils.js';
+import { createMCPBridge, isActualCompletionSignal, loadConfig } from '../shared/workflow_utils.js';
 
 class ChainKeywordMonitor extends EventEmitter {
   constructor(config) {

@@ -15,7 +15,7 @@ import { dirname, join } from 'path';
 import fs from 'fs';
 import { spawn } from 'child_process';
 import { ChainKeywordMonitor } from './chain_keyword_monitor.js';
-import { createMCPBridge, replaceTemplatePlaceholders, getLatestInstanceId as getLatestInstance } from './shared/workflow_utils.js';
+import { createMCPBridge, replaceTemplatePlaceholders, getLatestInstanceId as getLatestInstance } from '../shared/workflow_utils.js';
 
 async function loadTaskConfig(configPath) {
   try {
