@@ -1,1 +1,0 @@
-Test Results: 9 passed, 1 failed (MCP Bridge timeout). Success rate: 90%

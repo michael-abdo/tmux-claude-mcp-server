@@ -13,7 +13,7 @@ fi
 echo "📋 Continuing phase workflow for instance: $INSTANCE_ID"
 
 # Read the phase workflow to get the comparison instruction
-COMPARISON_INSTRUCTION=$(cat phase_implementation_workflow.json | jq -r '.chains[0].instruction')
+COMPARISON_INSTRUCTION=$(cat ../config/phase_implementation_workflow.json | jq -r '.chains[0].instruction')
 
 echo "📨 Sending comparison instruction..."
 node ../scripts/mcp_bridge.js send "{

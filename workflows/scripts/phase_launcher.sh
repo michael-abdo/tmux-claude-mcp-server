@@ -53,9 +53,9 @@ cat > .phase_task_config.json << EOF
 {
   "instanceId": "$INSTANCE_ID",
   "taskDescription": "$TASK",
-  "chains": $(cat phase_implementation_workflow.json | jq '.chains'),
-  "initialPrompt": $(cat phase_implementation_workflow.json | jq '.initialPrompt'),
-  "options": $(cat phase_implementation_workflow.json | jq '.options // {}')
+  "chains": $(cat ../config/phase_implementation_workflow.json | jq '.chains'),
+  "initialPrompt": $(cat ../config/phase_implementation_workflow.json | jq '.initialPrompt'),
+  "options": $(cat ../config/phase_implementation_workflow.json | jq '.options // {}')
 }
 EOF
 

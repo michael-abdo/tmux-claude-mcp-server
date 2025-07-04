@@ -6,60 +6,89 @@ A modular, extensible workflow system for orchestrating Claude instances with pr
 
 ```
 workflows/
-├── README.md          # This file - system overview and usage guide
-├── config/            # Configuration files
-│   └── workflow_config.json          # Main workflow configuration
-├── docs/              # System documentation
-│   ├── CURRENT_STATUS.md             # Current system status
-│   ├── SCALABLE_STRUCTURE_SUMMARY.md # Architecture overview
-│   ├── TEST_README.md                # Testing documentation
-│   ├── demo_workflow_test.md         # Workflow demo and examples
-│   ├── prompt_chain.md               # Execute-Compare-Commit prompt chain
-│   ├── workflow_advanced_actions.md  # Advanced action documentation
-│   ├── workflow_system_design.md     # System design specification
-│   ├── workflow_system_fix_plan.txt  # Implementation plan
-│   └── workflow_system_summary.md    # System summary
-├── examples/          # Example workflows for learning
+├── README.md                    # This file - system overview and usage guide
+├── CLAUDE.md                    # Project instructions and guidelines
+├── task                         # Main task execution script
+├── quick_task.js                # Quick task runner
+├── unified_workflow_launcher.sh # Main unified workflow launcher
+├── config/                      # Configuration files
+│   ├── workflow_config.json             # Main workflow configuration
+│   ├── example_chain_config.json        # Example chain configuration
+│   ├── phase_implementation_workflow.json # Phase workflow config
+│   ├── simple_task_progression.json     # Simple task configuration
+│   └── task_progression_config.json     # Task progression settings
+├── docs/                        # System documentation
+│   ├── CHAIN_MONITOR_GUIDE.md           # Chain monitoring guide
+│   ├── CHANGELOG.md                     # Project changelog
+│   ├── CURRENT_STATUS.md                # Current system status
+│   ├── GLOBAL_INSTALL_GUIDE.md          # Installation guide
+│   ├── PHASE_IMPLEMENTATION_GUIDE.md    # Phase implementation guide
+│   ├── SCALABLE_STRUCTURE_SUMMARY.md    # Architecture overview
+│   ├── SYSTEM_SUMMARY.md                # System summary
+│   ├── TASK_PROGRESSION_GUIDE.md        # Task progression guide
+│   ├── TEST_README.md                   # Testing documentation
+│   ├── demo_workflow_test.md            # Workflow demo and examples
+│   ├── prompt_chain.md                  # Execute-Compare-Commit prompt chain
+│   ├── workflow_advanced_actions.md     # Advanced action documentation
+│   ├── workflow_system_design.md        # System design specification
+│   ├── workflow_system_fix_plan.txt     # Implementation plan
+│   └── workflow_system_summary.md       # System summary
+├── examples/                    # Example workflows for learning
 │   ├── example_simple.yaml                  # Basic prompt chaining
 │   ├── example_code_analysis.yaml           # Complex analysis workflow
 │   ├── example_parallel_review.yaml         # Multi-instance parallel work
 │   ├── example_test_generation.yaml         # Iterative test generation
 │   ├── execute_compare_commit.yaml          # Execute-Compare-Commit workflow
 │   ├── execute_compare_commit_simple.yaml   # Simplified version
-│   └── execute_compare_commit_workflow.yaml # Full-featured version
-├── library/           # Reusable workflow components
-│   ├── actions/       # Action implementations
-│   │   ├── control.js      # Control flow actions
-│   │   ├── core.js         # Essential actions (send_prompt, spawn, etc.)
-│   │   ├── data.js         # Data processing actions
-│   │   ├── filesystem.js   # File operations
-│   │   ├── index.js        # Action library registry
-│   │   ├── network.js      # Network and HTTP actions
-│   │   └── script.js       # Script execution actions
-│   ├── common/        # Common workflow patterns
-│   │   └── code_analysis.yaml # Reusable code analysis pattern
-│   └── templates/     # Workflow templates for scaffolding
-│       ├── basic.yaml                 # Simple workflow template
-│       ├── conditional_branching.yaml # Conditional logic template
-│       ├── parallel_processing.yaml   # Parallel workflow template
-│       └── script_integration.yaml    # Script integration template
-├── scripts/           # Supporting scripts and utilities
-│   ├── chain_prompts.js     # Prompt chaining utility
-│   ├── create_workflow.cjs  # Workflow scaffolding tool
-│   ├── run_workflow.sh      # Shell script wrapper
-│   └── workflow_runner.js   # Workflow execution engine
-├── tests/             # Test workflows and test runner
-│   ├── run_tests.sh                   # Test runner script
-│   ├── test_basic.yaml                # Basic functionality test
-│   ├── test_complex_workflow.yaml     # Complex workflow test
-│   ├── test_engine_only.yaml          # Engine-only test
+│   ├── execute_compare_commit_workflow.yaml # Full-featured version
+│   ├── phase_workflow.yaml                  # Phase implementation workflow
+│   └── [additional example workflows]       # Various workflow examples
+├── library/                     # Reusable workflow components
+│   ├── common/                  # Common workflow patterns
+│   │   └── code_analysis.yaml          # Reusable code analysis pattern
+│   └── templates/               # Workflow templates for scaffolding
+│       ├── basic.yaml                  # Simple workflow template
+│       ├── conditional_branching.yaml  # Conditional logic template
+│       ├── parallel_processing.yaml    # Parallel workflow template
+│       └── script_integration.yaml     # Script integration template
+├── logs/                        # Log files
+│   └── workflow.log             # Workflow execution logs
+├── scripts/                     # Supporting scripts and utilities
+│   ├── chain_keyword_monitor.js        # Keyword monitoring for workflows
+│   ├── chain_prompts.js                # Prompt chaining utility
+│   ├── clean_secrets.sh                # Secret cleaning utility
+│   ├── continue_phase.sh               # Phase continuation script
+│   ├── create_workflow.cjs             # Workflow scaffolding tool
+│   ├── install_global.sh               # Global installation script
+│   ├── phase_launcher.sh               # Phase launcher script
+│   ├── phase_quick.js                  # Quick phase execution
+│   ├── remove_secrets_properly.sh      # Secure secret removal
+│   ├── run_workflow.sh                 # Shell script wrapper
+│   ├── task_chain_launcher.js          # Task chain launcher
+│   └── workflow_runner.js              # Workflow execution engine
+├── shared/                      # Shared utilities
+│   └── workflow_utils.js        # Common workflow utilities
+├── src/                         # Source templates and components
+│   └── role_templates/          # Role-specific templates
+│       └── specialist.md        # Specialist role template
+├── tests/                       # Test workflows and test runner
+│   ├── run_tests.sh                     # Test runner script
+│   ├── final_comprehensive_test.js      # Comprehensive system test
+│   ├── server_readiness_report.js       # Server readiness validation
+│   ├── validate_server_setup.js        # Server setup validation
+│   ├── test_basic.yaml                  # Basic functionality test
+│   ├── test_complex_workflow.yaml       # Complex workflow test
+│   ├── test_comprehensive.sh            # Comprehensive test script
+│   ├── test_engine_only.yaml            # Engine-only test
 │   ├── test_execute_compare_commit.yaml # Execute-Compare-Commit test
-│   ├── test_file_ops.yaml             # File operations test
-│   ├── test_log_only.yaml             # Logging test
-│   ├── test_minimal.yaml              # Minimal functionality test
-│   ├── test_script.yaml               # Script execution test
-│   └── test_script_actions.yaml       # Script actions test
-└── user/              # User-created workflows (initially empty)
+│   ├── test_file_ops.yaml               # File operations test
+│   ├── test_log_only.yaml               # Logging test
+│   ├── test_minimal.yaml                # Minimal functionality test
+│   ├── test_script.yaml                 # Script execution test
+│   └── test_script_actions.yaml         # Script actions test
+├── user/                        # User-created workflows (initially empty)
+└── workflow_state/              # Runtime workflow state
+    └── [runtime state files]    # Workflow execution state
 ```
 
 ## 🚀 Quick Start

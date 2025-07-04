@@ -1,2 +1,0 @@
-❌ CRITICAL SECURITY ISSUE: OpenAI API keys found in workflow_state/*.json files
-Affected commit: b07546d1275166c6044fd01691d35b016e81c7e4
