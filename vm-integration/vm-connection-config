@@ -1,0 +1,129 @@
+#!/bin/bash
+# VM Connection Configuration - Single source of truth
+# Source this file in .bashrc/.zshrc AND use for SSH config generation
+
+# VM Details (single source)
+VM_NAME="claude-dev-1750040389"
+PROJECT="claude-code-dev-20250615-1851"
+ZONE="us-central1-a"
+VM_IP="35.209.236.51"
+VM_USER="Mike"
+
+# SSH Connection Parameters (single source)
+ALIVE_INTERVAL=15
+ALIVE_COUNT=12
+CONNECT_TIMEOUT=10
+CONNECT_ATTEMPTS=5
+
+# Generate SSH config entry (run once or when config changes)
+generate_ssh_config() {
+    cat << EOF
+# Generated SSH config for $VM_NAME
+Host claude-dev
+    HostName $VM_IP
+    User $VM_USER
+    ServerAliveInterval $ALIVE_INTERVAL
+    ServerAliveCountMax $ALIVE_COUNT
+    TCPKeepAlive yes
+    ConnectTimeout $CONNECT_TIMEOUT
+    ConnectionAttempts $CONNECT_ATTEMPTS
+    Compression yes
+    ControlMaster auto
+    ControlPath ~/.ssh/control-%r@%h:%p
+    ControlPersist 30m
+
+Host $VM_IP
+    ServerAliveInterval $ALIVE_INTERVAL
+    ServerAliveCountMax $ALIVE_COUNT
+    TCPKeepAlive yes
+    ConnectTimeout $CONNECT_TIMEOUT
+    ConnectionAttempts $CONNECT_ATTEMPTS
+EOF
+}
+
+# Build SSH flags array (reusable)
+build_ssh_flags() {
+    echo "-o ServerAliveInterval=$ALIVE_INTERVAL"
+    echo "-o ServerAliveCountMax=$ALIVE_COUNT"
+    echo "-o TCPKeepAlive=yes"
+    echo "-o ConnectTimeout=$CONNECT_TIMEOUT"
+    echo "-o ConnectionAttempts=$CONNECT_ATTEMPTS"
+}
+
+# Build gcloud SSH flags (with proper format)
+build_gcloud_ssh_flags() {
+    echo "--ssh-flag=-o --ssh-flag=ServerAliveInterval=$ALIVE_INTERVAL"
+    echo "--ssh-flag=-o --ssh-flag=ServerAliveCountMax=$ALIVE_COUNT"
+    echo "--ssh-flag=-o --ssh-flag=TCPKeepAlive=yes"
+    echo "--ssh-flag=-o --ssh-flag=ConnectTimeout=$CONNECT_TIMEOUT"
+    echo "--ssh-flag=-o --ssh-flag=ConnectionAttempts=$CONNECT_ATTEMPTS"
+}
+
+# If sourced in shell, provide functions and aliases
+if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then
+    # Remove old aliases - everything goes through claude-tmux now
+    alias claude-direct="ssh claude-dev"
+    
+    # Status check
+    claude-status() {
+        gcloud compute instances describe "$VM_NAME" \
+            --project="$PROJECT" --zone="$ZONE" \
+            --format="table(name,status,networkInterfaces[0].accessConfigs[0].natIP)"
+    }
+    
+    # Tmux session with auto-reconnect
+    claude-tmux() {
+        while true; do
+            if [[ -n "$1" ]]; then
+                # With session name - run tmux command on remote
+                local session_name="$1"
+                gcloud compute ssh "$VM_USER@$VM_NAME" --project="$PROJECT" --zone="$ZONE" \
+                    $(build_gcloud_ssh_flags) \
+                    --ssh-flag="-t" \
+                    --command="tmux attach -t $session_name || tmux new -s $session_name"
+            else
+                # No session name - just connect normally
+                gcloud compute ssh "$VM_USER@$VM_NAME" --project="$PROJECT" --zone="$ZONE" \
+                    $(build_gcloud_ssh_flags)
+            fi
+            
+            # Check if user wants to exit (Ctrl+C twice within 2 seconds to exit)
+            echo ""
+            echo "Connection closed. Reconnecting in 5s... (Press Ctrl+C twice to exit)"
+            sleep 5
+        done
+    }
+fi
+
+# If run directly, show usage
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    case "${1:-usage}" in
+        ssh-config)
+            generate_ssh_config
+            ;;
+        install)
+            echo "Adding SSH config..."
+            generate_ssh_config >> ~/.ssh/config
+            echo "✓ SSH config added"
+            echo ""
+            echo "Add to your shell config:"
+            echo "  source $PWD/vm-connection-config"
+            ;;
+        *)
+            echo "VM Connection Config - DRY configuration management"
+            echo ""
+            echo "Usage:"
+            echo "  $0 ssh-config    # Generate SSH config"
+            echo "  $0 install       # Install SSH config"
+            echo ""
+            echo "Source in shell for aliases:"
+            echo "  source $0"
+            echo ""
+            echo "VM Details:"
+            echo "  Name: $VM_NAME"
+            echo "  IP: $VM_IP"
+            echo "  Project: $PROJECT"
+            echo "  Zone: $ZONE"
+            ;;
+    esac
+fi
