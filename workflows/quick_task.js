@@ -99,7 +99,7 @@ function buildChains(stages) {
 async function createTempConfig(task, instanceId, preset, customStages) {
   // Special handling for phase preset - use the full workflow file
   if (preset === 'phase') {
-    const phaseConfigPath = path.join(__dirname, 'phase_implementation_workflow.json');
+    const phaseConfigPath = path.join(__dirname, 'config', 'phase_implementation_workflow.json');
     const phaseConfig = JSON.parse(await fs.promises.readFile(phaseConfigPath, 'utf8'));
     
     // Update with current task and instance
@@ -208,7 +208,7 @@ The task will automatically progress through each stage!
     
     // Run the task chain launcher
     console.log('🔗 Starting task chain...\n');
-    const launcherPath = path.join(__dirname, 'task_chain_launcher.js');
+    const launcherPath = path.join(__dirname, 'scripts', 'task_chain_launcher.js');
     const launcher = spawn('node', [launcherPath, configFile], {
       stdio: 'inherit',
       cwd: process.cwd()

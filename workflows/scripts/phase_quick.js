@@ -69,7 +69,7 @@ The workflow will automatically progress through all stages!
   console.log('\n🔗 Starting phase implementation workflow...\n');
   
   // Build the command
-  const configPath = path.join(__dirname, 'phase_implementation_workflow.json');
+  const configPath = path.join(__dirname, '..', 'config', 'phase_implementation_workflow.json');
   const launcherPath = path.join(__dirname, 'task_chain_launcher.js');
   const launcherArgs = [launcherPath, configPath];
   if (instanceId) {
