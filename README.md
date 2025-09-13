@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/michael-abdo-tmux-claude-mcp-server-badge.png)](https://mseep.ai/app/michael-abdo-tmux-claude-mcp-server)
+
 # tmux-claude MCP Server
 
 <p align="center">
