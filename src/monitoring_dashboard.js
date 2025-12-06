@@ -167,7 +167,7 @@ export class MonitoringDashboard {
     
     setupWebSocket() {
         this.wss.on('connection', (ws) => {
-            console.log('Dashboard client connected');
+            console.error('Dashboard client connected');
             
             // Send initial state
             ws.send(JSON.stringify({
@@ -186,7 +186,7 @@ export class MonitoringDashboard {
             });
             
             ws.on('close', () => {
-                console.log('Dashboard client disconnected');
+                console.error('Dashboard client disconnected');
             });
         });
     }
@@ -437,8 +437,8 @@ export class MonitoringDashboard {
     
     start() {
         this.server.listen(this.port, () => {
-            console.log(`🎯 Monitoring Dashboard running at http://localhost:${this.port}`);
-            console.log(`📊 WebSocket endpoint: ws://localhost:${this.port}`);
+            console.error(`🎯 Monitoring Dashboard running at http://localhost:${this.port}`);
+            console.error(`📊 WebSocket endpoint: ws://localhost:${this.port}`);
         });
     }
     
@@ -465,7 +465,7 @@ export class MonitoringDashboard {
             this.server.close();
         }
         
-        console.log('🛑 Monitoring Dashboard stopped');
+        console.error('🛑 Monitoring Dashboard stopped');
     }
 }
 
@@ -481,7 +481,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     
     // Handle shutdown
     process.on('SIGINT', () => {
-        console.log('\nShutting down dashboard...');
+        console.error('\nShutting down dashboard...');
         dashboard.stop();
         process.exit(0);
     });

@@ -20,7 +20,7 @@ class MockRedisClient {
 
     async connect() {
         this.connected = true;
-        console.log('Mock Redis client connected');
+        console.error('Mock Redis client connected');
     }
 
     async disconnect() {
@@ -92,7 +92,7 @@ class MockRedisClient {
 
     async publish(channel, message) {
         // Mock pub/sub - would use Redis pub/sub in production
-        console.log(`Published to ${channel}: ${message}`);
+        console.error(`Published to ${channel}: ${message}`);
     }
 }
 
@@ -122,7 +122,7 @@ export class RedisStateStore {
                 // this.client = createClient({ url: this.redisUrl });
                 this.client = new MockRedisClient();
                 await this.client.connect();
-                console.log('Connected to Redis state store');
+                console.error('Connected to Redis state store');
             } else {
                 throw new Error('No Redis URL configured');
             }

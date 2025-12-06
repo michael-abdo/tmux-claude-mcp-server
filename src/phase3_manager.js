@@ -149,7 +149,7 @@ export class Phase3Manager {
      * This method would be called by the Manager Claude instance.
      */
     async executeJob(jobSpec) {
-        console.log(`Manager ${this.managerId} starting job: ${jobSpec.name}`);
+        console.error(`Manager ${this.managerId} starting job: ${jobSpec.name}`);
         
         try {
             // Start execution timer
@@ -166,11 +166,11 @@ export class Phase3Manager {
             const executionTime = Date.now() - startTime;
             
             // Log results
-            console.log(`Job ${jobSpec.name} completed:`);
-            console.log(`- Total tasks: ${results.total}`);
-            console.log(`- Completed: ${results.completed}`);
-            console.log(`- Failed: ${results.failed}`);
-            console.log(`- Execution time: ${Math.round(executionTime / 1000)}s`);
+            console.error(`Job ${jobSpec.name} completed:`);
+            console.error(`- Total tasks: ${results.total}`);
+            console.error(`- Completed: ${results.completed}`);
+            console.error(`- Failed: ${results.failed}`);
+            console.error(`- Execution time: ${Math.round(executionTime / 1000)}s`);
             
             // Report back to Executive
             await this.reportToExecutive(jobSpec, results, executionTime);
@@ -210,7 +210,7 @@ export class Phase3Manager {
             }))
         };
         
-        console.log('Job completion report:', JSON.stringify(report, null, 2));
+        console.error('Job completion report:', JSON.stringify(report, null, 2));
         
         // Would send this to Executive via MCP
         // await this.mcpTools.send({
@@ -230,7 +230,7 @@ export class Phase3Manager {
      * Emergency stop all specialists
      */
     async emergencyStop() {
-        console.log(`Manager ${this.managerId} initiating emergency stop`);
+        console.error(`Manager ${this.managerId} initiating emergency stop`);
         await this.executor.emergencyStop();
     }
 }
@@ -254,7 +254,7 @@ export async function demonstrateParallelExecution(mcpTools) {
     
     try {
         const results = await manager.executeJob(authJob);
-        console.log('Parallel execution completed successfully');
+        console.error('Parallel execution completed successfully');
         return results;
     } catch (error) {
         console.error('Parallel execution failed:', error);

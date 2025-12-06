@@ -51,7 +51,7 @@ export class GitBranchManager {
                 await this.gitCommand('fetch origin', workDir);
             } catch {
                 // No origin remote, working locally
-                console.log('Working in local repository (no origin)');
+                console.error('Working in local repository (no origin)');
             }
             
             // Get current branch if no base branch specified
@@ -67,8 +67,8 @@ export class GitBranchManager {
                 workDir
             );
             
-            console.log(`Created worktree at: ${worktreePath}`);
-            console.log(`With branch: ${branchName}`);
+            console.error(`Created worktree at: ${worktreePath}`);
+            console.error(`With branch: ${branchName}`);
             
             return {
                 branchName,
@@ -108,7 +108,7 @@ export class GitBranchManager {
                 await this.gitCommand('fetch origin', workDir);
             } catch {
                 // No origin remote, working locally
-                console.log('Working in local repository (no origin)');
+                console.error('Working in local repository (no origin)');
             }
             
             // Get current branch if no base branch specified
@@ -117,7 +117,7 @@ export class GitBranchManager {
             // Create and checkout new branch
             await this.gitCommand(`checkout -b ${branchName} ${currentBranch}`, workDir);
             
-            console.log(`Created and checked out branch: ${branchName}`);
+            console.error(`Created and checked out branch: ${branchName}`);
             
             // Set upstream for easy pushing
             await this.gitCommand(`branch --set-upstream-to=origin/${currentBranch} ${branchName}`, workDir).catch(() => {
@@ -194,7 +194,7 @@ export class GitBranchManager {
      */
     async gitCommand(command, workDir) {
         const fullCommand = `git ${command}`;
-        console.log(`Executing: ${fullCommand} in ${workDir}`);
+        console.error(`Executing: ${fullCommand} in ${workDir}`);
         
         const result = await execAsync(fullCommand, {
             cwd: workDir,
@@ -230,7 +230,7 @@ done
             await fs.writeFile(hookPath, hookContent);
             await fs.chmod(hookPath, '755');
             
-            console.log(`Set up branch protection for ${instanceId}`);
+            console.error(`Set up branch protection for ${instanceId}`);
         } catch (error) {
             console.error(`Error setting up branch protection: ${error.message}`);
         }
@@ -260,12 +260,12 @@ done
             // Merge specialist branch
             await this.gitCommand(`merge --no-ff ${branchName} -m "Merge ${branchName} into ${targetBranch}"`, workDir);
             
-            console.log(`Successfully merged ${branchName} into ${targetBranch}`);
+            console.error(`Successfully merged ${branchName} into ${targetBranch}`);
             
             // Delete branch if requested
             if (deleteBranch) {
                 await this.gitCommand(`branch -d ${branchName}`, workDir);
-                console.log(`Deleted branch ${branchName}`);
+                console.error(`Deleted branch ${branchName}`);
             }
             
             return true;
@@ -291,18 +291,18 @@ done
             // Remove the worktree
             const forceFlag = force ? '--force' : '';
             await this.gitCommand(`worktree remove ${forceFlag} "${worktreePath}"`, workDir);
-            console.log(`Removed worktree: ${worktreePath}`);
+            console.error(`Removed worktree: ${worktreePath}`);
             
             // Try to delete the branch (may fail if not fully merged)
             try {
                 await this.gitCommand(`branch -d ${branchName}`, workDir);
-                console.log(`Deleted branch: ${branchName}`);
+                console.error(`Deleted branch: ${branchName}`);
             } catch (error) {
                 if (force) {
                     await this.gitCommand(`branch -D ${branchName}`, workDir);
-                    console.log(`Force deleted branch: ${branchName}`);
+                    console.error(`Force deleted branch: ${branchName}`);
                 } else {
-                    console.log(`Branch ${branchName} not deleted (not fully merged)`);
+                    console.error(`Branch ${branchName} not deleted (not fully merged)`);
                 }
             }
             
@@ -360,7 +360,7 @@ done
         try {
             const result = await this.gitCommand('worktree prune -v', workDir);
             const pruned = (result.stdout.match(/Removing worktrees/g) || []).length;
-            console.log(`Pruned ${pruned} stale worktrees`);
+            console.error(`Pruned ${pruned} stale worktrees`);
             return pruned;
         } catch (error) {
             console.error(`Error pruning worktrees: ${error.message}`);

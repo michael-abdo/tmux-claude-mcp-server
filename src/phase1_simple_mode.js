@@ -109,7 +109,7 @@ export class Phase1SimpleMode {
                 }
             }
             
-            console.log(`[Phase 1] Created ${role} instance: ${instanceId}`);
+            console.error(`[Phase 1] Created ${role} instance: ${instanceId}`);
             
             return {
                 instanceId,
@@ -229,7 +229,7 @@ export class Phase1SimpleMode {
         // Remove instance
         this.instances.delete(instanceId);
         
-        console.log(`[Phase 1] Terminated instance: ${instanceId}`);
+        console.error(`[Phase 1] Terminated instance: ${instanceId}`);
     }
 
     /**
@@ -245,7 +245,7 @@ export class Phase1SimpleMode {
      * Demo workflow for Phase 1
      */
     async runDemo() {
-        console.log('=== Phase 1 Simple Mode Demo ===');
+        console.error('=== Phase 1 Simple Mode Demo ===');
         
         try {
             // Spawn Executive
@@ -281,9 +281,9 @@ export class Phase1SimpleMode {
             
             await this.sendToInstance(spec.instanceId, 'Create the Express.js hello world app');
             
-            console.log('\nInstances created:');
+            console.error('\nInstances created:');
             this.listInstances().forEach(inst => {
-                console.log(`- ${inst.role}: ${inst.instanceId} (branch: ${inst.branchName || 'main'})`);
+                console.error(`- ${inst.role}: ${inst.instanceId} (branch: ${inst.branchName || 'main'})`);
             });
             
         } catch (error) {

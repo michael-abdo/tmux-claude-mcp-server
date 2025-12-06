@@ -39,7 +39,7 @@ export class AutoScaler {
             this.stateStore = new RedisStateStore();
             await this.stateStore.initialize();
         }
-        console.log('AutoScaler initialized with config:', this.options);
+        console.error('AutoScaler initialized with config:', this.options);
     }
 
     /**
@@ -47,12 +47,12 @@ export class AutoScaler {
      */
     async startMonitoring() {
         if (this.isMonitoring) {
-            console.log('AutoScaler already monitoring');
+            console.error('AutoScaler already monitoring');
             return;
         }
 
         this.isMonitoring = true;
-        console.log('AutoScaler monitoring started');
+        console.error('AutoScaler monitoring started');
         
         // Initial check
         await this.checkAndScale();
@@ -75,7 +75,7 @@ export class AutoScaler {
         }
         
         this.isMonitoring = false;
-        console.log('AutoScaler monitoring stopped');
+        console.error('AutoScaler monitoring stopped');
     }
 
     /**
@@ -224,7 +224,7 @@ export class AutoScaler {
      * Execute scaling action
      */
     async executeScaling(decision) {
-        console.log(`AutoScaler: ${decision.action} - ${decision.reason}`);
+        console.error(`AutoScaler: ${decision.action} - ${decision.reason}`);
         
         try {
             if (decision.action === 'scale-up') {
@@ -272,7 +272,7 @@ export class AutoScaler {
             executive.instanceId
         );
         
-        console.log(`Spawned new Manager: ${manager.instanceId}`);
+        console.error(`Spawned new Manager: ${manager.instanceId}`);
         
         // Spawn Specialists for the new Manager
         const specialistPromises = [];
@@ -287,7 +287,7 @@ export class AutoScaler {
         }
         
         const specialists = await Promise.all(specialistPromises);
-        console.log(`Spawned ${specialists.length} Specialists for ${manager.instanceId}`);
+        console.error(`Spawned ${specialists.length} Specialists for ${manager.instanceId}`);
         
         this.metrics.currentManagers++;
     }
@@ -301,7 +301,7 @@ export class AutoScaler {
         const managers = instances.filter(i => i.role === 'manager' && i.status === 'active');
         
         if (managers.length <= this.options.minManagers) {
-            console.log('Already at minimum managers, cannot scale down');
+            console.error('Already at minimum managers, cannot scale down');
             return;
         }
         
@@ -323,11 +323,11 @@ export class AutoScaler {
         }
         
         if (!leastLoadedManager) {
-            console.log('Could not determine least loaded manager');
+            console.error('Could not determine least loaded manager');
             return;
         }
         
-        console.log(`Scaling down by removing ${leastLoadedManager.instanceId}`);
+        console.error(`Scaling down by removing ${leastLoadedManager.instanceId}`);
         
         // Gracefully terminate the manager and its specialists
         await this.instanceManager.terminateInstance(leastLoadedManager.instanceId, true);

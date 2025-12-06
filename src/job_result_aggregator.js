@@ -44,7 +44,7 @@ export class JobResultAggregator {
         // Ensure report directory exists
         await fs.ensureDir(this.reportDir);
         
-        console.log('JobResultAggregator initialized');
+        console.error('JobResultAggregator initialized');
     }
 
     /**
@@ -54,7 +54,7 @@ export class JobResultAggregator {
         if (this.isAggregating) return;
         
         this.isAggregating = true;
-        console.log('Starting job result aggregation');
+        console.error('Starting job result aggregation');
         
         // Initial aggregation
         this.performAggregation();
@@ -77,7 +77,7 @@ export class JobResultAggregator {
         }
         
         this.isAggregating = false;
-        console.log('Stopped job result aggregation');
+        console.error('Stopped job result aggregation');
     }
 
     /**
@@ -362,7 +362,7 @@ export class JobResultAggregator {
         }
         
         await fs.writeFile(detailedPath, report);
-        console.log(`Detailed report generated: ${detailedPath}`);
+        console.error(`Detailed report generated: ${detailedPath}`);
     }
 
     /**
@@ -401,7 +401,7 @@ export class JobResultAggregator {
         const jobs = Array.from(this.completedJobs.values());
         
         if (jobs.length === 0) {
-            console.log('No completed jobs to export');
+            console.error('No completed jobs to export');
             return;
         }
         
@@ -422,6 +422,6 @@ export class JobResultAggregator {
         
         const csv = rows.map(row => row.join(',')).join('\n');
         await fs.writeFile(outputPath, csv);
-        console.log(`Exported ${jobs.length} jobs to ${outputPath}`);
+        console.error(`Exported ${jobs.length} jobs to ${outputPath}`);
     }
 }

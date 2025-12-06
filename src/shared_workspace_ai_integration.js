@@ -29,7 +29,7 @@ export class SharedWorkspaceAIIntegration {
             minConfidence = 0.7
         } = options;
 
-        console.log(`🤖 Attempting AI-assisted merge: ${sourceBranch} → ${targetBranch}`);
+        console.error(`🤖 Attempting AI-assisted merge: ${sourceBranch} → ${targetBranch}`);
 
         // First, try a regular merge
         try {
@@ -48,7 +48,7 @@ export class SharedWorkspaceAIIntegration {
             }
         }
 
-        console.log('⚠️  Merge conflicts detected, invoking AI resolution...');
+        console.error('⚠️  Merge conflicts detected, invoking AI resolution...');
 
         // Get list of conflicted files
         const conflicts = await this.getConflictedFiles(workspaceDir);
@@ -78,7 +78,7 @@ export class SharedWorkspaceAIIntegration {
                 if (autoApply && result.confidence >= minConfidence) {
                     await fs.writeFile(fullPath, result.resolvedContent);
                     await this.gitManager.gitCommand(`add "${filePath}"`, workspaceDir);
-                    console.log(`✅ Auto-applied AI resolution for ${filePath} (confidence: ${(result.confidence * 100).toFixed(1)}%)`);
+                    console.error(`✅ Auto-applied AI resolution for ${filePath} (confidence: ${(result.confidence * 100).toFixed(1)}%)`);
                 }
             } catch (error) {
                 console.error(`❌ Failed to resolve ${filePath}: ${error.message}`);
@@ -238,7 +238,7 @@ See .git/AI_MERGE_REPORT.md for details.
                     modified: !!decision.modifiedContent
                 });
                 
-                console.log(`✅ Applied resolution for ${resolution.file}`);
+                console.error(`✅ Applied resolution for ${resolution.file}`);
             } else {
                 appliedResolutions.push({
                     ...resolution,
@@ -246,7 +246,7 @@ See .git/AI_MERGE_REPORT.md for details.
                     reason: decision.reason
                 });
                 
-                console.log(`⏭️  Skipped resolution for ${resolution.file}`);
+                console.error(`⏭️  Skipped resolution for ${resolution.file}`);
             }
         }
 

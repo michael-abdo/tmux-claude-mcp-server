@@ -45,7 +45,7 @@ export class OptimizedInstanceManager extends InstanceManager {
         if (!this.redisClient && !isTestEnvironment) {
             this.initializeRedis();
         } else if (!this.redisClient && isTestEnvironment) {
-            console.log('[TEST MODE] Skipping Redis initialization');
+            console.error('[TEST MODE] Skipping Redis initialization');
             // In test mode, create a mock Redis client if needed
             this._setupTestModeRedis();
         }
@@ -97,7 +97,7 @@ export class OptimizedInstanceManager extends InstanceManager {
             });
             
             this.redisClient.on('ready', () => {
-                console.log('✓ Redis connected and ready');
+                console.error('✓ Redis connected and ready');
                 this.redisReady = true;
             });
             
@@ -116,7 +116,7 @@ export class OptimizedInstanceManager extends InstanceManager {
      * Spawn multiple instances in parallel
      */
     async spawnInstancesBatch(instanceConfigs) {
-        console.log(`Spawning ${instanceConfigs.length} instances in parallel...`);
+        console.error(`Spawning ${instanceConfigs.length} instances in parallel...`);
         
         // Prepare spawn functions
         const instances = instanceConfigs.map(config => ({
@@ -133,7 +133,7 @@ export class OptimizedInstanceManager extends InstanceManager {
         // Use optimizer for parallel spawning
         const results = await this.optimizer.spawnInstancesBatch(instances);
         
-        console.log(`✓ Spawned ${results.length} instances`);
+        console.error(`✓ Spawned ${results.length} instances`);
         return results;
     }
     
@@ -303,13 +303,13 @@ export class OptimizedInstanceManager extends InstanceManager {
     setupPerformanceMonitoring() {
         // Monitor spawn batches
         this.optimizer.on('batch-spawn-complete', (event) => {
-            console.log(`Batch spawn: ${event.count} instances in ${event.duration}ms`);
+            console.error(`Batch spawn: ${event.count} instances in ${event.duration}ms`);
             this.perfEvents.emit('spawn-batch', event);
         });
         
         // Monitor message batches
         this.optimizer.on('message-batch-delivery', (event) => {
-            console.log(`Message batch: ${event.count} messages to ${event.instanceId}`);
+            console.error(`Message batch: ${event.count} messages to ${event.instanceId}`);
             this.perfEvents.emit('message-batch', event);
         });
         
@@ -317,7 +317,7 @@ export class OptimizedInstanceManager extends InstanceManager {
         if (process.env.NODE_ENV !== 'test') {
             this.metricsInterval = setInterval(() => {
                 const metrics = this.getPerformanceMetrics();
-                console.log('Performance metrics:', JSON.stringify(metrics, null, 2));
+                console.error('Performance metrics:', JSON.stringify(metrics, null, 2));
             }, 60000); // Every minute
         }
     }

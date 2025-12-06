@@ -49,7 +49,7 @@ class TmuxClaudeMCPServer {
         
         this.setupHandlers();
         this.setupEnhancedTools();
-        console.log('=== tmux-claude MCP Server initialized with message queuing ===');
+        console.error('=== tmux-claude MCP Server initialized with message queuing ===');
     }
 
     setupHandlers() {
@@ -72,7 +72,7 @@ class TmuxClaudeMCPServer {
                 const toolParams = { ...args };
                 delete toolParams._callerRole;
                 
-                console.log(`Tool call: ${name} from role: ${callerRole || 'unknown'}`);
+                console.error(`Tool call: ${name} from role: ${callerRole || 'unknown'}`);
                 
                 // Handle enhanced tools
                 if (name === 'enhancedSend') {
@@ -118,7 +118,7 @@ class TmuxClaudeMCPServer {
     async start() {
         const transport = new StdioServerTransport();
         await this.server.connect(transport);
-        console.log('tmux-claude MCP Server running on stdio');
+        console.error('tmux-claude MCP Server running on stdio');
     }
 
     setupEnhancedTools() {
@@ -288,21 +288,21 @@ class TmuxClaudeMCPServer {
 
     async stop() {
         // Cleanup if needed
-        console.log('tmux-claude MCP Server shutting down');
+        console.error('tmux-claude MCP Server shutting down');
         // Persist message queue if needed
         const queueData = Array.from(this.messageQueue.entries());
-        console.log(`Shutting down with ${queueData.length} instance queues`);
+        console.error(`Shutting down with ${queueData.length} instance queues`);
     }
 }
 
 // Handle graceful shutdown
 process.on('SIGINT', async () => {
-    console.log('Received SIGINT, shutting down gracefully...');
+    console.error('Received SIGINT, shutting down gracefully...');
     process.exit(0);
 });
 
 process.on('SIGTERM', async () => {
-    console.log('Received SIGTERM, shutting down gracefully...');
+    console.error('Received SIGTERM, shutting down gracefully...');
     process.exit(0);
 });
 

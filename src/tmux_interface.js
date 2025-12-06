@@ -35,7 +35,7 @@ export class TmuxInterface {
                 });
             }
             
-            console.log(`Found ${sessions.length} tmux sessions`);
+            console.error(`Found ${sessions.length} tmux sessions`);
             return sessions;
         } catch (error) {
             console.error(`!!! ERROR !!! Failed to list sessions: ${error.message}`);
@@ -65,7 +65,7 @@ export class TmuxInterface {
         try {
             // Kill existing session if it exists
             if (await this.sessionExists(name)) {
-                console.log(`Session ${name} already exists, killing it first`);
+                console.error(`Session ${name} already exists, killing it first`);
                 await this.killSession(name);
             }
 
@@ -75,7 +75,7 @@ export class TmuxInterface {
             
             await execAsync(`tmux new-session ${detachFlag} -s "${name}" -c "${sessionCwd}"`);
             
-            console.log(`Successfully created session: ${name}`);
+            console.error(`Successfully created session: ${name}`);
             return true;
         } catch (error) {
             console.error(`!!! ERROR !!! Failed to create session ${name}: ${error.message}`);
@@ -90,7 +90,7 @@ export class TmuxInterface {
     async killSession(name) {
         try {
             await execAsync(`tmux kill-session -t "${name}"`);
-            console.log(`Killed session: ${name}`);
+            console.error(`Killed session: ${name}`);
             return true;
         } catch (error) {
             console.error(`!!! ERROR !!! Failed to kill session ${name}: ${error.message}`);
@@ -107,14 +107,14 @@ export class TmuxInterface {
         try {
             // Send the keys
             await execAsync(`tmux send-keys -t "${target}" "${keys}"`);
-            console.log(`Sent keys to ${target}: ${keys}`);
+            console.error(`Sent keys to ${target}: ${keys}`);
             
             // Send Enter key if requested
             if (enter) {
                 // Add delay to let Claude process the text before Enter
                 await new Promise(resolve => setTimeout(resolve, 500));
                 await execAsync(`tmux send-keys -t "${target}" "C-m"`);
-                console.log(`Sent Enter key to ${target}`);
+                console.error(`Sent Enter key to ${target}`);
             }
             
             return true;

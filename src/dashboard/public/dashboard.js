@@ -25,11 +25,11 @@ class Dashboard {
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
         const wsUrl = `${protocol}//${window.location.host}`;
         
-        console.log('Connecting to WebSocket:', wsUrl);
+        console.error('Connecting to WebSocket:', wsUrl);
         this.ws = new WebSocket(wsUrl);
         
         this.ws.onopen = () => {
-            console.log('WebSocket connected');
+            console.error('WebSocket connected');
             this.updateConnectionStatus(true);
             
             // Clear reconnect interval
@@ -46,13 +46,13 @@ class Dashboard {
         };
         
         this.ws.onclose = () => {
-            console.log('WebSocket disconnected');
+            console.error('WebSocket disconnected');
             this.updateConnectionStatus(false);
             
             // Attempt to reconnect
             if (!this.reconnectInterval) {
                 this.reconnectInterval = setInterval(() => {
-                    console.log('Attempting to reconnect...');
+                    console.error('Attempting to reconnect...');
                     this.connect();
                 }, 5000);
             }
@@ -118,7 +118,7 @@ class Dashboard {
                 break;
                 
             case 'command-result':
-                console.log('Command result:', message.result);
+                console.error('Command result:', message.result);
                 break;
                 
             case 'command-error':
@@ -384,7 +384,7 @@ class Dashboard {
                 throw new Error(result.error);
             }
             
-            console.log(`Instance ${instanceId} terminated`);
+            console.error(`Instance ${instanceId} terminated`);
         } catch (error) {
             alert(`Error terminating instance: ${error.message}`);
         }
@@ -416,7 +416,7 @@ class Dashboard {
                 throw new Error(result.error);
             }
             
-            console.log('Instance spawned:', result.instance);
+            console.error('Instance spawned:', result.instance);
         } catch (error) {
             alert(`Error spawning instance: ${error.message}`);
         }
@@ -452,7 +452,7 @@ class Dashboard {
                 throw new Error(result.error);
             }
             
-            console.log('Settings optimized:', result.config);
+            console.error('Settings optimized:', result.config);
             alert('Settings updated successfully');
         } catch (error) {
             alert(`Error optimizing settings: ${error.message}`);
