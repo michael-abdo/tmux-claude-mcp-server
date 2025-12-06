@@ -239,7 +239,7 @@ export class PerformanceOptimizer extends EventEmitter {
     async initializeWorktreePool(baseDir, gitManager) {
         if (this.worktreeInitialized) return;
         
-        console.log(`Initializing worktree pool with ${this.config.worktreePoolSize} entries...`);
+        console.error(`Initializing worktree pool with ${this.config.worktreePoolSize} entries...`);
         
         const promises = [];
         for (let i = 0; i < this.config.worktreePoolSize; i++) {
@@ -259,7 +259,7 @@ export class PerformanceOptimizer extends EventEmitter {
         this.worktreePool = await Promise.all(promises);
         this.worktreeInitialized = true;
         
-        console.log('✓ Worktree pool initialized');
+        console.error('✓ Worktree pool initialized');
     }
     
     /**
@@ -288,7 +288,7 @@ export class PerformanceOptimizer extends EventEmitter {
      * Pre-warm instance pool
      */
     async prewarmInstancePool(instanceCreator, count = 5) {
-        console.log(`Pre-warming ${count} instances...`);
+        console.error(`Pre-warming ${count} instances...`);
         
         const promises = [];
         for (let i = 0; i < count; i++) {
@@ -305,7 +305,7 @@ export class PerformanceOptimizer extends EventEmitter {
         const instances = await Promise.all(promises);
         this.instancePool.push(...instances);
         
-        console.log(`✓ Instance pool warmed with ${instances.length} instances`);
+        console.error(`✓ Instance pool warmed with ${instances.length} instances`);
     }
     
     /**

@@ -40,7 +40,7 @@ export class JobQueue {
             await this.stateStore.saveInstance(`job:${job.id}`, job);
         }
         
-        console.log(`Job ${job.id} enqueued with priority ${priority}`);
+        console.error(`Job ${job.id} enqueued with priority ${priority}`);
         return job;
     }
 
@@ -83,7 +83,7 @@ export class JobQueue {
             await this.stateStore.saveInstance(`job:${jobId}`, job);
         }
         
-        console.log(`Job ${jobId} marked active, assigned to Manager ${managerId}`);
+        console.error(`Job ${jobId} marked active, assigned to Manager ${managerId}`);
         return true;
     }
 
@@ -113,7 +113,7 @@ export class JobQueue {
             });
         }
         
-        console.log(`Job ${jobId} completed in ${Math.round(job.duration / 1000)}s`);
+        console.error(`Job ${jobId} completed in ${Math.round(job.duration / 1000)}s`);
         return true;
     }
 
@@ -134,13 +134,13 @@ export class JobQueue {
             this.pendingJobs.push(job);
             this.pendingJobs.sort((a, b) => b.priority - a.priority);
             
-            console.log(`Job ${jobId} failed (attempt ${job.attempts}/${job.maxAttempts}), re-queued for retry`);
+            console.error(`Job ${jobId} failed (attempt ${job.attempts}/${job.maxAttempts}), re-queued for retry`);
         } else {
             // Max attempts reached
             job.status = 'failed';
             job.failedAt = new Date().toISOString();
             
-            console.log(`Job ${jobId} permanently failed after ${job.maxAttempts} attempts`);
+            console.error(`Job ${jobId} permanently failed after ${job.maxAttempts} attempts`);
         }
         
         // Update state store
@@ -271,7 +271,7 @@ export class JobQueue {
             // Sort pending jobs by priority
             this.pendingJobs.sort((a, b) => b.priority - a.priority);
             
-            console.log(`Loaded ${this.jobs.size} jobs from state store`);
+            console.error(`Loaded ${this.jobs.size} jobs from state store`);
         } catch (error) {
             console.error('Failed to load jobs from state store:', error);
         }

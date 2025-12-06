@@ -236,7 +236,7 @@ When ready, reply: "READY: Specialist - implementing ${task.name}"`;
             files: task.files
         });
         
-        console.log(`✓ Specialist spawned for: ${task.name} (${result.instanceId})`);
+        console.error(`✓ Specialist spawned for: ${task.name} (${result.instanceId})`);
         return result.instanceId;
     }
 
@@ -244,7 +244,7 @@ When ready, reply: "READY: Specialist - implementing ${task.name}"`;
      * Execute a group of tasks in parallel
      */
     async executeParallelTasks(taskGroup) {
-        console.log(`Executing ${taskGroup.length} tasks in parallel...`);
+        console.error(`Executing ${taskGroup.length} tasks in parallel...`);
         
         const spawnPromises = taskGroup.map(task => 
             this.spawnSpecialistSafely(task, task.id)
@@ -263,7 +263,7 @@ When ready, reply: "READY: Specialist - implementing ${task.name}"`;
         }
         
         const successfulSpawns = results.filter(r => !r.error);
-        console.log(`Successfully spawned ${successfulSpawns.length} specialists`);
+        console.error(`Successfully spawned ${successfulSpawns.length} specialists`);
         
         return {
             successful: successfulSpawns,
@@ -378,7 +378,7 @@ When ready, reply: "READY: Specialist - implementing ${task.name}"`;
             specialist.status = 'merged';
             specialist.mergedAt = new Date().toISOString();
             
-            console.log(`✓ Merged specialist work: ${specialist.task.name}`);
+            console.error(`✓ Merged specialist work: ${specialist.task.name}`);
             return mergeResult;
             
         } catch (error) {

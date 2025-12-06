@@ -152,7 +152,7 @@ export class InstanceManager {
                 // Shared mode: managers work in the same directory
                 projectDir = workDir;
                 isSharedWorkspace = true;
-                console.log(`Manager ${instanceId} will use shared workspace: ${workDir}`);
+                console.error(`Manager ${instanceId} will use shared workspace: ${workDir}`);
             } else {
                 // Isolated mode: each instance gets its own subdirectory (default)
                 projectDir = path.join(workDir, instanceId);
@@ -280,7 +280,7 @@ export class InstanceManager {
             this.instances[instanceId].status = 'active';
             await this.saveInstances();
             
-            console.log(`Created Claude instance: ${role} (${instanceId})`);
+            console.error(`Created Claude instance: ${role} (${instanceId})`);
             return {
                 instanceId,
                 paneId: paneTarget,
@@ -324,13 +324,13 @@ export class InstanceManager {
             await new Promise(resolve => setTimeout(resolve, 3000));
             
             // Handle permission dialog automatically
-            console.log(`Handling permission dialog for ${paneTarget}`);
+            console.error(`Handling permission dialog for ${paneTarget}`);
             await this.tmux.sendKeys(paneTarget, 'Down', false); // Select "Yes, I accept"
             await new Promise(resolve => setTimeout(resolve, 500));
             await this.tmux.sendKeys(paneTarget, '', true); // Press Enter
             await new Promise(resolve => setTimeout(resolve, 2000)); // Wait for Claude to load
             
-            console.log(`Claude initialized with MCP in ${paneTarget}`);
+            console.error(`Claude initialized with MCP in ${paneTarget}`);
             return true;
         } catch (error) {
             console.error(`!!! ERROR !!! Failed to initialize Claude: ${error.message}`);
@@ -355,7 +355,7 @@ export class InstanceManager {
         // Claude sometimes needs multiple Enter presses when in "Bypassing Permissions" mode
         await new Promise(resolve => setTimeout(resolve, 1500));
         await this.tmux.sendKeys(instance.paneTarget, '', true);
-        console.log(`Sent additional Enter to ${instanceId} for safety`);
+        console.error(`Sent additional Enter to ${instanceId} for safety`);
         
         return true;
     }
@@ -439,7 +439,7 @@ export class InstanceManager {
                         force: true  // Force removal even if there are uncommitted changes
                     });
                     
-                    console.log(`Cleaned up worktree for specialist ${instanceId}`);
+                    console.error(`Cleaned up worktree for specialist ${instanceId}`);
                 } catch (error) {
                     console.error(`Warning: Failed to clean up worktree: ${error.message}`);
                     // Continue with termination even if worktree cleanup fails
@@ -456,7 +456,7 @@ export class InstanceManager {
             delete this.instances[instanceId];
             await this.saveInstances();
             
-            console.log(`Terminated instance: ${instanceId}`);
+            console.error(`Terminated instance: ${instanceId}`);
             return true;
         } catch (error) {
             console.error(`!!! ERROR !!! Failed to terminate instance: ${error.message}`);
@@ -486,7 +486,7 @@ export class InstanceManager {
         }
         try {
             if (!fs.existsSync(this.instancesFile)) {
-                console.log(`No instances file found at ${this.instancesFile}`);
+                console.error(`No instances file found at ${this.instancesFile}`);
                 return {};
             }
             
@@ -511,13 +511,13 @@ export class InstanceManager {
             for (const [id, instance] of Object.entries(this.instances)) {
                 await this.stateStore.saveInstance(id, instance);
             }
-            console.log(`Saved ${Object.keys(this.instances).length} instances to Redis`);
+            console.error(`Saved ${Object.keys(this.instances).length} instances to Redis`);
             return;
         }
         try {
             const data = { instances: this.instances };
             fs.writeJsonSync(this.instancesFile, data, { spaces: 2 });
-            console.log(`Saved ${Object.keys(this.instances).length} instances to ${this.instancesFile}`);
+            console.error(`Saved ${Object.keys(this.instances).length} instances to ${this.instancesFile}`);
         } catch (error) {
             console.error(`!!! ERROR !!! Failed to save instances: ${error.message}`);
         }
@@ -568,7 +568,7 @@ export class InstanceManager {
             const instance = this.instances[instanceId];
             if (!instance) return;
             
-            console.log(`Starting graceful shutdown of ${instanceId}...`);
+            console.error(`Starting graceful shutdown of ${instanceId}...`);
             
             // Send exit command to Claude
             await this.tmux.sendKeys(instance.paneTarget, 'exit', true);
@@ -590,9 +590,9 @@ export class InstanceManager {
             }
             
             if (gracefulExit) {
-                console.log(`Instance ${instanceId} shut down gracefully`);
+                console.error(`Instance ${instanceId} shut down gracefully`);
             } else {
-                console.log(`Instance ${instanceId} did not exit gracefully, will force terminate`);
+                console.error(`Instance ${instanceId} did not exit gracefully, will force terminate`);
             }
         } catch (error) {
             console.error(`Error during graceful shutdown of ${instanceId}:`, error);
@@ -604,7 +604,7 @@ export class InstanceManager {
      * Used for clean system shutdown.
      */
     async cleanup() {
-        console.log('Starting graceful cleanup of all instances...');
+        console.error('Starting graceful cleanup of all instances...');
         
         // Get all active instances
         const instances = await this.listInstances();
@@ -612,7 +612,7 @@ export class InstanceManager {
         
         // Gracefully shutdown all active instances in parallel
         if (activeInstances.length > 0) {
-            console.log(`Shutting down ${activeInstances.length} active instances...`);
+            console.error(`Shutting down ${activeInstances.length} active instances...`);
             await Promise.all(
                 activeInstances.map(instance => 
                     this.gracefulShutdown(instance.instanceId).catch(err => 
@@ -639,7 +639,7 @@ export class InstanceManager {
             todoMonitor.stopMonitoring(instanceId);
         }
         
-        console.log('Cleanup completed');
+        console.error('Cleanup completed');
     }
     
     /**
@@ -709,7 +709,7 @@ export class InstanceManager {
         // Phase 2: Git integration (optional enhancement)
         try {
             workspace.git = await this.addGitIntegration(workspaceDir, instanceId, context, options);
-            console.log(`✓ Git integration enabled for workspace: ${workspaceDir}`);
+            console.error(`✓ Git integration enabled for workspace: ${workspaceDir}`);
         } catch (error) {
             console.warn(`⚠️ Git integration failed: ${error.message}`);
             workspace.git = { enabled: false, error: error.message };
@@ -769,7 +769,7 @@ Each manager works on their own branch and merges back to main when ready.
         // Ensure .managers directory exists
         await fs.ensureDir(path.join(workspaceDir, '.managers'));
         
-        console.log(`✓ Core workspace setup complete: ${workspaceDir}`);
+        console.error(`✓ Core workspace setup complete: ${workspaceDir}`);
         
         return {
             workspaceDir,
@@ -795,7 +795,7 @@ Each manager works on their own branch and merges back to main when ready.
         // Initialize git workspace if needed
         try {
             await sharedWorkspaceGitManager.initializeSharedWorkspace(workspaceDir);
-            console.log(`Initialized git for shared workspace: ${workspaceDir}`);
+            console.error(`Initialized git for shared workspace: ${workspaceDir}`);
         } catch (error) {
             throw new Error(`Git initialization failed: ${error.message}`);
         }
@@ -813,7 +813,7 @@ Each manager works on their own branch and merges back to main when ready.
                     workDir: workspaceDir,
                     parentId: options.parentId
                 });
-                console.log(`Generated MCP config for ${instanceId}`);
+                console.error(`Generated MCP config for ${instanceId}`);
             } catch (error) {
                 console.warn(`Could not generate MCP config: ${error.message}`);
             }
@@ -859,7 +859,7 @@ Each manager works on their own branch and merges back to main when ready.
             
             if (workspaceFiles.length > 0) {
                 await sharedWorkspaceGitManager.commitWorkspaceFiles(workspaceDir, workspaceFiles);
-                console.log(`Committed ${workspaceFiles.length} workspace files before branch creation`);
+                console.error(`Committed ${workspaceFiles.length} workspace files before branch creation`);
             }
         } catch (error) {
             console.warn(`Could not commit workspace files: ${error.message}`);
@@ -873,7 +873,7 @@ Each manager works on their own branch and merges back to main when ready.
                 taskDescription: context
             });
             managerBranch = branchResult.branchName;
-            console.log(`Created/checked out manager branch: ${managerBranch}`);
+            console.error(`Created/checked out manager branch: ${managerBranch}`);
         } catch (error) {
             throw new Error(`Manager branch creation failed: ${error.message}`);
         }

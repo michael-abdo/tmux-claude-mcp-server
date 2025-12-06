@@ -25,7 +25,7 @@ class ReliableTmuxSender {
             try {
                 const success = await this._executeStrategy(message, strategy);
                 if (success) {
-                    console.log(`✅ Message sent successfully on attempt ${attempt + 1}`);
+                    console.error(`✅ Message sent successfully on attempt ${attempt + 1}`);
                     return true;
                 } else {
                     console.warn(`⚠️ Message send failed on attempt ${attempt + 1}`);
@@ -316,41 +316,41 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     const args = process.argv.slice(2);
     
     if (args.length < 2) {
-        console.log('Usage: node reliable_tmux_sender.js <session_name> <message> [strategy]');
-        console.log('\nAvailable strategies:');
-        console.log('  - singleEnter (fastest)');
-        console.log('  - doubleEnter');
-        console.log('  - doubleEnterWithVerification (recommended default)');
-        console.log('  - enterDelayEnter');
-        console.log('  - separateCommands');
-        console.log('  - bulletproof (maximum reliability)');
+        console.error('Usage: node reliable_tmux_sender.js <session_name> <message> [strategy]');
+        console.error('\nAvailable strategies:');
+        console.error('  - singleEnter (fastest)');
+        console.error('  - doubleEnter');
+        console.error('  - doubleEnterWithVerification (recommended default)');
+        console.error('  - enterDelayEnter');
+        console.error('  - separateCommands');
+        console.error('  - bulletproof (maximum reliability)');
         process.exit(1);
     }
 
     const [sessionName, message, strategy = 'doubleEnterWithVerification'] = args;
 
-    console.log(`🎯 Sending to session: ${sessionName}`);
-    console.log(`📝 Message: ${message}`);
-    console.log(`⚙️  Strategy: ${strategy}`);
+    console.error(`🎯 Sending to session: ${sessionName}`);
+    console.error(`📝 Message: ${message}`);
+    console.error(`⚙️  Strategy: ${strategy}`);
 
     (async () => {
         const sender = new ReliableTmuxSender(sessionName, strategy);
         
         // Quick test first
-        console.log('🔍 Testing session responsiveness...');
+        console.error('🔍 Testing session responsiveness...');
         if (!(await sender.quickTest())) {
-            console.log('❌ Session appears unresponsive!');
+            console.error('❌ Session appears unresponsive!');
             process.exit(1);
         }
 
-        console.log('✅ Session responsive, sending message...');
+        console.error('✅ Session responsive, sending message...');
         const success = await sender.sendMessage(message);
 
         if (success) {
-            console.log('✅ Message sent successfully!');
+            console.error('✅ Message sent successfully!');
             process.exit(0);
         } else {
-            console.log('❌ Failed to send message!');
+            console.error('❌ Failed to send message!');
             process.exit(1);
         }
     })();

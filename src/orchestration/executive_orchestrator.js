@@ -81,7 +81,7 @@ When you receive this context, immediately reply with:
             tasks
         });
         
-        console.log(`✓ Manager spawned: ${role} (${result.instanceId})`);
+        console.error(`✓ Manager spawned: ${role} (${result.instanceId})`);
         return result.instanceId;
     }
 
@@ -297,7 +297,7 @@ When you receive this context, immediately reply with:
         manager.terminatedAt = new Date().toISOString();
         manager.terminationReason = reason;
         
-        console.log(`Manager ${role} terminated: ${reason}`);
+        console.error(`Manager ${role} terminated: ${reason}`);
     }
 }
 

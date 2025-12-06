@@ -42,7 +42,7 @@ export class MCPConfigGenerator {
         const configPath = path.join(configDir, 'settings.json');
         await fs.writeFile(configPath, JSON.stringify(config, null, 2));
         
-        console.log(`Generated MCP config for ${instanceId} at ${configPath}`);
+        console.error(`Generated MCP config for ${instanceId} at ${configPath}`);
         return configPath;
     }
 
@@ -140,7 +140,7 @@ export class MCPConfigGenerator {
             this.deepMerge(config, updates);
             
             await fs.writeFile(configPath, JSON.stringify(config, null, 2));
-            console.log(`Updated MCP config at ${configPath}`);
+            console.error(`Updated MCP config at ${configPath}`);
         } catch (error) {
             console.error(`Error updating config: ${error.message}`);
             throw error;

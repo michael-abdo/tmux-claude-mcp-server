@@ -41,7 +41,7 @@ class DashboardServer {
         // Wait for initialization
         await new Promise(resolve => setTimeout(resolve, 1000));
         
-        console.log('Dashboard server initialized');
+        console.error('Dashboard server initialized');
     }
 
     setupMiddleware() {
@@ -276,7 +276,7 @@ class DashboardServer {
                 const jobId = `job_${Date.now()}`;
                 
                 // In production, this would use the job queue and parallel executor
-                console.log(`Distributing job ${jobId}: ${name}`);
+                console.error(`Distributing job ${jobId}: ${name}`);
                 
                 res.json({
                     success: true,
@@ -291,7 +291,7 @@ class DashboardServer {
         // API: Emergency stop
         this.app.post('/api/emergency-stop', async (req, res) => {
             try {
-                console.log('Emergency stop requested!');
+                console.error('Emergency stop requested!');
                 
                 // In production, this would stop all active jobs
                 // For now, just log and return success
@@ -311,8 +311,8 @@ class DashboardServer {
         await this.initialize();
         
         this.server = this.app.listen(this.port, () => {
-            console.log(`Dashboard server running at http://localhost:${this.port}`);
-            console.log(`Phase: ${process.env.PHASE || '2'}`);
+            console.error(`Dashboard server running at http://localhost:${this.port}`);
+            console.error(`Phase: ${process.env.PHASE || '2'}`);
         });
     }
 
@@ -333,13 +333,13 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     
     // Handle graceful shutdown
     process.on('SIGINT', async () => {
-        console.log('\nShutting down dashboard server...');
+        console.error('\nShutting down dashboard server...');
         await server.stop();
         process.exit(0);
     });
 
     process.on('SIGTERM', async () => {
-        console.log('\nShutting down dashboard server...');
+        console.error('\nShutting down dashboard server...');
         await server.stop();
         process.exit(0);
     });

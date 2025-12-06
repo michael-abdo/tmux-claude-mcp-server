@@ -84,7 +84,7 @@ export class CircuitBreaker {
                 
             case 'HALF_OPEN':
                 circuit.successes++;
-                console.log(`Circuit ${instanceId}: Success ${circuit.successes}/${this.options.successThreshold}`);
+                console.error(`Circuit ${instanceId}: Success ${circuit.successes}/${this.options.successThreshold}`);
                 
                 // Check if we should close the circuit
                 if (circuit.successes >= this.options.successThreshold) {
@@ -121,7 +121,7 @@ export class CircuitBreaker {
         
         switch (circuit.state) {
             case 'CLOSED':
-                console.log(`Circuit ${instanceId}: Failure ${circuit.failures.length}/${this.options.failureThreshold}`);
+                console.error(`Circuit ${instanceId}: Failure ${circuit.failures.length}/${this.options.failureThreshold}`);
                 
                 // Check if we should open the circuit
                 if (circuit.failures.length >= this.options.failureThreshold) {
@@ -131,7 +131,7 @@ export class CircuitBreaker {
                 
             case 'HALF_OPEN':
                 // Single failure in HALF_OPEN reopens the circuit
-                console.log(`Circuit ${instanceId}: Failure in HALF_OPEN state, reopening`);
+                console.error(`Circuit ${instanceId}: Failure in HALF_OPEN state, reopening`);
                 this.transitionTo(instanceId, 'OPEN');
                 break;
                 
@@ -151,7 +151,7 @@ export class CircuitBreaker {
         
         if (oldState === newState) return;
         
-        console.log(`Circuit ${instanceId}: ${oldState} → ${newState}`);
+        console.error(`Circuit ${instanceId}: ${oldState} → ${newState}`);
         
         circuit.state = newState;
         circuit.lastStateChange = Date.now();
@@ -235,7 +235,7 @@ export class CircuitBreaker {
      */
     reset(instanceId) {
         if (this.circuits.has(instanceId)) {
-            console.log(`Resetting circuit for ${instanceId}`);
+            console.error(`Resetting circuit for ${instanceId}`);
             this.circuits.delete(instanceId);
         }
     }
@@ -244,7 +244,7 @@ export class CircuitBreaker {
      * Reset all circuits
      */
     resetAll() {
-        console.log('Resetting all circuits');
+        console.error('Resetting all circuits');
         this.circuits.clear();
     }
 

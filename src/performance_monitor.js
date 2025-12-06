@@ -79,7 +79,7 @@ export class PerformanceMonitor extends EventEmitter {
         if (this.monitoring) return;
         
         this.monitoring = true;
-        console.log('🔍 Performance monitoring started');
+        console.error('🔍 Performance monitoring started');
         
         // Take snapshots every 5 seconds
         this.intervals.snapshot = setInterval(() => {
@@ -108,7 +108,7 @@ export class PerformanceMonitor extends EventEmitter {
             clearInterval(interval);
         });
         
-        console.log('🔍 Performance monitoring stopped');
+        console.error('🔍 Performance monitoring stopped');
     }
     
     /**

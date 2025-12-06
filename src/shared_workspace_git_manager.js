@@ -48,13 +48,13 @@ export class SharedWorkspaceGitManager extends GitBranchManager {
             try {
                 await this.gitCommand(`pull origin ${targetBranch}`, workspaceDir);
             } catch {
-                console.log('No remote origin or pull failed - working locally');
+                console.error('No remote origin or pull failed - working locally');
             }
             
             // Create workspace git configuration
             await this.setupSharedWorkspaceGitConfig(workspaceDir);
             
-            console.log(`Initialized shared workspace git at ${workspaceDir} with base branch ${targetBranch}`);
+            console.error(`Initialized shared workspace git at ${workspaceDir} with base branch ${targetBranch}`);
             
             return {
                 workspaceDir,
@@ -82,7 +82,7 @@ export class SharedWorkspaceGitManager extends GitBranchManager {
         
         // Check if branch already exists
         if (await this.branchExists(branchName, workspaceDir)) {
-            console.log(`Manager branch ${branchName} already exists, checking out...`);
+            console.error(`Manager branch ${branchName} already exists, checking out...`);
             await this.gitCommand(`checkout ${branchName}`, workspaceDir);
             return {
                 branchName,
@@ -116,7 +116,7 @@ export class SharedWorkspaceGitManager extends GitBranchManager {
                     name: 'create-branch',
                     fn: async () => {
                         await this.gitCommand(`checkout -b ${branchName} ${targetBaseBranch}`, workspaceDir);
-                        console.log(`Created and checked out branch: ${branchName}`);
+                        console.error(`Created and checked out branch: ${branchName}`);
                         return { branchName };
                     }
                 },
@@ -127,7 +127,7 @@ export class SharedWorkspaceGitManager extends GitBranchManager {
                             await this.gitCommand(`push -u origin ${branchName}`, workspaceDir);
                             return { pushed: true };
                         } catch {
-                            console.log('No remote origin - working locally');
+                            console.error('No remote origin - working locally');
                             return { pushed: false };
                         }
                     }
@@ -143,7 +143,7 @@ export class SharedWorkspaceGitManager extends GitBranchManager {
         );
         
         if (result.success) {
-            console.log(`Created manager branch: ${branchName}`);
+            console.error(`Created manager branch: ${branchName}`);
             return {
                 branchName,
                 status: 'created',
@@ -266,7 +266,7 @@ export class SharedWorkspaceGitManager extends GitBranchManager {
         );
         
         if (mergeResult.success) {
-            console.log(`Successfully merged ${managerBranch} into ${targetBranch}`);
+            console.error(`Successfully merged ${managerBranch} into ${targetBranch}`);
             return {
                 success: true,
                 status: 'merged',
@@ -477,7 +477,7 @@ ${workspaceFiles.map(f => `- ${f.filename}`).join('\n')}
 
 This commit sets up the shared workspace infrastructure for manager collaboration."`, workspaceDir);
             
-            console.log(`Committed ${workspaceFiles.length} workspace setup files`);
+            console.error(`Committed ${workspaceFiles.length} workspace setup files`);
         } catch (error) {
             console.warn(`Could not commit workspace files: ${error.message}`);
             throw error;
@@ -530,7 +530,7 @@ package-lock.json merge=ours
             // Set up merge drivers
             await this.gitCommand('config merge.ours.driver true', workspaceDir);
             
-            console.log('Set up shared workspace git configuration');
+            console.error('Set up shared workspace git configuration');
         } catch (error) {
             console.warn(`Warning: Could not set up git config: ${error.message}`);
         }
@@ -596,7 +596,7 @@ Type: Shared workspace collaboration"`,
                 workspaceDir
             );
             
-            console.log(`Created initial commit for manager ${instanceId}`);
+            console.error(`Created initial commit for manager ${instanceId}`);
         } catch (error) {
             console.warn(`Could not create initial commit: ${error.message}`);
         }
@@ -621,7 +621,7 @@ Type: Shared workspace collaboration"`,
         try {
             await this.gitCommand(`pull origin ${branch}`, workspaceDir);
         } catch (error) {
-            console.log(`Could not pull from origin: ${error.message}`);
+            console.error(`Could not pull from origin: ${error.message}`);
         }
     }
 
@@ -654,7 +654,7 @@ Type: Shared workspace collaboration"`,
     async deleteManagerBranch(branchName, workspaceDir) {
         try {
             await this.gitCommand(`branch -d ${branchName}`, workspaceDir);
-            console.log(`Deleted manager branch: ${branchName}`);
+            console.error(`Deleted manager branch: ${branchName}`);
         } catch (error) {
             console.warn(`Could not delete branch ${branchName}: ${error.message}`);
         }
@@ -662,12 +662,12 @@ Type: Shared workspace collaboration"`,
 
     async updateWorkspaceAfterMerge(workspaceDir, managerBranch) {
         // Update SHARED_WORKSPACE.md or other markers after successful merge
-        console.log(`Updated workspace after merging ${managerBranch}`);
+        console.error(`Updated workspace after merging ${managerBranch}`);
     }
 
     async autoResolveFile(filename, workspaceDir) {
         // Implement auto-resolution strategies for specific file types
-        console.log(`Auto-resolving conflicts in ${filename}`);
+        console.error(`Auto-resolving conflicts in ${filename}`);
     }
 }
 

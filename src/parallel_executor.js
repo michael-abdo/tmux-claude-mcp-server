@@ -21,7 +21,7 @@ export class ParallelExecutor {
         this.completedTasks = [];
         this.failedTasks = [];
         
-        console.log(`=== Parallel Executor initialized (max concurrent: ${this.maxConcurrent}) ===`);
+        console.error(`=== Parallel Executor initialized (max concurrent: ${this.maxConcurrent}) ===`);
     }
 
     /**
@@ -34,7 +34,7 @@ export class ParallelExecutor {
      * @returns {Promise<Object>} Results of all task executions
      */
     async executeParallel(tasks, managerId, workDir) {
-        console.log(`Starting parallel execution of ${tasks.length} tasks for Manager ${managerId}`);
+        console.error(`Starting parallel execution of ${tasks.length} tasks for Manager ${managerId}`);
         
         // Queue all tasks
         this.taskQueue = [...tasks];
@@ -94,7 +94,7 @@ export class ParallelExecutor {
                     specialist: specialist
                 });
                 
-                console.log(`Specialist ${specialist.instanceId} started task: ${task.name}`);
+                console.error(`Specialist ${specialist.instanceId} started task: ${task.name}`);
                 
                 // Send git branch setup for specialist
                 await this.mcpTools.send({
@@ -253,7 +253,7 @@ export class ParallelExecutor {
                     
                     if (!stillActive) {
                         // Specialist died or completed
-                        console.log(`Specialist ${specialistId} is no longer active`);
+                        console.error(`Specialist ${specialistId} is no longer active`);
                         this.activeSpecialists.delete(specialistId);
                         return;
                     }
@@ -265,7 +265,7 @@ export class ParallelExecutor {
                     });
                     
                     if (this.isTaskComplete(output.output, info.task)) {
-                        console.log(`Specialist ${specialistId} completed task`);
+                        console.error(`Specialist ${specialistId} completed task`);
                         return;
                     }
                     
@@ -298,7 +298,7 @@ export class ParallelExecutor {
      * Emergency stop - terminate all active specialists.
      */
     async emergencyStop() {
-        console.log('Emergency stop initiated - terminating all active specialists');
+        console.error('Emergency stop initiated - terminating all active specialists');
         
         const terminationPromises = [];
         for (const [specialistId] of this.activeSpecialists) {

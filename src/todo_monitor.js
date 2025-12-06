@@ -31,11 +31,11 @@ export class TodoMonitor extends EventEmitter {
      */
     async startMonitoring(instanceId, projectPath) {
         if (this.watchers.has(instanceId)) {
-            console.log(`Already monitoring todos for ${instanceId}`);
+            console.error(`Already monitoring todos for ${instanceId}`);
             return;
         }
 
-        console.log(`Starting todo monitoring for ${instanceId}`);
+        console.error(`Starting todo monitoring for ${instanceId}`);
         
         // Initial read
         await this.readInstanceTodos(instanceId, projectPath);
@@ -74,7 +74,7 @@ export class TodoMonitor extends EventEmitter {
             clearInterval(interval);
             this.watchers.delete(instanceId);
             this.instanceTodos.delete(instanceId);
-            console.log(`Stopped todo monitoring for ${instanceId}`);
+            console.error(`Stopped todo monitoring for ${instanceId}`);
         }
     }
 
@@ -165,7 +165,7 @@ export class TodoMonitor extends EventEmitter {
         }
         this.watchers.clear();
         this.instanceTodos.clear();
-        console.log('Todo monitoring cleaned up');
+        console.error('Todo monitoring cleaned up');
     }
 }
 

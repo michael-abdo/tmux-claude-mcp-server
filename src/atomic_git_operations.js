@@ -49,7 +49,7 @@ export class AtomicGitOperations extends GitBranchManager {
             if (hasUncommittedChanges) {
                 stashName = `atomic-checkpoint-${Date.now()}`;
                 await this.gitCommand(`stash push -m "${stashName}"`, workspaceDir);
-                console.log(`Created stash: ${stashName}`);
+                console.error(`Created stash: ${stashName}`);
             }
             
             const checkpoint = {
@@ -64,7 +64,7 @@ export class AtomicGitOperations extends GitBranchManager {
             // Store checkpoint
             this.checkpoints.set(workspaceDir, checkpoint);
             
-            console.log(`Created checkpoint at ${checkpoint.commit} on branch ${checkpoint.branch}`);
+            console.error(`Created checkpoint at ${checkpoint.commit} on branch ${checkpoint.branch}`);
             return checkpoint;
         } catch (error) {
             throw new Error(`Failed to create checkpoint: ${error.message}`);
@@ -78,7 +78,7 @@ export class AtomicGitOperations extends GitBranchManager {
      */
     async rollbackToCheckpoint(workspaceDir, checkpoint) {
         try {
-            console.log(`Rolling back to checkpoint: ${checkpoint.commit} on ${checkpoint.branch}`);
+            console.error(`Rolling back to checkpoint: ${checkpoint.commit} on ${checkpoint.branch}`);
             
             // First, ensure we're on the right branch
             const currentBranch = await this.getCurrentBranch(workspaceDir);
@@ -98,14 +98,14 @@ export class AtomicGitOperations extends GitBranchManager {
                     
                     if (stashMatch) {
                         await this.gitCommand(`stash pop ${stashMatch[1]}`, workspaceDir);
-                        console.log(`Restored stashed changes: ${checkpoint.stashName}`);
+                        console.error(`Restored stashed changes: ${checkpoint.stashName}`);
                     }
                 } catch (error) {
                     console.warn(`Could not restore stash: ${error.message}`);
                 }
             }
             
-            console.log('Rollback completed successfully');
+            console.error('Rollback completed successfully');
         } catch (error) {
             throw new Error(`Failed to rollback: ${error.message}`);
         }
@@ -123,24 +123,24 @@ export class AtomicGitOperations extends GitBranchManager {
         const results = [];
         
         try {
-            console.log(`Starting atomic git operation: ${operationName}`);
-            console.log(`Executing ${operations.length} operations...`);
+            console.error(`Starting atomic git operation: ${operationName}`);
+            console.error(`Executing ${operations.length} operations...`);
             
             for (const [index, op] of operations.entries()) {
                 const opName = op.name || `Operation ${index + 1}`;
-                console.log(`  → Executing: ${opName}`);
+                console.error(`  → Executing: ${opName}`);
                 
                 try {
                     const result = await op.fn();
                     results.push({ name: opName, success: true, result });
-                    console.log(`  ✓ Completed: ${opName}`);
+                    console.error(`  ✓ Completed: ${opName}`);
                 } catch (error) {
                     console.error(`  ✗ Failed: ${opName} - ${error.message}`);
                     throw new Error(`Operation "${opName}" failed: ${error.message}`);
                 }
             }
             
-            console.log(`✓ Atomic operation completed: ${operationName}`);
+            console.error(`✓ Atomic operation completed: ${operationName}`);
             
             // Clear checkpoint on success
             this.checkpoints.delete(workspaceDir);
@@ -154,12 +154,12 @@ export class AtomicGitOperations extends GitBranchManager {
         } catch (error) {
             console.error(`✗ Atomic operation failed: ${operationName}`);
             console.error(`Error: ${error.message}`);
-            console.log('Initiating rollback...');
+            console.error('Initiating rollback...');
             
             // Rollback on failure
             try {
                 await this.rollbackToCheckpoint(workspaceDir, checkpoint);
-                console.log('✓ Rollback completed');
+                console.error('✓ Rollback completed');
             } catch (rollbackError) {
                 console.error(`✗ Rollback failed: ${rollbackError.message}`);
                 console.error('Manual intervention may be required');
@@ -186,22 +186,22 @@ export class AtomicGitOperations extends GitBranchManager {
         const results = [];
         let allValid = true;
         
-        console.log('Validating preconditions...');
+        console.error('Validating preconditions...');
         
         for (const validation of validations) {
             const name = validation.name || 'Validation';
             try {
                 const result = await validation.fn(workspaceDir);
                 if (result.valid) {
-                    console.log(`  ✓ ${name}: ${result.message || 'Valid'}`);
+                    console.error(`  ✓ ${name}: ${result.message || 'Valid'}`);
                     results.push({ name, valid: true, message: result.message });
                 } else {
-                    console.log(`  ✗ ${name}: ${result.message || 'Invalid'}`);
+                    console.error(`  ✗ ${name}: ${result.message || 'Invalid'}`);
                     results.push({ name, valid: false, message: result.message });
                     allValid = false;
                 }
             } catch (error) {
-                console.log(`  ✗ ${name}: ${error.message}`);
+                console.error(`  ✗ ${name}: ${error.message}`);
                 results.push({ name, valid: false, error: error.message });
                 allValid = false;
             }

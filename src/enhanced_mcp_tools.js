@@ -65,7 +65,7 @@ export class EnhancedMCPTools {
                     maxConcurrent: this.maxSpecialistsPerManager
                 });
                 this.parallelExecutors.set(result.instanceId, executor);
-                console.log(`Parallel executor initialized for Manager ${result.instanceId}`);
+                console.error(`Parallel executor initialized for Manager ${result.instanceId}`);
             }
             
             return {
@@ -215,7 +215,7 @@ export class EnhancedMCPTools {
                 const executor = this.parallelExecutors.get(instanceId);
                 await executor.emergencyStop();
                 this.parallelExecutors.delete(instanceId);
-                console.log(`Cleaned up parallel executor for Manager ${instanceId}`);
+                console.error(`Cleaned up parallel executor for Manager ${instanceId}`);
             }
             
             // Reset circuit breaker for terminated instance

@@ -17,7 +17,7 @@ export class HealthMonitor {
         this.isMonitoring = false;
         this.monitoringTimer = null;
         
-        console.log('=== Health Monitor initialized ===');
+        console.error('=== Health Monitor initialized ===');
     }
 
     /**
@@ -25,12 +25,12 @@ export class HealthMonitor {
      */
     async startMonitoring() {
         if (this.isMonitoring) {
-            console.log('Health monitoring already active');
+            console.error('Health monitoring already active');
             return;
         }
         
         this.isMonitoring = true;
-        console.log('Starting health monitoring...');
+        console.error('Starting health monitoring...');
         
         // Initial check
         await this.performHealthCheck();
@@ -50,7 +50,7 @@ export class HealthMonitor {
             this.monitoringTimer = null;
         }
         this.isMonitoring = false;
-        console.log('Health monitoring stopped');
+        console.error('Health monitoring stopped');
     }
 
     /**
@@ -178,7 +178,7 @@ export class HealthMonitor {
         // Check if instance needs recovery
         if (healthData.failureCount >= this.unhealthyThreshold) {
             healthData.status = 'unhealthy';
-            console.log(`Instance ${instance.instanceId} marked unhealthy after ${healthData.failureCount} failures`);
+            console.error(`Instance ${instance.instanceId} marked unhealthy after ${healthData.failureCount} failures`);
             
             // Trigger recovery
             await this.attemptRecovery(instance);
@@ -191,7 +191,7 @@ export class HealthMonitor {
      * Attempt to recover an unhealthy instance
      */
     async attemptRecovery(instance) {
-        console.log(`Attempting recovery for ${instance.instanceId}...`);
+        console.error(`Attempting recovery for ${instance.instanceId}...`);
         
         try {
             // Wait before recovery
@@ -202,11 +202,11 @@ export class HealthMonitor {
             
             if (!isActive) {
                 // Instance is dead, attempt restart
-                console.log(`Restarting dead instance ${instance.instanceId}`);
+                console.error(`Restarting dead instance ${instance.instanceId}`);
                 const result = await this.mcpTools.restart({ instanceId: instance.instanceId });
                 
                 if (result.status === 'restarted') {
-                    console.log(`Successfully restarted ${instance.instanceId}`);
+                    console.error(`Successfully restarted ${instance.instanceId}`);
                     
                     // Reset health data
                     const healthData = this.healthChecks.get(instance.instanceId);
@@ -226,11 +226,11 @@ export class HealthMonitor {
                 }
             } else {
                 // Instance is alive but unhealthy
-                console.log(`Instance ${instance.instanceId} is alive but unhealthy`);
+                console.error(`Instance ${instance.instanceId} is alive but unhealthy`);
                 
                 // For Specialists, might need to terminate and respawn
                 if (instance.role === 'specialist' && instance.parentId) {
-                    console.log(`Terminating unhealthy specialist ${instance.instanceId}`);
+                    console.error(`Terminating unhealthy specialist ${instance.instanceId}`);
                     await this.mcpTools.terminate({ instanceId: instance.instanceId });
                     
                     // Notify parent Manager
